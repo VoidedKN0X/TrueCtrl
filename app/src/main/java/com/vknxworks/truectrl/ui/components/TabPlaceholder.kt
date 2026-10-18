@@ -11,16 +11,24 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.truectrl.R
+import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.ui.theme.Gutter
 
-/** A main tab with nothing connected yet: its title, what it will show, and a pointer to server setup. */
+/** A main tab that isn't built yet: its title, what it will show, and any connection problem. */
 @Composable
 fun TabPlaceholder(@StringRes title: Int, @StringRes hint: Int, icon: ImageVector) {
+    val sessions = LocalContext.current.container.sessions
+    val active by sessions.active.collectAsStateWithLifecycle()
+    val access by sessions.access.collectAsStateWithLifecycle()
+    val serverName = active?.server?.name.orEmpty()
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
         TabTitle(stringResource(title))
         Text(
@@ -29,10 +37,15 @@ fun TabPlaceholder(@StringRes title: Int, @StringRes hint: Int, icon: ImageVecto
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter),
         )
+        ConnectionBanner()
         EmptyState(
             icon = icon,
-            title = stringResource(R.string.no_server_title),
-            body = stringResource(R.string.no_server_body),
+            title = stringResource(R.string.tab_coming_title),
+            body = when {
+                access.connected -> stringResource(R.string.tab_coming_body, serverName)
+                access.loading -> stringResource(R.string.tab_connecting_body, serverName)
+                else -> stringResource(R.string.tab_offline_body, serverName)
+            },
             modifier = Modifier.weight(1f).padding(bottom = LocalBottomClearance.current),
         )
         Spacer(Modifier.height(8.dp))

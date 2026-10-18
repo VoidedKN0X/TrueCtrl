@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.vknxworks.truectrl.R
@@ -28,12 +29,15 @@ enum class ThemeChoice(@StringRes val label: Int) {
 data class AppSettings(
     val theme: ThemeChoice = ThemeChoice.SYSTEM,
     val dynamicColor: Boolean = false,
+    /** Pool usage (percent) from which a pool is flagged in the attention list. */
+    val poolWarnPercent: Int = 80,
 )
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
     private object K {
         val theme = stringPreferencesKey("theme")
         val dynamic = booleanPreferencesKey("dynamic_color")
+        val poolWarn = intPreferencesKey("pool_warn_percent")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -43,6 +47,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
     private fun Preferences.toSettings() = AppSettings(
         theme = enumOr(this[K.theme], ThemeChoice.SYSTEM),
         dynamicColor = this[K.dynamic] ?: false,
+        poolWarnPercent = (this[K.poolWarn] ?: 80).coerceIn(50, 99),
     )
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
@@ -50,6 +55,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             val s = transform(p.toSettings())
             p[K.theme] = s.theme.name
             p[K.dynamic] = s.dynamicColor
+            p[K.poolWarn] = s.poolWarnPercent
         }
     }
 

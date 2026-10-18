@@ -4,6 +4,30 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.2.0 (2026-10-19)
+
+TrueCtrl now connects to your TrueNAS: add a server, sign in, and see exactly what your user is allowed to do. The tabs themselves are filled in from the next version on.
+
+### New
+
+- **Server setup** on first start: enter the address (like `192.168.1.9`, or `https://nas.example.com` behind a reverse proxy), an optional name, and how to sign in. TrueCtrl checks the address before sending anything secret, and gives a clear reason when something's wrong: unreachable, not a TrueNAS server, an older TrueNAS without the API TrueCtrl uses, a version older than 25.04, a rejected or expired API key, a wrong password or code, or an account that isn't allowed to sign in
+- **Sign in with an API key** (recommended) for a TrueNAS user, or **with a username and password**, including the 6-digit two-factor code from your authenticator app
+- **Self-signed certificates**: the first time, TrueCtrl shows the certificate's SHA-256 fingerprint (with how to check it on TrueNAS) and asks you to trust it. From then on it only accepts that exact certificate from that server, and warns you clearly if it ever changes. There is no "trust all certificates" option
+- **What this sign-in can do**: after connecting, a list shows each kind of action (datasets, snapshots, scrubs, replication, cloud sync, shares, services, apps, alerts, updates, reboot and shutdown, shell) as allowed or not, with the TrueNAS role it needs. It's also on the account page
+- **Read-only mode** per server, which hides every action that changes something. It's turned on automatically for a user that can only look
+- **Several servers**: add, switch between, edit and remove servers from the account page (tap the profile picture, then Servers). Removing one deletes its saved API key or password from the phone
+- **Live connection**: TrueCtrl keeps one secure connection to TrueNAS open while the app is on screen and closes it when you leave the app. If the connection drops (Wi-Fi changes, TrueNAS reboots, the reverse proxy is down), it reconnects on its own, waiting a little longer after each failed try
+- **Connection problems** show as a banner on every tab with the reason and the one action that fixes it: Retry, Sign in again, or Check again for a certificate
+- **Version detection**: TrueCtrl reads your TrueNAS version and what your user can call when it connects, so later features can use the right commands for 25.04, 25.10 and 26 and hide what your version doesn't have
+- **Pool usage warning** setting (Settings › Warnings), 80 % by default, for the attention list that comes with the Overview
+
+### Security
+
+- API keys and passwords are encrypted with a key kept in the Android Keystore and never leave the phone; nothing is written to logs
+- A password is only saved when it can sign in again on its own. With two-factor sign-in nothing is saved, and you're asked to sign in again when the session ends (an API key avoids this)
+- TrueNAS is only reached over HTTPS and secure WebSockets, which TrueNAS requires for API keys; plain `http://` addresses are refused
+- Redirects are never followed, so a sign-in can't be sent to another server
+
 ## v0.1.0 (2026-10-19)
 
 The first build of TrueCtrl: the app's shell, ready for the features that follow. It doesn't connect to a TrueNAS server yet; server setup comes in the next version.

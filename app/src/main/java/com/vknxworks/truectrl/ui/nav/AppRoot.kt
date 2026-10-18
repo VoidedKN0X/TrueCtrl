@@ -55,7 +55,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.toRoute
 import com.vknxworks.truectrl.R
+import com.vknxworks.truectrl.container
+import com.vknxworks.truectrl.ui.settings.ServersScreen
+import com.vknxworks.truectrl.ui.setup.SetupScreen
 import com.vknxworks.truectrl.ui.components.LocalBottomClearance
 import com.vknxworks.truectrl.ui.components.LocalHazeState
 import com.vknxworks.truectrl.ui.overview.OverviewScreen
@@ -70,8 +76,15 @@ import dev.chrisbanes.haze.rememberHazeState
 
 @Composable
 fun AppRoot() {
+    val c = LocalContext.current.container
+    val servers by c.sessions.servers.collectAsStateWithLifecycle()
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        MainScaffold()
+        if (servers.isEmpty()) {
+            // First start (or every server removed): setup fills the screen, no tabs.
+            SetupScreen(onDone = {}, onCancel = null)
+        } else {
+            MainScaffold()
+        }
     }
 }
 
@@ -195,5 +208,14 @@ private fun AppNavHost(navController: NavHostController) {
 
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }
+        composable<ServersRoute> { ServersScreen() }
+        composable<AddServerRoute> {
+            val navigator = LocalNavigator.current
+            SetupScreen(onDone = { navController.popBackStack(OverviewRoute, false) }, onCancel = navigator::back)
+        }
+        composable<EditServerRoute> {
+            val navigator = LocalNavigator.current
+            SetupScreen(editId = it.toRoute<EditServerRoute>().id, onDone = navigator::back, onCancel = navigator::back)
+        }
     }
 }

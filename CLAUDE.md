@@ -8,7 +8,7 @@ Android app for monitoring and managing a TrueNAS server (25.04 and newer). Part
 - Every push needs a detailed `CHANGELOG.md` entry.
 - Every user-visible string goes in `app/src/main/res/values/strings.xml`.
 - TrueNAS is reached only through the versioned JSON-RPC 2.0 WebSocket API (`wss://<host>/api/current` or a pinned version). Never use the REST API (`/api/v2.0`): it is deprecated since 25.04 and removed in 26.
-- Check method names and argument shapes against the server's own docs (`https://<host>/api/docs/`) for that version; never guess. Method names differ between versions (for example `zfs.snapshot.*` on 25.04 vs `pool.snapshot.*` on 26, `service.restart` vs `service.control`), so go through the compatibility layer and `core.get_methods`. Hide a feature when its method is missing.
+- Check method names and argument shapes against the server's own docs (`https://<host>/api/docs/`) for that version; never guess. Method names differ between versions (for example `zfs.snapshot.*` on 25.04 vs `pool.snapshot.*` from 25.10, `service.start/stop/restart` vs `service.control` from 25.10, the scrub event `zfs.pool.scan` vs `pool.scan` on 26), so go through the compatibility layer and `core.get_methods`. Hide a feature when its method is missing.
 - Parse API responses leniently (missing or new fields must never crash).
 - Never log or store API keys, passwords, OTPs or dataset passphrases in plain text. Dataset passphrases are never persisted.
 - Test write actions on a throwaway test dataset and its snapshots, never on datasets used by Jellyfin, Immich, Paperless, the *arr stack or other services.

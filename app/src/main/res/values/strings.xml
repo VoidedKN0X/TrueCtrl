@@ -16,9 +16,7 @@
     <string name="selected">Selected</string>
     <string name="account_and_settings">Account and settings</string>
 
-    <!-- Empty states while no server is set up -->
-    <string name="no_server_title">No TrueNAS server yet</string>
-    <string name="no_server_body">Server setup arrives in the next build. Your pools, datasets, snapshots, shares and apps will show up here once you\'ve added your TrueNAS server.</string>
+    <!-- What each tab shows -->
     <string name="overview_empty_hint">System health and anything that needs attention.</string>
     <string name="storage_empty_hint">Pools, datasets, zvols and disks with SMART health.</string>
     <string name="protection_empty_hint">Snapshots, replication, cloud sync, rsync and scrubs.</string>
@@ -30,7 +28,7 @@
     <string name="you_not_connected">Not connected</string>
     <string name="you_not_connected_body">Add your TrueNAS server to get started.</string>
     <string name="settings">Settings</string>
-    <string name="settings_subtitle">Appearance</string>
+    <string name="settings_subtitle">Appearance and warnings</string>
     <string name="support_title">Support TrueCtrl</string>
     <string name="support_subtitle">TrueCtrl is free and open source. Sponsor development on GitHub</string>
     <string name="source_title">Source code and issues</string>
@@ -49,4 +47,130 @@
     <string name="theme_black">Pure black</string>
     <string name="dynamic_colour">Dynamic colour</string>
     <string name="dynamic_colour_subtitle">Use colours from your wallpaper</string>
+    <!-- Settings: warnings -->
+    <string name="group_warnings">Warnings</string>
+    <string name="pool_warn_title">Pool usage warning</string>
+    <string name="pool_warn_subtitle">From %1$d%% full</string>
+
+    <!-- Server setup -->
+    <string name="setup_title">Add your TrueNAS server</string>
+    <string name="setup_intro">TrueCtrl talks to the TrueNAS API over a secure WebSocket. An API key for a user that can only do what you need is the safest way in.</string>
+    <string name="edit_server_title">Server and sign-in</string>
+    <string name="field_name">Name (optional)</string>
+    <string name="field_name_hint">Defaults to your TrueNAS hostname</string>
+    <string name="field_address">Address</string>
+    <string name="field_address_hint">192.168.1.9 or https://nas.example.com</string>
+    <string name="address_resolves">Connects to %1$s</string>
+    <string name="address_invalid">Enter the address of your TrueNAS, like 192.168.1.9 or https://nas.example.com</string>
+    <string name="address_http">TrueNAS only accepts API keys over HTTPS. Use https:// or leave the scheme out.</string>
+    <string name="auth_method">Sign in with</string>
+    <string name="auth_api_key">API key</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_api_key_note">Recommended. Create the key under Credentials › Users for a user with only the roles TrueCtrl needs; see the README.</string>
+    <string name="auth_password_note">Signs in with your TrueNAS login. Two-factor codes are supported, but then you\'ll need a new code each time TrueCtrl reconnects, so an API key is easier.</string>
+    <string name="field_username">Username</string>
+    <string name="field_username_hint">truectrl</string>
+    <string name="field_username_key_note">The TrueNAS user the API key belongs to</string>
+    <string name="field_api_key">API key</string>
+    <string name="field_password">Password</string>
+    <string name="show_secret">Show</string>
+    <string name="hide_secret">Hide</string>
+    <string name="connect">Connect</string>
+    <string name="connecting">Connecting…</string>
+    <string name="save_changes">Save</string>
+    <string name="continue_label">Continue</string>
+    <string name="retry">Retry</string>
+
+    <!-- Certificate -->
+    <string name="cert_title">Trust this certificate?</string>
+    <string name="cert_changed_title">Certificate changed</string>
+    <string name="cert_intro">%1$s uses a certificate your phone doesn\'t know, like the self-signed certificate TrueNAS creates on install.</string>
+    <string name="cert_changed_warning">%1$s now presents a different certificate from the one you trusted. Only continue if you replaced or renewed it yourself.</string>
+    <string name="cert_check">Check that this SHA-256 fingerprint matches your TrueNAS certificate (open TrueNAS in a browser and view the certificate, or run in the TrueNAS shell: openssl x509 -noout -fingerprint -sha256 -in /etc/certificates/truenas_default.crt):</string>
+    <string name="cert_issued_to">Issued to: %1$s</string>
+    <string name="cert_pin_note">From now on TrueCtrl only accepts this exact certificate from this server.</string>
+    <string name="cert_trust">Trust</string>
+
+    <!-- One-time password -->
+    <string name="otp_title">Two-factor code</string>
+    <string name="otp_body">Enter the 6-digit code from your authenticator app.</string>
+    <string name="otp_code">Code</string>
+    <string name="verify">Verify</string>
+
+    <!-- Errors -->
+    <string name="error_unreachable">Can\'t reach %1$s. Check the address and that your phone is on a network that can reach it.</string>
+    <string name="error_untrusted_cert">The certificate of %1$s isn\'t trusted.</string>
+    <string name="error_pin_mismatch">%1$s presents a different certificate from the one you trusted. TrueCtrl stopped connecting to protect your sign-in.</string>
+    <string name="error_not_truenas">%1$s answered, but not like a TrueNAS server. Check the address and port.</string>
+    <string name="error_rest_only">%1$s doesn\'t offer the TrueNAS API that TrueCtrl uses. It\'s either an older TrueNAS with only the old REST API (TrueCtrl needs TrueNAS %2$s or newer) or not a TrueNAS server.</string>
+    <string name="error_unsupported">This server runs TrueNAS %1$s. TrueCtrl needs TrueNAS %2$s or newer.</string>
+    <string name="error_bad_api_key">TrueNAS rejected the API key. Check the username and key, and that the key hasn\'t been revoked.</string>
+    <string name="error_key_expired">This API key has expired. Create a new one in TrueNAS under Credentials › Users.</string>
+    <string name="error_bad_password">Wrong username or password.</string>
+    <string name="error_bad_otp">That code wasn\'t accepted. Wait for a new code and try again.</string>
+    <string name="error_denied">TrueNAS doesn\'t let this account sign in. Check that the user is enabled and has a privilege that allows API access.</string>
+    <string name="error_session_ended">Your session on %1$s ended. Sign in again.</string>
+    <string name="error_forbidden">Your user isn\'t allowed to do this.</string>
+    <string name="error_method_missing">Your TrueNAS version doesn\'t support this.</string>
+    <string name="error_server">TrueNAS returned an error.</string>
+    <string name="error_with_detail">%1$s\n\n%2$s</string>
+    <string name="error_generic">Something went wrong.</string>
+
+    <!-- Connection result and access -->
+    <string name="connected_to">Connected to %1$s</string>
+    <string name="tn_version">TrueNAS %1$s</string>
+    <string name="signed_in_as">Signed in as %1$s</string>
+    <string name="access_title">What this sign-in can do</string>
+    <string name="access_footer">Anything not allowed is greyed out in the app. Give the user more roles in TrueNAS to allow more; see the README.</string>
+    <string name="access_none_warning">This user can\'t see anything yet. Add it to the Read-only Administrator group or give it a privilege (see the README), then check again.</string>
+    <string name="cap_monitor">See pools, datasets, disks, tasks, shares, apps and alerts</string>
+    <string name="cap_datasets">Create and edit datasets, lock and unlock</string>
+    <string name="cap_dataset_delete">Delete datasets</string>
+    <string name="cap_snapshots">Take, roll back and clone snapshots</string>
+    <string name="cap_snapshot_delete">Delete snapshots</string>
+    <string name="cap_scrubs">Start and stop scrubs</string>
+    <string name="cap_replication">Run replication</string>
+    <string name="cap_cloud_sync">Run cloud sync</string>
+    <string name="cap_shares">Turn SMB and NFS shares on and off</string>
+    <string name="cap_services">Start, stop and restart services</string>
+    <string name="cap_apps">Start, stop and upgrade apps</string>
+    <string name="cap_alerts">Dismiss alerts</string>
+    <string name="cap_updates">Install TrueNAS updates</string>
+    <string name="cap_power">Reboot and shut down</string>
+    <string name="cap_shell">Shell</string>
+    <string name="cap_shell_privilege">Web shell access in the user\'s privilege</string>
+    <string name="allowed">Allowed</string>
+    <string name="not_allowed">Not allowed</string>
+    <string name="read_only_suggest">This user can only look, not change anything, so read-only mode is turned on.</string>
+
+    <!-- Servers -->
+    <string name="servers_title">Servers</string>
+    <string name="servers_subtitle">Switch, add or remove TrueNAS servers</string>
+    <string name="add_server">Add server</string>
+    <string name="active_server">In use</string>
+    <string name="switch_to">Switch to this server</string>
+    <string name="edit_server">Change address or sign-in</string>
+    <string name="remove_server">Remove server</string>
+    <string name="remove_server_title">Remove %1$s?</string>
+    <string name="remove_server_body">TrueCtrl forgets this server and deletes its saved API key or password from the phone. Nothing changes on the server itself.</string>
+    <string name="remove">Remove</string>
+    <string name="read_only_mode">Read-only mode</string>
+    <string name="read_only_mode_subtitle">Hide every action that changes something on this server</string>
+    <string name="cert_pinned">Pinned certificate</string>
+    <string name="cert_system">Certificate trusted by your phone</string>
+    <string name="sign_in_again">Sign in again</string>
+    <string name="check_again">Check again</string>
+    <string name="auth_summary_api_key">%1$s with API key</string>
+    <string name="auth_summary_password">%1$s with password</string>
+    <string name="auth_summary_password_otp">%1$s with password and two-factor</string>
+
+    <!-- Connected placeholders -->
+    <string name="tab_coming_title">Coming in the next updates</string>
+    <string name="tab_coming_body">Connected to %1$s. This tab is filled in as TrueCtrl is built, one part at a time.</string>
+    <string name="tab_connecting_body">Connecting to %1$s…</string>
+    <string name="tab_offline_body">Not connected to %1$s right now.</string>
+    <string name="connection_problem">Connection problem</string>
+
+    <!-- Freshness -->
+    <string name="stale_banner">Showing what TrueCtrl last saw %1$s. %2$s</string>
 </resources>

@@ -72,6 +72,18 @@ class Sessions(
         return connection
     }
 
+    /**
+     * A separate, short-lived connection for a background check of [server]. It never changes
+     * anything (read-only whatever the setting says) and is closed by the caller when done.
+     */
+    fun backgroundConnection(server: Server): Connection = Connection(
+        server = server,
+        baseHttp = baseHttp,
+        secrets = { store.secrets(server.id) },
+        scope = scope,
+        readOnly = { true },
+    )
+
     @Synchronized
     private fun dropConnection() {
         cached?.second?.stop()

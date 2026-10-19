@@ -22,6 +22,8 @@ object ReadOnlyGate {
         "update.check_available",
         // The active and dismissed alerts (the Overview and the Alerts screen).
         "alert.list",
+        // Sends a test alert through an alert service; changes nothing.
+        "alertservice.test",
         // Job progress and results.
         "core.get_jobs",
         // Disk temperatures and graphs.

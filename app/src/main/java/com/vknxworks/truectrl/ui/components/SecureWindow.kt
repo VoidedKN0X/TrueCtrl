@@ -28,3 +28,16 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
+
+/**
+ * Copies [text] marked as sensitive, so Android hides it from the clipboard preview and keyboards
+ * don't keep it in their clipboard history.
+ */
+fun copySensitive(context: Context, label: String, text: String) {
+    val clip = android.content.ClipData.newPlainText(label, text).apply {
+        description.extras = android.os.PersistableBundle().apply {
+            putBoolean(android.content.ClipDescription.EXTRA_IS_SENSITIVE, true)
+        }
+    }
+    context.getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(clip)
+}

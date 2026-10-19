@@ -4,6 +4,43 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.5.0 (2026-10-19)
+
+Notifications: TrueCtrl can now tell you when something on your TrueNAS needs attention, without Google services.
+
+### New
+
+- **Notifications page** under Settings › Notifications
+- **Background checks** every 15, 30, 60 or 120 minutes (only with a network connection). Each check opens its own short, read-only connection to every saved server and notifies about:
+  - New TrueNAS alerts at the level you choose (only errors, warnings and worse, or everything)
+  - Disk health: S.M.A.R.T. errors, failed self-tests and disks running too hot
+  - A pool that isn't healthy, and a pool passing your usage warning level
+  - Scrubs that found errors
+  - Failed replication, periodic snapshot, cloud sync and rsync tasks, once per failed run, with TrueNAS's error
+  - Apps that crashed
+  - A new TrueNAS version, once per version
+  - A server that can't be reached in two checks in a row, or whose sign-in stopped working
+- Conditions like an unhealthy pool are notified when they start and the notification is removed when they're over. A TrueNAS alert that's cleared or dismissed takes its notification with it
+- The first check of a server only remembers what's already there, so adding a server doesn't flood your phone with old alerts
+- **Check now** runs a check straight away, and each server shows when it was last checked and whether that worked
+- **Push from TrueNAS** through UnifiedPush, for example your own ntfy: every TrueNAS alert arrives within seconds
+  - TrueCtrl registers with your push app and shows the push address (tap to copy; it's marked as sensitive so it doesn't show in clipboard previews)
+  - **Set up on TrueNAS**: with the Alert Write role, TrueCtrl adds a "TrueCtrl" alert service on your TrueNAS for you (type Slack, pointed at the push address, at your chosen alert level), or updates it if it's already there. **Send a test alert** checks the whole path
+  - Without that role, the page shows the steps to add it in the TrueNAS web UI yourself
+  - While push is on, the background check doesn't notify about TrueNAS alerts a second time
+- **Per-event switches** for each kind of notification
+- **Notification channels** for critical problems, warnings, updates and info, and alerts pushed by TrueNAS, so you can pick the sound and importance of each in Android's settings
+- **Battery** section that says whether battery optimisation can delay checks, with a button to TrueCtrl's app info and how to allow background activity on ColorOS
+
+### Security
+
+- Notifications on a locked phone only say "New alert from your TrueNAS"; pool, disk, app and server names show once you unlock
+- Background checks never change anything on TrueNAS, whatever read-only mode is set to
+
+### Changed
+
+- **Google-free**: the built-in WebView (used by the web shell that's coming) doesn't send page addresses to Google Safe Browsing or usage data to Google
+
 ## v0.4.1 (2026-10-19)
 
 TrueCtrl is now completely Google-free. Nothing changes in how you use it.

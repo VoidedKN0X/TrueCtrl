@@ -4,6 +4,12 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Changed
+
+- **README brought up to date with 0.4.0.** Datasets and zvols, the Protection, Sharing and System tabs, notifications and the home screen widgets and Quick Settings tile aren't in the app yet, so they moved from the feature list to a new **Planned** section, and the ntfy push setup steps were taken out until notifications arrive. The feature list now describes what's there: the Overview, live alerts, pools and scrubs, disks with temperatures, graphs and SMART health, several servers, the offline view, and the blank recent-apps preview and encrypted API keys and passwords. The roles table now lists only the roles the app uses today (`READONLY_ADMIN`, `POOL_WRITE`, `ALERT_LIST_WRITE`, and Full Admin for SMART self-tests on 25.04), with the others in a separate table for planned features. There's a new **Getting started** section, the CtrlF-Droid badge and link in Install, and a line saying TrueCtrl only connects to your own TrueNAS besides the opt-in stats. No change to the app itself
+
 ## v0.4.0 (2026-10-19)
 
 The Storage tab now shows your pools and disks, and you can start, pause and stop scrubs from your phone.

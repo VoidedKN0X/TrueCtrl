@@ -102,7 +102,7 @@
     <string name="error_untrusted_cert">The certificate of %1$s isn\'t trusted.</string>
     <string name="error_pin_mismatch">%1$s presents a different certificate from the one you trusted. TrueCtrl stopped connecting to protect your sign-in.</string>
     <string name="error_not_truenas">%1$s answered, but not like a TrueNAS server. Check the address and port.</string>
-    <string name="error_rest_only">%1$s doesn\'t offer the TrueNAS API that TrueCtrl uses. It\'s either an older TrueNAS with only the old REST API (TrueCtrl needs TrueNAS %2$s or newer) or not a TrueNAS server.</string>
+    <string name="error_rest_only">%1$s doesn\'t have the TrueNAS API that TrueCtrl uses. This usually means TrueNAS 24.10 or older, which only has the old REST API: TrueCtrl needs TrueNAS %2$s or newer. You can see your version on the TrueNAS dashboard.</string>
     <string name="error_unsupported">This server runs TrueNAS %1$s. TrueCtrl needs TrueNAS %2$s or newer.</string>
     <string name="error_bad_api_key">TrueNAS rejected the API key. Check the username and key, and that the key hasn\'t been revoked.</string>
     <string name="error_key_expired">This API key has expired. Create a new one in TrueNAS under Credentials › Users.</string>

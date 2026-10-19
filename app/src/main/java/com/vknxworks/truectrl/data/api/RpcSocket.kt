@@ -131,10 +131,10 @@ class RpcSocket(private val http: OkHttpClient, private val url: String) {
             val error = when {
                 response == null -> TnError.fromIo(t)
                 // The address answered over HTTPS but has no TrueNAS API there.
-                code == 404 -> TnError.NotTrueNas(null)
+                code == 404 -> TnError.NotTrueNas("WebSocket /api/current: HTTP 404")
                 // A reverse proxy answers 502/503/504 while TrueNAS itself is down or rebooting.
                 code in 500..599 -> TnError.Unreachable(t)
-                else -> TnError.NotTrueNas("HTTP $code")
+                else -> TnError.NotTrueNas("WebSocket /api/current: HTTP $code")
             }
             response?.close()
             fail(error)

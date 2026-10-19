@@ -27,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.SecureFlagPolicy
 import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.data.server.Tls
 import kotlinx.coroutines.Dispatchers
@@ -108,5 +110,7 @@ fun OtpDialog(error: String?, busy: Boolean, onSubmit: (String) -> Unit, onCance
         },
         confirmButton = { TextButton(onClick = { if (canSubmit) onSubmit(value) }, enabled = canSubmit) { Text(stringResource(R.string.verify)) } },
         dismissButton = { TextButton(onCancel) { Text(stringResource(R.string.cancel)) } },
+        // The code is typed in the dialog's own window: keep it out of screenshots and casting too.
+        properties = DialogProperties(securePolicy = SecureFlagPolicy.SecureOn),
     )
 }

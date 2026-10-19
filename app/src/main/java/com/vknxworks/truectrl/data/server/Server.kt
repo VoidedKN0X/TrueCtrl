@@ -42,7 +42,11 @@ data class ServerSecrets(
     val apiKey: String = "",
     /** Only kept for password sign-ins without a one-time password, so the app can reconnect. */
     val password: String = "",
-)
+) {
+    /** Never the secrets themselves, so they can't end up in a log, an error or a crash report. */
+    override fun toString(): String =
+        "ServerSecrets(apiKey=${if (apiKey.isEmpty()) "none" else "***"}, password=${if (password.isEmpty()) "none" else "***"})"
+}
 
 object ServerAddress {
     /**

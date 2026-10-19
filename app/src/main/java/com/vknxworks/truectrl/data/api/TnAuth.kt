@@ -9,6 +9,8 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
@@ -32,10 +34,13 @@ object TnAuth {
      * certificate is trusted, before anything secret is sent.
      */
     suspend fun probe(http: OkHttpClient, baseUrl: String): List<String> = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url("$baseUrl/api/versions").get().build()
+        val url = httpsBase(baseUrl).newBuilder().encodedPath("/api/versions").build()
+        val request = Request.Builder().url(url).get().build()
         try {
             http.newCall(request).execute().use { response ->
-                val text = response.body?.string().orEmpty()
+                // The list is a few hundred bytes; never read more than a small, fixed amount of
+                // whatever the address answers (a proxy page, a large download).
+                val text = response.peekBody(MAX_PROBE_BYTES).string()
                 val code = response.code
                 when {
                     response.isSuccessful -> {
@@ -80,8 +85,21 @@ object TnAuth {
         return newest
     }
 
-    /** The WebSocket address for [baseUrl]: always the server's current API version. */
-    fun socketUrl(baseUrl: String): String = baseUrl.replaceFirst("https://", "wss://", ignoreCase = true) + "/api/current"
+    /**
+     * The WebSocket address for [baseUrl]: always the server's current API version, and always
+     * wss://. TrueNAS revokes an API key that arrives over plain HTTP, so there is no ws:// fallback:
+     * a base address that isn't https:// is refused with [TnError.InsecureAddress].
+     */
+    fun socketUrl(baseUrl: String): String {
+        val https = httpsBase(baseUrl).newBuilder().encodedPath("/api/current").build().toString()
+        return "wss://" + https.removePrefix("https://")
+    }
+
+    /** [baseUrl] parsed, only when it's https:// (the scheme ServerAddress always saves). */
+    private fun httpsBase(baseUrl: String): HttpUrl =
+        baseUrl.toHttpUrlOrNull()?.takeIf { it.isHttps } ?: throw TnError.InsecureAddress()
+
+    private const val MAX_PROBE_BYTES = 64L * 1024
 
     suspend fun loginApiKey(socket: RpcSocket, username: String, apiKey: String): LoginResult =
         interpret(

@@ -91,6 +91,8 @@ class Telemetry(
                         firstRead && openPending && s.usageStats -> { openPending = false; trackOpened(s) }
                         // Switched on in Settings or the first-run question: start a fresh session.
                         !firstRead && !wasOptedIn && s.usageStats -> { resetSession(); trackOpened(s) }
+                        // Switched off: drop anything still waiting to go out, and forget the session.
+                        wasOptedIn && !s.usageStats -> { dropQueued(); resetSession() }
                     }
                 }
             }
@@ -136,6 +138,11 @@ class Telemetry(
             .put("systemProps", systemProps)
             .put("props", JSONObject(props))
         queue.trySend(event)
+    }
+
+    /** Empties the queue without sending anything. */
+    private fun dropQueued() {
+        while (queue.tryReceive().isSuccess) { }
     }
 
     /** A fresh session after opting back in, so stats from before and after aren't linked. */

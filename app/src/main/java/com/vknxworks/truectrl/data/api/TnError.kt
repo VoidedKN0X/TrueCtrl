@@ -57,11 +57,17 @@ sealed class TnError(val detail: String? = null, cause: Throwable? = null) : IOE
     /** Any other error from TrueNAS ([errname] like EINVAL or ENOENT). */
     class Call(val errname: String?, detail: String?) : TnError(detail)
 
+    /** Read-only mode is on for this server and [method] could change something, so it was never sent. */
+    class ReadOnly(val method: String) : TnError(method)
+
+    /** The saved address isn't https://: API keys and passwords are only ever sent over HTTPS/WSS. */
+    class InsecureAddress : TnError(null)
+
     /** Errors that retrying on its own can't fix: the user has to change something first. */
     val needsUser: Boolean
         get() = this is UntrustedCertificate || this is PinMismatch || this is NotTrueNas || this is RestOnly ||
             this is Unsupported || this is BadApiKey || this is KeyExpired || this is BadPassword ||
-            this is BadOtp || this is Denied || this is NeedsSignIn
+            this is BadOtp || this is Denied || this is NeedsSignIn || this is InsecureAddress
 
     companion object {
         /** Sorts a network-level failure from OkHttp. */

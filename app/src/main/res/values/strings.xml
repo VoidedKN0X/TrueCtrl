@@ -124,6 +124,8 @@
     <string name="error_server">TrueNAS returned an error.</string>
     <string name="error_with_detail">%1$s\n\n%2$s</string>
     <string name="error_generic">Something went wrong.</string>
+    <string name="error_read_only">Read-only mode is on for this server, so TrueCtrl didn\'t send this change. Turn read-only mode off in Servers to make changes.</string>
+    <string name="error_insecure_address">The saved address of %1$s doesn\'t use HTTPS. TrueCtrl only sends API keys and passwords over a secure connection. Edit the server and enter its address again.</string>
 
     <!-- Connection result and access -->
     <string name="connected_to">Connected to %1$s</string>

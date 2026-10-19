@@ -24,6 +24,8 @@ fun errorMessage(context: Context, e: Throwable, host: String): String {
         is TnError.Forbidden -> context.getString(R.string.error_forbidden)
         is TnError.MethodMissing -> context.getString(R.string.error_method_missing)
         is TnError.Call -> context.getString(R.string.error_server)
+        is TnError.ReadOnly -> context.getString(R.string.error_read_only)
+        is TnError.InsecureAddress -> context.getString(R.string.error_insecure_address, host)
         else -> context.getString(R.string.error_generic)
     }
     // TrueNAS's own wording helps for permission and server errors; network errors' detail is noise.

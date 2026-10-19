@@ -19,6 +19,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // The recent-apps view shows a blank card instead of a snapshot of pools, datasets and shares.
+        setRecentsScreenshotEnabled(false)
         val c = container
         if (savedInstanceState == null) c.telemetry.appOpened()
         setContent {

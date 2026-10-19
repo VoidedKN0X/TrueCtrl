@@ -216,15 +216,34 @@ data class AppInfo(val name: String, val state: String, val upgradeAvailable: Bo
 }
 
 @Serializable
-data class ScrubSchedule(val poolId: Int, val poolName: String, val thresholdDays: Int, val enabled: Boolean) {
+data class ScrubSchedule(
+    val poolId: Int,
+    val poolName: String,
+    /** A scheduled scrub only runs when the last one is at least this many days old. */
+    val thresholdDays: Int,
+    val enabled: Boolean,
+    val id: Int = 0,
+    val minute: String = "00",
+    val hour: String = "00",
+    val dom: String = "*",
+    val month: String = "*",
+    val dow: String = "7",
+) {
     companion object {
         fun from(j: JsonElement): ScrubSchedule? {
             val o = j.obj() ?: return null
+            val c = o["schedule"].obj()
             return ScrubSchedule(
                 poolId = o["pool"].long()?.toInt() ?: return null,
                 poolName = o["pool_name"].str().orEmpty(),
                 thresholdDays = o["threshold"].long()?.toInt() ?: 35,
                 enabled = o["enabled"].bool() ?: true,
+                id = o["id"].long()?.toInt() ?: 0,
+                minute = c?.get("minute").str() ?: "00",
+                hour = c?.get("hour").str() ?: "00",
+                dom = c?.get("dom").str() ?: "*",
+                month = c?.get("month").str() ?: "*",
+                dow = c?.get("dow").str() ?: "*",
             )
         }
     }

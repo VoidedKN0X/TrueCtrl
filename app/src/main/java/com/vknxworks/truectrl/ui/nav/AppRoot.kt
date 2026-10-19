@@ -72,6 +72,8 @@ import com.vknxworks.truectrl.ui.settings.SettingsScreen
 import com.vknxworks.truectrl.ui.settings.UsageStatsPrompt
 import com.vknxworks.truectrl.ui.settings.YouScreen
 import com.vknxworks.truectrl.ui.sharing.SharingScreen
+import com.vknxworks.truectrl.ui.storage.DiskScreen
+import com.vknxworks.truectrl.ui.storage.PoolScreen
 import com.vknxworks.truectrl.ui.storage.StorageScreen
 import com.vknxworks.truectrl.ui.system.SystemScreen
 import dev.chrisbanes.haze.hazeSource
@@ -235,6 +237,8 @@ private fun AppNavHost(navController: NavHostController) {
         composable<SystemRoute> { SystemScreen() }
 
         composable<AlertsRoute> { AlertsScreen() }
+        composable<PoolRoute> { PoolScreen(it.toRoute<PoolRoute>().id) }
+        composable<DiskRoute> { DiskScreen(it.toRoute<DiskRoute>().name) }
 
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }

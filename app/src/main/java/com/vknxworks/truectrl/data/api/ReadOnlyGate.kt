@@ -22,6 +22,18 @@ object ReadOnlyGate {
         "update.check_available",
         // The active and dismissed alerts (the Overview and the Alerts screen).
         "alert.list",
+        // Job progress and results.
+        "core.get_jobs",
+        // Disk temperatures and graphs.
+        "disk.temperatures",
+        "disk.temperature_agg",
+        "reporting.get_data",
+        "reporting.graphs",
+        "reporting.netdata_get_data",
+        "reporting.netdata_graphs",
+        // SMART (TrueNAS 25.04 only).
+        "smart.test.results",
+        "disk.smart_attributes",
     )
 
     /** Last name segments that only read: `<namespace>.query`, `.get_instance`, `.config` and so on. */

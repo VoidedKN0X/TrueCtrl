@@ -4,6 +4,40 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.4.0 (2026-10-19)
+
+The Storage tab now shows your pools and disks, and you can start, pause and stop scrubs from your phone.
+
+### New
+
+- **Pools and Disks** in the Storage tab, switched with the buttons at the top. Datasets join this tab in a later version
+- **Pool list** with each pool's health, a usage bar (yellow from your warning level, red when critical), used, total and free space, its layout (like "2 × MIRROR"), the number of disks, and a running scrub or resilver
+- **Pool page** with:
+  - Status and health, with TrueNAS's explanation when a pool isn't healthy
+  - Space used, fragmentation and the compression ratio
+  - A note when newer ZFS features are available for the pool (upgrading stays in the TrueNAS web UI, because it can't be undone)
+  - The layout: data, metadata (special), dedup, log, cache and spare vdevs, each with its state and the disks inside it, with read, write and checksum errors per disk. Tap a disk to open it
+- **Scrubs** on the pool page:
+  - The last scrub: when it finished, how long it took and whether it found errors
+  - When the next scheduled scrub runs, worked out from the pool's scrub schedule and its threshold (TrueNAS skips scheduled scrubs until the last one is old enough)
+  - **Start**, **Pause**, **Resume** and **Stop** a scrub, each after a confirmation that explains what happens. Needs the Pool Write role and read-only mode off
+  - Live progress while a scrub or resilver runs: percentage, a progress bar, when it started, roughly how long is left and any errors found
+- **Disk list** with name, model, type (HDD or SSD, with rpm), size, which pool it's in, and its temperature (yellow from 50 °C, red from 60 °C)
+- **Disk page** with:
+  - Model, size and type, and the serial number, which is shortened until you tap Show
+  - The pool it belongs to (tap to open it)
+  - The temperature now, and the lowest, average and highest over the last 7 days
+  - **Graphs** of temperature and read/write speed over the last hour, day, week or month. Touch and drag a graph to see the values at any moment
+  - **S.M.A.R.T.**:
+    - On TrueNAS 25.10 and newer, which no longer report S.M.A.R.T. details through their API, any S.M.A.R.T. alert TrueNAS raised for the disk is listed instead
+    - On TrueNAS 25.04: self-test history with results, power-on hours, the disk's S.M.A.R.T. attributes, and running a short or long self-test (Full Admin only, as TrueNAS 25.04 requires)
+- **Pull to refresh** on all storage screens; the lists refresh every 30 seconds while open
+- **Works offline**: the last pools and disks are kept on the phone and shown, marked as stale, when TrueNAS can't be reached
+
+### Security
+
+- Starting, pausing and stopping scrubs and running S.M.A.R.T. tests are blocked in read-only mode, both in the app and before anything is sent to TrueNAS
+
 ## v0.3.0 (2026-10-19)
 
 The Overview tab now shows your TrueNAS at a glance: what needs attention, live system graphs and your pools. Alerts get their own screen.

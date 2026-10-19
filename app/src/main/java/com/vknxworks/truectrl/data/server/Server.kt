@@ -30,6 +30,8 @@ data class Server(
     val usesOtp: Boolean = false,
     /** Last seen TrueNAS version, e.g. 25.10.1. */
     val tnVersion: String = "",
+    /** The Proxmox VM this TrueNAS runs in, to open it in ProxCtrl (start it again after a shutdown). */
+    val proxmoxVmId: Int? = null,
 ) {
     val host: String get() = url.toHttpUrlOrNull()?.host ?: url
 

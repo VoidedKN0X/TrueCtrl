@@ -171,6 +171,16 @@ class Connection(
      * In read-only mode, anything that isn't a known read ([ReadOnlyGate]) is refused with
      * [TnError.ReadOnly] before it's sent: this is the one place every server call goes through.
      */
+    /**
+     * Opens a separate WebSocket to [path] on this server (e.g. `/websocket/shell`), with the same
+     * pinned certificate as the API connection and no read timeout.
+     */
+    fun openWebSocket(path: String, listener: okhttp3.WebSocketListener): okhttp3.WebSocket {
+        val base = server.url.trimEnd('/').replaceFirst(Regex("^https://", RegexOption.IGNORE_CASE), "wss://")
+        val client = http.newBuilder().readTimeout(0, java.util.concurrent.TimeUnit.MILLISECONDS).build()
+        return client.newWebSocket(okhttp3.Request.Builder().url(base + path).build(), listener)
+    }
+
     suspend fun call(method: String, params: List<JsonElement> = emptyList(), waitMs: Long = 15_000): JsonElement {
         if (readOnly() && !ReadOnlyGate.allows(method)) throw TnError.ReadOnly(method)
         val s = socket?.takeIf { it.isOpen } ?: run {

@@ -242,6 +242,16 @@ private fun AppNavHost(navController: NavHostController) {
         composable<DatasetRoute> { com.vknxworks.truectrl.ui.storage.DatasetScreen(it.toRoute<DatasetRoute>().id) }
         composable<SnapshotsRoute> { com.vknxworks.truectrl.ui.protection.SnapshotsScreen(it.toRoute<SnapshotsRoute>().dataset) }
 
+        composable<AppsRoute> { com.vknxworks.truectrl.ui.system.AppsScreen() }
+        composable<AppLogsRoute> {
+            val r = it.toRoute<AppLogsRoute>()
+            com.vknxworks.truectrl.ui.system.AppLogsScreen(r.app, r.container, r.service)
+        }
+        composable<JobsRoute> { com.vknxworks.truectrl.ui.system.JobsScreen() }
+        composable<UpdatesRoute> { com.vknxworks.truectrl.ui.system.UpdatesScreen() }
+        composable<NetworkRoute> { com.vknxworks.truectrl.ui.system.NetworkScreen() }
+        composable<ShellRoute> { com.vknxworks.truectrl.ui.system.ShellScreen() }
+
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }
         composable<NotificationsRoute> { com.vknxworks.truectrl.ui.settings.NotificationsScreen() }

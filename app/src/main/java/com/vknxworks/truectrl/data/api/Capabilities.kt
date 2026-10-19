@@ -65,7 +65,7 @@ data class Capabilities(
         val NAMESPACES = listOf(
             "system", "system.reboot", "pool", "pool.dataset", "pool.scrub", "pool.snapshot", "zfs.snapshot", "pool.snapshottask",
             "disk", "smart.test", "replication", "cloudsync", "rsynctask", "sharing.smb", "sharing.nfs",
-            "service", "smb", "app", "alert", "update", "interface", "reporting",
+            "service", "smb", "app", "alert", "alertservice", "update", "interface", "reporting",
         )
     }
 }

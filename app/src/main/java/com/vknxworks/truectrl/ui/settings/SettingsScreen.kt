@@ -12,6 +12,10 @@ import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.Notifications
+import com.vknxworks.truectrl.ui.components.GroupRow
+import com.vknxworks.truectrl.ui.nav.LocalNavigator
+import com.vknxworks.truectrl.ui.nav.NotificationsRoute
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,10 +31,11 @@ import com.vknxworks.truectrl.ui.components.GroupSwitch
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
 import kotlinx.coroutines.launch
 
-/** App settings. Server, notification, lock and threshold settings are added in later stages. */
+/** App settings: appearance, notifications, warnings, usage stats. */
 @Composable
 fun SettingsScreen() {
     val c = LocalContext.current.container
+    val nav = LocalNavigator.current
     val settings by c.settings.settings.collectAsStateWithLifecycle()
     val themeOptions = ThemeChoice.entries.map { it to stringResource(it.label) }
 
@@ -50,6 +55,15 @@ fun SettingsScreen() {
                     checked = settings.dynamicColor,
                     icon = Icons.Filled.Palette,
                 ) { on -> c.appScope.launch { c.settings.update { it.copy(dynamicColor = on) } } }
+            }
+            Group(stringResource(R.string.group_notifications)) {
+                GroupRow(
+                    stringResource(R.string.notifications),
+                    stringResource(R.string.notifications_subtitle),
+                    icon = Icons.Filled.Notifications,
+                    showChevron = true,
+                    onClick = { nav.navigate(NotificationsRoute) },
+                )
             }
             Group(stringResource(R.string.group_warnings)) {
                 GroupChoice(

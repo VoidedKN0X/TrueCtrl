@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.vknxworks.truectrl.data.notify.NotifySettingsRepository
 import com.vknxworks.truectrl.data.overview.OverviewRepository
 import com.vknxworks.truectrl.data.server.ServerStore
 import com.vknxworks.truectrl.data.storage.StorageRepository
@@ -21,6 +22,7 @@ class AppContainer(val context: Context) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val settings = SettingsRepository(context, appScope)
+    val notifySettings = NotifySettingsRepository(context, appScope)
 
     /** Opt-in anonymous usage stats, with its own HTTP client (normal certificate checks, no TrueNAS pins). */
     val telemetry = Telemetry(context, settings, appScope)
@@ -53,7 +55,7 @@ class AppContainer(val context: Context) {
     val storage = StorageRepository(context, sessions, appScope)
 
     init {
-        // One live connection while the app is on screen; background checks come later with WorkManager.
+        // One live connection while the app is on screen; background checks run in NotifyWorker.
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStart(owner: LifecycleOwner) = sessions.setForeground(true)
             override fun onStop(owner: LifecycleOwner) = sessions.setForeground(false)

@@ -53,7 +53,8 @@ fun authSummary(server: Server): String = when {
 /** All saved servers: switch between them, change one, set read-only mode, or remove one. */
 @Composable
 fun ServersScreen() {
-    val c = LocalContext.current.container
+    val context = LocalContext.current
+    val c = context.container
     val nav = LocalNavigator.current
     val servers by c.sessions.servers.collectAsStateWithLifecycle()
     val active by c.sessions.active.collectAsStateWithLifecycle()
@@ -115,6 +116,8 @@ fun ServersScreen() {
                     c.sessions.remove(server.id)
                     c.overview.forget(server.id)
                     c.storage.forget(server.id)
+                    com.vknxworks.truectrl.data.notify.CheckStore.forget(context, server.id)
+                    com.vknxworks.truectrl.data.notify.Notifier.cancelServer(context, server.id)
                 }) { Text(stringResource(R.string.remove), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { removing = null }) { Text(stringResource(R.string.cancel)) } },

@@ -242,6 +242,7 @@ private fun AppNavHost(navController: NavHostController) {
 
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }
+        composable<NotificationsRoute> { com.vknxworks.truectrl.ui.settings.NotificationsScreen() }
         composable<ServersRoute> { ServersScreen() }
         composable<AddServerRoute> {
             val navigator = LocalNavigator.current

@@ -4,6 +4,25 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.7.0 (2026-10-19)
+
+Sharing: your SMB and NFS shares and the services behind them.
+
+### New
+
+- **Sharing tab** replaces the placeholder, with **Shares** and **Services**
+- **SMB shares** with name, path, comment, special purpose (Time Machine, multiprotocol, time-locked and others), read-only and locked state. **NFS shares** with path, comment and the networks and hosts allowed
+- **Turn a share on or off** with its switch (needs the SMB or NFS sharing write role). Turning a share off asks first; its settings and data stay as they are
+- A note under the shares when the SMB or NFS service isn't running, so you know why clients can't connect
+- **SMB connections** on TrueNAS 25.04: who is connected and from which machine (TrueNAS 25.10 no longer offers this to apps)
+- **Services**: every TrueNAS service with whether it's running and whether it starts on boot. Services set to start on boot that aren't running are shown in yellow
+  - The switch sets **start on boot**
+  - Tap a service to **start**, **stop** or **restart** it. Stopping and restarting ask first and say what it does to connected clients. TrueCtrl uses the right method for your TrueNAS version and shows TrueNAS's error when a service doesn't come up
+
+### Changed
+
+- Tapping a stopped service on the Overview's attention list opens the Sharing tab, where you can start it
+
 ## v0.6.0 (2026-10-19)
 
 Protection and datasets: see whether your data is protected, run backup tasks, manage snapshots and work with datasets from the app.

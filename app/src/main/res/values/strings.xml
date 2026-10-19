@@ -270,4 +270,115 @@
     <string name="alert_dismiss">Dismiss</string>
     <string name="alert_restore">Restore</string>
     <string name="alert_dismissed">Dismissed</string>
+
+    <!-- Confirmations -->
+    <string name="confirm_type">Type %1$s to confirm:</string>
+    <string name="no_value">—</string>
+    <string name="read_only_active">Read-only mode is on</string>
+
+    <!-- Storage -->
+    <string name="storage_pools">Pools</string>
+    <string name="storage_disks">Disks</string>
+    <string name="storage_loading_body">The pools and disks of %1$s show up here.</string>
+    <string name="pools_none">No pools</string>
+    <string name="pools_none_body">This TrueNAS has no pools yet, or your user can\'t see them.</string>
+    <string name="disks_none">No disks</string>
+    <string name="disks_none_body">No disks were reported, or your user can\'t see them.</string>
+    <string name="pool_title">Pool</string>
+    <string name="pool_healthy">Healthy</string>
+    <string name="pool_online_healthy">Online and healthy</string>
+    <string name="pool_missing">Pool not found</string>
+    <string name="pool_missing_body">It may have been exported or renamed. Pull down to refresh.</string>
+    <string name="pool_fragmentation">Fragmentation %1$s%%</string>
+    <string name="pool_compression">Compression %1$s</string>
+    <string name="pool_not_upgraded">Newer ZFS features are available for this pool. Upgrading it is done in the TrueNAS web UI and can\'t be undone.</string>
+    <plurals name="disk_count">
+        <item quantity="one">%1$d disk</item>
+        <item quantity="other">%1$d disks</item>
+    </plurals>
+    <string name="vdev_data">Data</string>
+    <string name="vdev_log">Log</string>
+    <string name="vdev_cache">Cache</string>
+    <string name="vdev_spare">Spares</string>
+    <string name="vdev_special">Metadata (special)</string>
+    <string name="vdev_dedup">Dedup</string>
+    <string name="vdev_errors">Errors: %1$d read, %2$d write, %3$d checksum</string>
+    <string name="vdev_no_errors">No errors</string>
+
+    <!-- Scrubs -->
+    <string name="scrub_title">Scrub</string>
+    <string name="scan_scrubbing">Scrubbing, %1$d%%</string>
+    <string name="scan_resilvering">Resilvering, %1$d%%</string>
+    <string name="scan_paused">Scrub paused at %1$d%%</string>
+    <string name="scan_started">Started %1$s</string>
+    <string name="scan_left">About %1$s left</string>
+    <string name="scan_errors">%1$d errors</string>
+    <string name="scrub_last">Last scrub finished %1$s</string>
+    <string name="scrub_last_canceled">Last scrub was stopped %1$s</string>
+    <string name="scrub_took">Took %1$s</string>
+    <string name="scrub_no_errors">No errors</string>
+    <string name="scrub_never">This pool hasn\'t been scrubbed yet.</string>
+    <string name="scrub_next">Next scheduled scrub: %1$s (runs when the last one is at least %2$d days old)</string>
+    <string name="scrub_no_schedule">No scrub schedule for this pool.</string>
+    <string name="scrub_schedule_off">The scrub schedule for this pool is turned off.</string>
+    <string name="scrub_schedule_unknown">The scrub schedule couldn\'t be read.</string>
+    <string name="scrub_not_allowed">Your user can\'t start or stop scrubs (needs the Pool Write role).</string>
+    <string name="scrub_start">Start scrub</string>
+    <string name="scrub_resume">Resume</string>
+    <string name="scrub_pause">Pause</string>
+    <string name="scrub_stop">Stop</string>
+    <string name="scrub_start_title">Scrub %1$s?</string>
+    <string name="scrub_start_body">A scrub reads every block in the pool to check it. It runs in the background and slows the pool down while it runs, which can take hours on large pools.</string>
+    <string name="scrub_pause_title">Pause the scrub of %1$s?</string>
+    <string name="scrub_pause_body">The scrub stops where it is and can be resumed later from the same point.</string>
+    <string name="scrub_stop_title">Stop the scrub of %1$s?</string>
+    <string name="scrub_stop_body">The scrub is cancelled. Starting it again later begins from the start.</string>
+    <string name="scrub_started">Scrub started</string>
+    <string name="scrub_paused">Scrub paused</string>
+    <string name="scrub_stopped">Scrub stopped</string>
+
+    <!-- Disks -->
+    <string name="disk_rpm">%1$d rpm</string>
+    <string name="disk_in_pool">In %1$s</string>
+    <string name="disk_unused">Not in a pool</string>
+    <string name="disk_missing">Disk not found</string>
+    <string name="disk_missing_body">It may have been removed. Pull down to refresh the disk list.</string>
+    <string name="disk_model">Model</string>
+    <string name="disk_serial">Serial number</string>
+    <string name="disk_kind">Type and size</string>
+    <string name="disk_pool">Pool</string>
+    <string name="disk_temperature">Temperature</string>
+    <string name="disk_temp_unknown">Not reported</string>
+    <string name="disk_temp_week">Last 7 days: lowest %1$s, average %2$s, highest %3$s</string>
+    <string name="disk_device">Device</string>
+    <string name="disk_graphs">Graphs</string>
+    <string name="range_hour">Hour</string>
+    <string name="range_day">Day</string>
+    <string name="range_week">Week</string>
+    <string name="range_month">Month</string>
+    <string name="graph_temperature">Temperature</string>
+    <string name="graph_io">Read and write</string>
+    <string name="graphs_none">TrueNAS has no graphs for this disk.</string>
+    <string name="series_temp">Temperature</string>
+    <string name="series_read">Read</string>
+    <string name="series_write">Write</string>
+
+    <!-- SMART -->
+    <string name="smart_title">S.M.A.R.T.</string>
+    <string name="smart_via_alerts">TrueNAS 25.10 and newer don\'t report S.M.A.R.T. details through their API. TrueNAS still checks the disks itself, and any problem it finds shows up as an alert, listed here.</string>
+    <string name="smart_no_alerts">No S.M.A.R.T. alerts for this disk</string>
+    <string name="smart_running">Self-test running (%1$d%%)</string>
+    <string name="smart_power_on">Powered on for %1$d hours</string>
+    <string name="smart_no_tests">No self-tests have run on this disk.</string>
+    <string name="smart_at_hours">at %1$d hours</string>
+    <string name="smart_short">Short test</string>
+    <string name="smart_long">Long test</string>
+    <string name="smart_run">Run test</string>
+    <string name="smart_short_title">Run a short test on %1$s?</string>
+    <string name="smart_short_body">The disk checks itself for a couple of minutes while it keeps working normally.</string>
+    <string name="smart_long_title">Run a long test on %1$s?</string>
+    <string name="smart_long_body">The disk reads its whole surface. It keeps working, but the test takes hours and slows the disk down.</string>
+    <string name="smart_started">Test started</string>
+    <string name="smart_show_attributes">Show attributes</string>
+    <string name="smart_no_attributes">This disk reports no attributes.</string>
 </resources>

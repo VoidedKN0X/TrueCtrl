@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.vknxworks.truectrl.data.overview.OverviewRepository
 import com.vknxworks.truectrl.data.server.ServerStore
+import com.vknxworks.truectrl.data.storage.StorageRepository
 import com.vknxworks.truectrl.data.server.Sessions
 import com.vknxworks.truectrl.data.settings.SettingsRepository
 import com.vknxworks.truectrl.data.telemetry.Telemetry
@@ -49,6 +50,7 @@ class AppContainer(val context: Context) {
     val serverStore = ServerStore(context)
     val sessions = Sessions(serverStore, http, appScope)
     val overview = OverviewRepository(context, sessions, appScope)
+    val storage = StorageRepository(context, sessions, appScope)
 
     init {
         // One live connection while the app is on screen; background checks come later with WorkManager.

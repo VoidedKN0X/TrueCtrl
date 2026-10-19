@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable data object SystemRoute
 
 @Serializable data object AlertsRoute
+@Serializable data class PoolRoute(val id: Int)
+@Serializable data class DiskRoute(val name: String)
 
 // Account and settings, opened from the profile picture
 @Serializable data object YouRoute

@@ -2,6 +2,7 @@ package com.vknxworks.truectrl.data.server
 
 import com.vknxworks.truectrl.data.api.Capabilities
 import com.vknxworks.truectrl.data.api.LoginResult
+import com.vknxworks.truectrl.data.api.ReadOnlyGate
 import com.vknxworks.truectrl.data.api.RpcEvent
 import com.vknxworks.truectrl.data.api.RpcSocket
 import com.vknxworks.truectrl.data.api.SystemInfo
@@ -48,6 +49,11 @@ class Connection(
     baseHttp: OkHttpClient,
     private val secrets: () -> ServerSecrets,
     private val scope: CoroutineScope,
+    /**
+     * Whether read-only mode is on for this server right now. Read on every call (the setting can
+     * change while the connection stays open); true when in doubt.
+     */
+    private val readOnly: () -> Boolean,
     /** Called with the exact TrueNAS version after each sign-in, so it can be remembered. */
     private val onVersion: (String) -> Unit = {},
 ) {
@@ -146,8 +152,11 @@ class Connection(
     /**
      * Calls [method] on the open connection, waiting up to [waitMs] for it to connect first.
      * Throws a [TnError] when it isn't connected in time or TrueNAS returns an error.
+     * In read-only mode, anything that isn't a known read ([ReadOnlyGate]) is refused with
+     * [TnError.ReadOnly] before it's sent: this is the one place every server call goes through.
      */
     suspend fun call(method: String, params: List<JsonElement> = emptyList(), waitMs: Long = 15_000): JsonElement {
+        if (readOnly() && !ReadOnlyGate.allows(method)) throw TnError.ReadOnly(method)
         val s = socket?.takeIf { it.isOpen } ?: run {
             start()
             try {

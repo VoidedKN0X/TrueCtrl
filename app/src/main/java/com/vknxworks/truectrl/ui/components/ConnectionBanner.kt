@@ -46,7 +46,8 @@ fun ConnectionBanner(modifier: Modifier = Modifier) {
 
     val certificate = error is TnError.PinMismatch || error is TnError.UntrustedCertificate
     val needsSetup = certificate || error is TnError.NeedsSignIn || error is TnError.BadApiKey ||
-        error is TnError.KeyExpired || error is TnError.BadPassword || error is TnError.Denied
+        error is TnError.KeyExpired || error is TnError.BadPassword || error is TnError.Denied ||
+        error is TnError.InsecureAddress
     Surface(
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.errorContainer,

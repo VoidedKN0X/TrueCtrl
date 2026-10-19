@@ -73,6 +73,9 @@ class ServerStore(context: Context) {
         password = decrypt(sp.getString(secretKey(id, "password"), null)),
     )
 
+    /** Whether a usable API key is saved for [id], without handing the key itself to the caller. */
+    fun hasApiKey(id: String): Boolean = secrets(id).apiKey.isNotBlank()
+
     fun saveSecrets(id: String, s: ServerSecrets) {
         sp.edit()
             .putString(secretKey(id, "api_key"), encrypt(s.apiKey))

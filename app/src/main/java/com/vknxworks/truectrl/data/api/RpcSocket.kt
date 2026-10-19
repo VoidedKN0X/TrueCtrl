@@ -19,6 +19,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -115,6 +116,14 @@ class RpcSocket(private val http: OkHttpClient, private val url: String) {
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
+            // Answers are parsed leniently but not without limit: a message far beyond anything
+            // TrueNAS sends (a broken proxy, a misbehaving server) ends the connection instead of
+            // being turned into a huge JSON tree.
+            if (text.length > MAX_MESSAGE_CHARS) {
+                webSocket.cancel()
+                fail(TnError.Unreachable(IOException("message too large")))
+                return
+            }
             handle(text)
         }
 
@@ -172,6 +181,9 @@ class RpcSocket(private val http: OkHttpClient, private val url: String) {
 
     companion object {
         private const val METHOD_NOT_FOUND = -32601L
+
+        /** The largest message accepted (characters). Big query results are a few MB at most. */
+        private const val MAX_MESSAGE_CHARS = 32 * 1024 * 1024
 
         /**
          * Turns a JSON-RPC error into a [TnError]. TrueNAS puts its own error in `data`:

@@ -63,6 +63,8 @@ class Sessions(
             baseHttp = baseHttp,
             secrets = { store.secrets(server.id) },
             scope = scope,
+            // The live setting, not this copy: read-only mode changes without replacing the connection.
+            readOnly = { store.servers.value.firstOrNull { it.id == server.id }?.readOnly ?: true },
             onVersion = { v -> if (v != server.tnVersion) store.update(server.id) { it.copy(tnVersion = v) } },
         )
         cached = key to connection

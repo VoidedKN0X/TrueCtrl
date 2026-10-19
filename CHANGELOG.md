@@ -4,13 +4,24 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## v0.2.3 (2026-10-19)
 
-Not in a release yet; this goes out with the next version.
+A security and privacy check-up: read-only mode is now enforced for every request, sign-in screens are kept out of screenshots, and the connection to TrueNAS is locked to HTTPS even more strictly.
+
+### Security
+
+- **Read-only mode now blocks changes, not just hides them.** Until now read-only mode hid the buttons that change things. Now every request TrueCtrl sends to your TrueNAS also goes through one check first: while read-only mode is on, only requests that read something (lists, details, settings, status) are sent, and anything else is stopped on the phone with a "Read-only mode is on" message. It works the moment you flip the switch, without reconnecting, and if TrueCtrl isn't sure whether read-only mode is on, it assumes it is
+- **No screenshots of sign-in screens.** The add-server and edit-server screens, where you type an API key, password or 6-digit two-factor code, can no longer be captured in screenshots or screen recordings, shown while casting your screen, or seen by other apps that record the screen. The two-factor code box is protected the same way
+- **No previews in recent apps.** The recent-apps view now shows a blank card for TrueCtrl instead of a snapshot of your server, so pool, dataset and share names don't show when you switch apps
+- **HTTPS only, with no way around it.** TrueNAS revokes an API key that's ever sent over plain HTTP, so TrueCtrl already only accepted https:// addresses. Now the connection itself also refuses anything that isn't HTTPS for the address check and a secure WebSocket (wss://) for signing in, even if a saved address were somehow changed. If that ever happens, TrueCtrl shows a clear message with a **Sign in again** button that opens the server so you can enter its address again, instead of trying to connect
+- **Saved API key stays locked away while editing a server.** When you edit a server and leave the API key field empty to keep the current key, the saved key is no longer read out and held by the screen; it's only unlocked at the moment TrueCtrl signs in with it
+- **Limits on what a server can send back.** The address check reads at most 64 KB of whatever answers (a reverse proxy page or a wrong address can't make TrueCtrl download a large file), and a connection that sends an absurdly large message (over 32 MB) is closed instead of being processed
+- **Turning off usage stats drops anything waiting.** If you switch usage stats off, any stats not sent yet are thrown away right away and the session is forgotten. Nothing was ever sent after switching off before either, but now nothing is even kept
 
 ### Changed
 
-- **All Ctrl apps in the README.** The README's Ctrl series table now lists all 14 apps. New in the table: [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) (Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app), [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) (scan and browse documents on Paperless-ngx) and [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) (Bambu Lab printers through Bambuddy, and Spoolman spools). Every app in the table is also in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) for automatic updates. No change to the app itself.
+- **All Ctrl apps in the README.** The README's Ctrl series table now lists all 14 apps. New in the table: [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) (Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app), [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) (scan and browse documents on Paperless-ngx) and [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) (Bambu Lab printers through Bambuddy, and Spoolman spools). Every app in the table is also in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) for automatic updates.
+- **README describes only what's in the app.** The README's "Safe by design" line no longer mentions typed confirmations and a fingerprint lock, which aren't in TrueCtrl yet. It now lists read-only mode, certificate pinning and the screenshot blocking above.
 
 ## v0.2.2 (2026-10-19)
 

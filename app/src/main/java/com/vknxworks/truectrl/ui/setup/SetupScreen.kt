@@ -60,6 +60,7 @@ import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupSwitch
 import com.vknxworks.truectrl.ui.components.PillButton
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
+import com.vknxworks.truectrl.ui.components.SecureWindow
 import com.vknxworks.truectrl.ui.components.errorMessage
 import com.vknxworks.truectrl.ui.theme.Gutter
 import kotlinx.coroutines.launch
@@ -92,7 +93,8 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     val c = context.container
     val scope = rememberCoroutineScope()
     val existing = remember(editId) { editId?.let { id -> c.sessions.servers.value.firstOrNull { it.id == id } } }
-    val existingSecrets = remember(editId) { editId?.let { c.serverStore.secrets(it) } }
+    // Only whether a key is saved; the key itself is decrypted when it's used, not kept in the screen's state.
+    val keptKey = remember(editId) { existing?.auth == AuthMethod.API_KEY && editId != null && c.serverStore.hasApiKey(editId) }
 
     var name by remember { mutableStateOf(existing?.name.orEmpty()) }
     var address by remember { mutableStateOf(existing?.url?.removePrefix("https://").orEmpty()) }
@@ -117,6 +119,8 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
 
     // A socket left open for the one-time password step is closed when leaving the screen.
     DisposableEffect(Unit) { onDispose { otpSocket?.close() } }
+    // API keys, passwords and one-time passwords are typed here: no screenshots, recordings or casting.
+    SecureWindow()
 
     val resolved: HttpUrl? = ServerAddress.normalize(address)
     val addressError = when {
@@ -125,13 +129,15 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
         resolved == null -> stringResource(R.string.address_invalid)
         else -> null
     }
-    val keptKey = existing?.auth == AuthMethod.API_KEY && existingSecrets?.apiKey?.isNotBlank() == true
     val canConnect = !busy && resolved != null && username.isNotBlank() && when (method) {
         AuthMethod.API_KEY -> apiKey.isNotBlank() || keptKey
         AuthMethod.PASSWORD -> password.isNotEmpty()
     }
 
     fun pinFor(url: HttpUrl): String = if (pinnedHost.equals(url.host, ignoreCase = true)) pin else ""
+
+    /** The API key to sign in with: the one typed, or the saved one when the field was left empty. */
+    fun keyToUse(): String = apiKey.trim().ifBlank { if (keptKey && editId != null) c.serverStore.secrets(editId).apiKey else "" }
 
     /** Reads roles, version and system info on the signed-in [socket], then shows the result. */
     suspend fun finish(socket: RpcSocket, url: HttpUrl, newest: TnVersion, usesOtp: Boolean) {
@@ -150,7 +156,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
             )
             // The password is only kept when it can sign in again on its own (no one-time password).
             val secrets = when (method) {
-                AuthMethod.API_KEY -> ServerSecrets(apiKey = apiKey.trim().ifBlank { existingSecrets?.apiKey.orEmpty() })
+                AuthMethod.API_KEY -> ServerSecrets(apiKey = keyToUse())
                 AuthMethod.PASSWORD -> ServerSecrets(password = if (usesOtp) "" else password)
             }
             // Keep the user's read-only choice when editing; a user that can't change anything starts read-only.
@@ -189,7 +195,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
             try {
                 socket.open()
                 val result = when (method) {
-                    AuthMethod.API_KEY -> TnAuth.loginApiKey(socket, username.trim(), apiKey.trim().ifBlank { existingSecrets?.apiKey.orEmpty() })
+                    AuthMethod.API_KEY -> TnAuth.loginApiKey(socket, username.trim(), keyToUse())
                     AuthMethod.PASSWORD -> TnAuth.loginPassword(socket, username.trim(), password)
                 }
                 if (result == LoginResult.OtpRequired) {

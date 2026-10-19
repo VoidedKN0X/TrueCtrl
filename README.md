@@ -21,7 +21,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **System**: apps, alerts, jobs with live progress, updates, network and power
 - **Notifications** without Google services: polling, or UnifiedPush through your own ntfy
 - **Widgets** and a Quick Settings tile
-- **Safe by design**: read-only mode, typed confirmations for dangerous actions, certificate pinning, optional fingerprint lock
+- **Safe by design**: read-only mode that blocks every change at the connection level, certificate pinning, and screenshots blocked wherever you type keys, passwords or codes
 
 ## Requirements
 

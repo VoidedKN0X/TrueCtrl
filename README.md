@@ -10,21 +10,23 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/VoidedKN0X/TrueCtrl"><img src=".github/assets/badge_obtainium.png" alt="Get it on Obtainium" height="80"></a> <a href="https://voidedkn0x.github.io/CtrlF-Droid/"><img src=".github/assets/badge_ctrlf-droid.png" alt="Get it from our F-Droid repo" height="80"></a>
 
-> TrueCtrl is in early development. Features arrive release by release; see the [changelog](CHANGELOG.md) for what's in each version.
-
 ## Features
 
-- **Overview** of your server, with an attention list for alerts, unhealthy or full pools, failing disks, overdue scrubs, failed backups and more, a system card, live CPU, memory and network graphs, and your pools
+- **Overview** of your server, with an attention list for alerts, unhealthy or full pools, failing disks, overdue scrubs, failed or stale backups, stopped services, crashed apps and pending updates, a system card, live CPU, memory and network graphs, and your pools
 - **Alerts** that update live, with dismiss and restore
 - **Storage**: pools with their health, space and layout, and scrubs you can start, pause, resume and stop with live progress
+- **Datasets** as a tree: space, quota, compression, encryption and more. Create child datasets with the TrueNAS presets, edit quotas and comments, lock and unlock encrypted datasets, and delete with a preview of everything that goes with it
 - **Disks** with temperatures, temperature and speed graphs, and SMART health (self-tests and attributes on TrueNAS 25.04)
+- **Protection**: periodic snapshot, replication, cloud sync, rsync and scrub tasks with their schedule, last and next run, and the age of the last good backup. Run tasks now, stop a cloud sync, turn snapshot and scrub tasks on and off
+- **Snapshots**: browse per dataset, take, delete one or many, roll back and clone
+- **Sharing**: SMB and NFS shares (turn them on and off), who's connected over SMB, and the services behind them (start, stop, restart, start on boot)
+- **System**: apps (start, stop, redeploy, upgrade, open their web UI, live container logs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
+- **Notifications without Google services**: background checks every 15 to 120 minutes, or TrueNAS alerts pushed within seconds through [UnifiedPush](https://unifiedpush.org) and your own ntfy (TrueCtrl can set it up on TrueNAS for you)
+- **Widgets and a Quick Settings tile** with pool health and usage, the number of active alerts, and whether anything needs attention
+- **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
 - **Several servers**, signed in with an API key or a password (two-factor codes work too), with a list of what each sign-in is allowed to do
-- **Works offline**: the last Overview, pools and disks stay on screen, marked as out of date, when TrueNAS can't be reached
-- **Safe by design**: read-only mode that blocks every change at the connection level, certificate pinning, screenshots blocked wherever you type keys, passwords or codes, a blank preview in recent apps, and API keys and passwords encrypted with the Android Keystore
-
-## Planned
-
-Not in the app yet: datasets and zvols (including locking and unlocking encrypted ones) in the Storage tab; the **Protection** tab (snapshots, periodic snapshot tasks, replication, cloud sync, rsync and scrub schedules, with the age of the last good backup); the **Sharing** tab (SMB and NFS shares and the services behind them); the **System** tab (apps, jobs with live progress, updates, network and power); notifications without Google services (background checks, or TrueNAS alerts pushed instantly through UnifiedPush and your own ntfy); and home screen widgets and a Quick Settings tile. The tabs are already there and say what they'll show.
+- **Works offline**: the last known state stays on screen, marked as out of date, when TrueNAS can't be reached
+- **Safe by design**: read-only mode that blocks every change at the connection level, confirmations for anything disruptive (typing the dataset path or hostname for the most dangerous ones), certificate pinning, an optional fingerprint or screen-lock app lock, screenshots blocked wherever you type keys, passwords, passphrases or use the shell, a blank preview in recent apps, API keys and passwords encrypted with the Android Keystore, and dataset passphrases that are never saved
 
 ## Requirements
 
@@ -64,7 +66,7 @@ TrueCtrl works best with its own TrueNAS user and an API key that can only do wh
 
 - **Monitoring only:** add the user to the group `truenas_readonly_administrators`. That's the built-in **Read-only Administrator** privilege: TrueCtrl can see everything but change nothing.
 - **Monitoring and day-to-day actions:** create your own privilege under **Credentials → Groups → Privileges → Add** with the roles below, attached to a group the `truectrl` user is in. Start from `READONLY_ADMIN` and add only the write roles for the actions you want.
-- **Everything:** add the user to `builtin_administrators` (Full Admin). Only do this if you need it: today that's only for SMART self-tests on TrueNAS 25.04.
+- **Everything:** add the user to `builtin_administrators` (Full Admin). Only do this if you need it: rebooting and shutting down need it, and on TrueNAS 25.04 SMART self-tests, snapshot rollback and clone.
 
 **2. Create the API key.** Go to **Credentials → Users**, open the `truectrl` user (or the API Keys page from your user menu), choose **Add API Key** for that user, and copy the key. TrueNAS shows it **once**. In TrueCtrl, enter the username `truectrl` and that key.
 
@@ -72,30 +74,45 @@ TrueCtrl works best with its own TrueNAS user and an API key that can only do wh
 
 | Role | Used for |
 | --- | --- |
-| `READONLY_ADMIN` | Everything TrueCtrl shows: the Overview, alerts, pools, scrubs, disks and graphs |
+| `READONLY_ADMIN` | Everything TrueCtrl shows: the Overview, alerts, pools, datasets, disks, graphs, tasks, snapshots, shares, services, apps, jobs, updates and network |
 | `POOL_WRITE` | Starting, pausing, resuming and stopping scrubs |
+| `POOL_SCRUB_WRITE` | Turning scrub schedules on and off |
 | `ALERT_LIST_WRITE` | Dismissing and restoring alerts |
-| Full Admin only | Running SMART self-tests on TrueNAS 25.04 |
-
-**Roles for planned features.** These actions aren't in the app yet, so you don't need these roles until they arrive:
-
-| Role | Will be used for |
-| --- | --- |
+| `ALERT_WRITE` | Setting up push notifications on TrueNAS for you (optional; you can add the alert service by hand) |
 | `DATASET_WRITE` | Creating datasets, editing quotas and comments, locking and unlocking encrypted datasets |
 | `DATASET_DELETE` | Deleting datasets (not included in `DATASET_WRITE`) |
 | `SNAPSHOT_WRITE` | Taking snapshots. Rolling back also needs `POOL_WRITE`, cloning also needs `DATASET_WRITE` |
 | `SNAPSHOT_DELETE` | Deleting snapshots (not included in `SNAPSHOT_WRITE`) |
-| `POOL_WRITE` | Scrub schedules |
-| `SNAPSHOT_TASK_WRITE` | Enabling periodic snapshot tasks and running rsync tasks |
+| `SNAPSHOT_TASK_WRITE` | Turning periodic snapshot tasks on and off and running them |
 | `REPLICATION_TASK_WRITE` | Running replication tasks |
 | `CLOUD_SYNC_WRITE` | Running and stopping cloud sync tasks |
 | `SHARING_SMB_WRITE`, `SHARING_NFS_WRITE` | Turning SMB and NFS shares on and off |
-| `SERVICE_READ` + `SERVICE_WRITE` | Starting, stopping and restarting services (`SERVICE_WRITE` doesn't include `SERVICE_READ`, so add both) |
-| `APPS_WRITE` | Starting, stopping, restarting and upgrading apps |
+| `SERVICE_READ` + `SERVICE_WRITE` | Starting, stopping and restarting services and choosing whether they start on boot (`SERVICE_WRITE` doesn't include `SERVICE_READ`, so add both) |
+| `APPS_WRITE` | Starting, stopping, redeploying and upgrading apps |
 | `SYSTEM_UPDATE_WRITE` | Installing TrueNAS updates |
-| Full Admin only | Rebooting and shutting down. On TrueNAS 25.04 also snapshot rollback and clone, and running rsync tasks |
+| Web shell privilege | The shell (the **Web Shell Access** option on the privilege) |
+| Full Admin only | Rebooting and shutting down. On TrueNAS 25.04 also SMART self-tests, snapshot rollback and clone |
+
+Running rsync tasks needs whatever role your TrueNAS version asks for; TrueCtrl offers it when TrueNAS says your user may call it.
 
 TrueCtrl checks what your key can do when it connects and greys out anything it isn't allowed to.
+
+## Push notifications with ntfy
+
+TrueNAS has no ntfy or UnifiedPush alert type, but its **Slack** alert type posts a small JSON message to any address, which ntfy accepts.
+
+1. Install [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) (or another UnifiedPush distributor) on your phone and point it at your ntfy server.
+2. In TrueCtrl, open **Settings › Notifications › Push from TrueNAS**, pick the distributor, and wait for the push address to appear.
+3. Tap **Set up on TrueNAS**. TrueCtrl adds a "TrueCtrl" alert service (type Slack, pointed at the push address, at your chosen alert level). This needs the `ALERT_WRITE` role; without it, the page shows the steps to add the service in the TrueNAS web UI yourself.
+4. Tap **Send a test alert** to check the whole path.
+
+## Widgets and Quick Settings
+
+- **TrueNAS pools** widget: the selected server, whether anything needs attention, and up to four pools with their health and usage.
+- **TrueNAS alerts** widget: the number of active alerts, red when one is critical.
+- **TrueNAS** Quick Settings tile: the selected server and whether anything needs attention. Tap it to open TrueCtrl.
+
+They update whenever TrueCtrl reads the server and after every background check, so with background checks off they only change while the app is open.
 
 ## Supported TrueNAS versions
 
@@ -167,4 +184,4 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 
 TrueCtrl is licensed under the [GNU General Public License v3.0](LICENSE). © VKNXWorks
 
-The Manrope font is licensed under the SIL Open Font License; see `FONT-LICENSE-Manrope.txt`.
+The Manrope font is licensed under the SIL Open Font License; see `FONT-LICENSE-Manrope.txt`. The shell uses [xterm.js](https://xtermjs.org) (MIT licence, see `app/src/main/assets/xterm/LICENSE`).

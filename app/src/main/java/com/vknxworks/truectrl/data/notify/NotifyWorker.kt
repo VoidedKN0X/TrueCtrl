@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.vknxworks.truectrl.container
+import com.vknxworks.truectrl.data.widget.HealthStore
 import com.vknxworks.truectrl.data.api.TnJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,6 +73,12 @@ class NotifyWorker(context: Context, params: WorkerParameters) : CoroutineWorker
             result.cancel.forEach { Notifier.cancel(applicationContext, it) }
             result.post.forEach { Notifier.post(applicationContext, it) }
             CheckStore.write(applicationContext, server.id, result.state)
+            val snapshot = result.snapshot
+            if (snapshot != null) {
+                HealthStore.save(applicationContext, HealthStore.from(server, snapshot, app.poolWarnPercent, app.backupMaxAgeDays))
+            } else {
+                HealthStore.markUnreachable(applicationContext, server.id)
+            }
         }
         return Result.success()
     }

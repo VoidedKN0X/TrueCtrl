@@ -34,6 +34,8 @@ data class AppSettings(
     val poolWarnPercent: Int = 80,
     /** A replication, cloud sync or rsync task whose last success is older than this is flagged. */
     val backupMaxAgeDays: Int = 7,
+    /** Ask for the fingerprint, face or screen lock when TrueCtrl opens. */
+    val appLock: Boolean = false,
     /** Opt-in anonymous usage stats (off until the user says yes). */
     val usageStats: Boolean = false,
     /** Whether the one-time usage stats question has been answered. */
@@ -46,6 +48,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val dynamic = booleanPreferencesKey("dynamic_color")
         val poolWarn = intPreferencesKey("pool_warn_percent")
         val backupAge = intPreferencesKey("backup_max_age_days")
+        val appLock = booleanPreferencesKey("app_lock")
         val usageStats = booleanPreferencesKey("usage_stats")
         val usageStatsAsked = booleanPreferencesKey("usage_stats_asked")
     }
@@ -62,6 +65,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         dynamicColor = this[K.dynamic] ?: false,
         poolWarnPercent = (this[K.poolWarn] ?: 80).coerceIn(50, 99),
         backupMaxAgeDays = (this[K.backupAge] ?: 7).coerceIn(1, 90),
+        appLock = this[K.appLock] ?: false,
         usageStats = this[K.usageStats] ?: false,
         usageStatsAsked = this[K.usageStatsAsked] ?: false,
     )
@@ -73,6 +77,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.dynamic] = s.dynamicColor
             p[K.poolWarn] = s.poolWarnPercent
             p[K.backupAge] = s.backupMaxAgeDays
+            p[K.appLock] = s.appLock
             p[K.usageStats] = s.usageStats
             p[K.usageStatsAsked] = s.usageStatsAsked
         }

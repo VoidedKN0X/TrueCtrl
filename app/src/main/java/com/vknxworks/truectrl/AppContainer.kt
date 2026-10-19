@@ -10,6 +10,7 @@ import com.vknxworks.truectrl.data.server.ServerStore
 import com.vknxworks.truectrl.data.protection.ProtectionRepository
 import com.vknxworks.truectrl.data.sharing.SharingRepository
 import com.vknxworks.truectrl.data.system.SystemRepository
+import com.vknxworks.truectrl.data.widget.HealthStore
 import com.vknxworks.truectrl.data.storage.DatasetRepository
 import com.vknxworks.truectrl.data.storage.StorageRepository
 import com.vknxworks.truectrl.data.server.Sessions
@@ -18,6 +19,9 @@ import com.vknxworks.truectrl.data.telemetry.Telemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import com.vknxworks.truectrl.data.lock.AppLock
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
@@ -53,9 +57,15 @@ class AppContainer(val context: Context) {
         }
         .build()
 
+    /** Read once, synchronously, so the app never shows unlocked for a moment at start. */
+    val appLock = AppLock(context, runBlocking { runCatching { settings.stored.first().appLock }.getOrDefault(false) })
+
     val serverStore = ServerStore(context)
     val sessions = Sessions(serverStore, http, appScope)
-    val overview = OverviewRepository(context, sessions, appScope)
+    val overview = OverviewRepository(context, sessions, appScope) { server, snapshot ->
+        val s = settings.settings.value
+        HealthStore.save(context, HealthStore.from(server, snapshot, s.poolWarnPercent, s.backupMaxAgeDays))
+    }
     val storage = StorageRepository(context, sessions, appScope)
     val datasets = DatasetRepository(context, sessions, appScope)
     val protection = ProtectionRepository(context, sessions, appScope)
@@ -66,7 +76,10 @@ class AppContainer(val context: Context) {
         // One live connection while the app is on screen; background checks run in NotifyWorker.
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStart(owner: LifecycleOwner) = sessions.setForeground(true)
-            override fun onStop(owner: LifecycleOwner) = sessions.setForeground(false)
+            override fun onStop(owner: LifecycleOwner) {
+                sessions.setForeground(false)
+                if (settings.settings.value.appLock) appLock.lock()
+            }
         })
     }
 }

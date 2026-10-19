@@ -4,6 +4,14 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.9.1 (2026-10-19)
+
+### Changed
+
+- **One About section in every Ctrl app**: Support, Report a bug, Source code and Licence (GPL-3.0), with the version underneath, at the bottom of the Account page (tap the profile picture on any tab)
+- New **Report a bug** row in About opens TrueCtrl's GitHub issues, where you can report a problem or suggest an idea
+- The "Source code and issues" row is now just **Source code**, since bugs have their own row
+
 ## v0.9.0 (2026-10-19)
 
 Widgets, a Quick Settings tile and an app lock. With this version every planned feature is in the app.

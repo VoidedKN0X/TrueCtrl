@@ -3,6 +3,11 @@ package com.vknxworks.truectrl
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import com.vknxworks.truectrl.ui.lock.LockScreen
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -37,8 +42,16 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose { }
             }
+            val locked by c.appLock.locked.collectAsStateWithLifecycle()
             TrueCtrlTheme(settings.theme, settings.dynamicColor) {
-                AppRoot()
+                Box(Modifier.fillMaxSize()) {
+                    AppRoot()
+                    if (locked && settings.appLock) {
+                        // Back leaves the app instead of moving around underneath the lock.
+                        BackHandler { moveTaskToBack(true) }
+                        LockScreen()
+                    }
+                }
             }
         }
     }

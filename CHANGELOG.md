@@ -4,6 +4,22 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.9.0 (2026-10-19)
+
+Widgets, a Quick Settings tile and an app lock. With this version every planned feature is in the app.
+
+### New
+
+- **TrueNAS pools widget**: the selected server, whether anything needs attention ("All good", "2 things need attention, 1 critical"), and up to four pools with their health and a usage bar that turns yellow and red at your pool warning level. It follows your wallpaper colours in light and dark mode
+- **TrueNAS alerts widget**: the number of active TrueNAS alerts, yellow when there are any and red when one is critical
+- **Quick Settings tile**: the selected server and whether anything needs attention; it's highlighted when something does. Tap it to open TrueCtrl
+- Widgets and the tile update every time TrueCtrl reads the server and after every background check. When a server can't be reached they show when it was last seen
+- **App lock** under Settings › Security: TrueCtrl asks for your fingerprint, face or the phone's screen lock when it opens and every time it comes back from the background. Notifications, widgets and the tile keep working while it's locked
+
+### Changed
+
+- The README now describes every feature, the TrueNAS roles each action needs, setting up push notifications with ntfy, and the widgets
+
 ## v0.8.0 (2026-10-19)
 
 System: apps, jobs, updates, network, power and the TrueNAS shell.

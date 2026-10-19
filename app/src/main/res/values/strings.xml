@@ -889,4 +889,39 @@
     <string name="key_pgup">PgUp</string>
     <string name="key_pgdn">PgDn</string>
     <string name="key_del">Del</string>
+    <!-- App lock -->
+    <string name="group_security">Security</string>
+    <string name="app_lock">App lock</string>
+    <string name="app_lock_subtitle">Ask for your fingerprint, face or screen lock to open TrueCtrl</string>
+    <string name="app_lock_footer">TrueCtrl locks whenever it goes to the background. Notifications, widgets and the Quick Settings tile keep working.</string>
+    <string name="app_lock_unavailable">Set up a screen lock in Android\'s settings first.</string>
+    <string name="lock_title">TrueCtrl is locked</string>
+    <string name="lock_body">Unlock with your fingerprint, face or screen lock.</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_prompt_title">Unlock TrueCtrl</string>
+    <string name="lock_prompt_subtitle">Your TrueNAS servers</string>
+
+    <!-- Widgets and Quick Settings tile -->
+    <string name="widget_pools_name">TrueNAS pools</string>
+    <string name="widget_pools_description">Pool health and usage, and whether anything needs attention</string>
+    <string name="widget_alerts_name">TrueNAS alerts</string>
+    <string name="widget_alerts_description">The number of active TrueNAS alerts</string>
+    <string name="widget_all_good">All good</string>
+    <plurals name="widget_problems">
+        <item quantity="one">%d thing needs attention</item>
+        <item quantity="other">%d things need attention</item>
+    </plurals>
+    <plurals name="widget_problems_critical">
+        <item quantity="one">%1$d thing needs attention, %2$d critical</item>
+        <item quantity="other">%1$d things need attention, %2$d critical</item>
+    </plurals>
+    <string name="widget_unreachable">Can\'t reach it. Last seen %1$s</string>
+    <string name="widget_no_data">Open TrueCtrl once to fill this in.</string>
+    <string name="widget_no_data_short">No data yet</string>
+    <plurals name="widget_alerts">
+        <item quantity="one">alert</item>
+        <item quantity="other">alerts</item>
+    </plurals>
+    <string name="tile_label">TrueNAS</string>
+    <string name="tile_unreachable">Can\'t reach it</string>
 </resources>

@@ -34,8 +34,8 @@ android {
         minSdk = 33
         targetSdk = 36
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 12
-        versionName = "0.8.0"
+        versionCode = 13
+        versionName = "0.9.0"
 
         buildConfigField("String", "APTABASE_KEY", "\"${aptabaseKey.replace("\"", "")}\"")
         buildConfigField("String", "APTABASE_HOST", "\"$aptabaseHost\"")

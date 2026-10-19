@@ -476,4 +476,228 @@
     <string name="nt_unreachable">Can\'t reach %1$s</string>
     <string name="nt_push_title">TrueNAS alert</string>
     <string name="nt_push_cleared">TrueNAS alert cleared</string>
+    <!-- Shared -->
+    <string name="actions">Actions</string>
+    <string name="details">Details</string>
+    <string name="create">Create</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="stop">Stop</string>
+    <string name="none">None</string>
+    <string name="yes">Yes</string>
+    <string name="show">Show</string>
+    <string name="hide">Hide</string>
+    <string name="none_set_up">None set up on this server.</string>
+    <string name="name_invalid">Use letters, digits, - _ . and : only.</string>
+    <string name="read_only_hint">Read-only mode is on for this server, so changes are hidden. Turn it off in Servers to make changes.</string>
+
+    <!-- Backup age -->
+    <string name="att_backup_stale">%1$s %2$s hasn\'t succeeded in a while</string>
+    <string name="att_backup_stale_detail">Last success %1$s, older than your %2$d-day limit</string>
+    <string name="backup_age_title">Warn when a backup is older than</string>
+    <plurals name="backup_age_value">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+
+    <!-- Schedules and task runs -->
+    <string name="schedule_none">No schedule</string>
+    <string name="schedule_hourly">Every hour at minute %1$d</string>
+    <string name="schedule_daily">Every day at %1$s</string>
+    <string name="schedule_weekly">Every %1$s at %2$s</string>
+    <string name="schedule_monthly">Day %1$d of every month at %2$s</string>
+    <string name="schedule_cron">Custom schedule: %1$s</string>
+    <string name="task_disabled">Disabled</string>
+    <string name="task_next">Next run %1$s</string>
+    <string name="task_never_ran">Hasn\'t run yet</string>
+    <string name="task_running_pct">Running, %1$d%%</string>
+    <string name="task_running">Running</string>
+    <string name="task_ok_at">Succeeded %1$s</string>
+    <string name="task_ok">Succeeded</string>
+    <string name="task_failed_at">Failed %1$s</string>
+    <string name="task_failed">Failed</string>
+    <string name="task_last_success">Last success %1$s</string>
+    <string name="task_no_success_known">No success seen by TrueCtrl yet</string>
+    <string name="task_enabled_done">Task turned on</string>
+    <string name="task_disabled_done">Task turned off</string>
+    <string name="task_started">Task started</string>
+    <string name="task_stopped">Task stopped</string>
+    <plurals name="keep_hours">
+        <item quantity="one">kept %d hour</item>
+        <item quantity="other">kept %d hours</item>
+    </plurals>
+    <plurals name="keep_days">
+        <item quantity="one">kept %d day</item>
+        <item quantity="other">kept %d days</item>
+    </plurals>
+    <plurals name="keep_weeks">
+        <item quantity="one">kept %d week</item>
+        <item quantity="other">kept %d weeks</item>
+    </plurals>
+    <plurals name="keep_months">
+        <item quantity="one">kept %d month</item>
+        <item quantity="other">kept %d months</item>
+    </plurals>
+    <plurals name="keep_years">
+        <item quantity="one">kept %d year</item>
+        <item quantity="other">kept %d years</item>
+    </plurals>
+    <plurals name="scrub_threshold">
+        <item quantity="one">Skipped when the last scrub is less than %d day old</item>
+        <item quantity="other">Skipped when the last scrub is less than %d days old</item>
+    </plurals>
+
+    <!-- Protection tab -->
+    <string name="protection_loading_body">Snapshot, replication, cloud sync, rsync and scrub tasks on %1$s show up here.</string>
+    <string name="group_snapshot_tasks">Periodic snapshots</string>
+    <string name="group_replication">Replication</string>
+    <string name="group_cloud_sync">Cloud sync</string>
+    <string name="group_rsync">Rsync</string>
+    <string name="group_scrub_tasks">Scrub schedules</string>
+    <string name="recursive_mark">(with children)</string>
+    <string name="run_now">Run now</string>
+    <string name="run_snapshot_title">Snapshot %1$s now?</string>
+    <string name="run_snapshot_body">Takes a snapshot right away with this task\'s naming and retention, as if it ran on schedule.</string>
+    <string name="run_task_title">Run %1$s now?</string>
+    <string name="run_replication_body">Starts the replication now. It sends any snapshots the target doesn\'t have yet.</string>
+    <string name="run_cloud_body">Starts the cloud sync now. With a sync or move transfer, files can be deleted or moved on one side to match the other.</string>
+    <string name="run_rsync_body">Starts the rsync task now. With delete turned on in the task, files missing on the source are deleted on the target.</string>
+    <string name="stop_task_title">Stop %1$s?</string>
+    <string name="stop_cloud_body">Stops the running cloud sync. Files already copied stay where they are.</string>
+    <string name="snapshot_taken">Snapshot taken</string>
+
+    <!-- Snapshots -->
+    <string name="snapshots_title">Snapshots</string>
+    <string name="snapshots_browse">Browse, take, roll back, clone and delete snapshots</string>
+    <string name="snapshots_pick">Pick a dataset</string>
+    <string name="snapshots_pick_body">Snapshots are listed per dataset.</string>
+    <string name="snapshots_no_access">Snapshots aren\'t available</string>
+    <string name="snapshots_no_access_body">This user can\'t see snapshots on this server.</string>
+    <string name="snapshots_failed">Couldn\'t load snapshots</string>
+    <string name="snapshots_none">No snapshots</string>
+    <string name="snapshots_none_body">%1$s has no snapshots yet.</string>
+    <string name="snapshots_hold_hint">Touch and hold to select several</string>
+    <string name="snapshots_role_hint">Some actions are hidden because this user doesn\'t have the role for them.</string>
+    <string name="snapshot_used">%1$s used</string>
+    <string name="snapshot_referenced">%1$s referenced</string>
+    <string name="snapshot_held">Held, can\'t be deleted</string>
+    <string name="snapshot_copy_name">Copy name</string>
+    <string name="snapshot_rollback">Roll back</string>
+    <string name="snapshot_clone">Clone</string>
+    <string name="snapshot_create">Take snapshot</string>
+    <string name="snapshot_create_title">Take a snapshot</string>
+    <string name="snapshot_create_body">A snapshot of %1$s as it is now.</string>
+    <string name="snapshot_name">Name</string>
+    <string name="snapshot_recursive">Also snapshot child datasets</string>
+    <string name="snapshot_created">Snapshot taken</string>
+    <string name="rollback_title">Roll back to %1$s?</string>
+    <string name="rollback_body">Everything written to %1$s since this snapshot is lost. Apps and shares using it may need a restart.</string>
+    <string name="rollback_done">Rolled back</string>
+    <string name="clone_title">Clone %1$s</string>
+    <string name="clone_body">Creates a new dataset from this snapshot. The snapshot can\'t be deleted while the clone exists.</string>
+    <string name="clone_target">New dataset</string>
+    <string name="clone_target_invalid">A new path in the same pool, like tank/restore</string>
+    <string name="clone_done">Cloned to %1$s</string>
+    <string name="delete_snapshot_body">%1$s is deleted for good. Its data can\'t be recovered from it afterwards.</string>
+    <plurals name="snapshot_count">
+        <item quantity="one">%d snapshot</item>
+        <item quantity="other">%d snapshots</item>
+    </plurals>
+    <plurals name="snapshots_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="rollback_newer">
+        <item quantity="one">%d newer snapshot is destroyed too.</item>
+        <item quantity="other">%d newer snapshots are destroyed too.</item>
+    </plurals>
+    <plurals name="delete_snapshots_title">
+        <item quantity="one">Delete snapshot?</item>
+        <item quantity="other">Delete %d snapshots?</item>
+    </plurals>
+    <plurals name="delete_snapshots_body">
+        <item quantity="one">%1$d snapshot of %2$s is deleted for good.</item>
+        <item quantity="other">%1$d snapshots of %2$s are deleted for good.</item>
+    </plurals>
+    <plurals name="snapshots_deleted">
+        <item quantity="one">Snapshot deleted</item>
+        <item quantity="other">%d snapshots deleted</item>
+    </plurals>
+
+    <!-- Datasets -->
+    <string name="storage_datasets">Datasets</string>
+    <string name="datasets_none">No datasets</string>
+    <string name="datasets_none_body">Create a pool in the TrueNAS web UI first.</string>
+    <string name="dataset_missing">Dataset not found</string>
+    <string name="dataset_missing_body">%1$s isn\'t on this server any more.</string>
+    <string name="dataset_used">%1$s used</string>
+    <string name="dataset_free">%1$s free</string>
+    <string name="dataset_quota_short">quota %1$s</string>
+    <string name="zvol_size">zvol %1$s</string>
+    <string name="dataset_locked">Locked</string>
+    <string name="dataset_unlocked">Encrypted, unlocked</string>
+    <string name="dataset_children">Child datasets</string>
+    <string name="dataset_snapshots_sub">See, take and roll back snapshots</string>
+    <string name="dataset_edit">Edit quota and comments</string>
+    <string name="dataset_edit_sub">Limit how much space this dataset and its children can use</string>
+    <string name="dataset_add_child">Add dataset</string>
+    <string name="dataset_add_child_sub">Create a child dataset</string>
+    <string name="dataset_lock">Lock</string>
+    <string name="dataset_lock_sub">Unmount and lock this encrypted dataset</string>
+    <string name="dataset_lock_title">Lock %1$s?</string>
+    <string name="dataset_lock_body">The dataset and the children sharing its key are unmounted. Shares, apps and VMs using it stop working until it\'s unlocked again with the passphrase.</string>
+    <string name="dataset_locked_done">Dataset locked</string>
+    <string name="dataset_unlock">Unlock</string>
+    <string name="dataset_unlock_sub">Enter the passphrase to unlock</string>
+    <string name="dataset_unlock_key_sub">This dataset uses a key file. Unlock it in the TrueNAS web UI.</string>
+    <string name="dataset_unlock_title">Unlock %1$s</string>
+    <string name="dataset_unlock_body">The passphrase is sent to TrueNAS once and never saved by TrueCtrl.</string>
+    <string name="dataset_passphrase">Passphrase</string>
+    <string name="dataset_unlocked_done">Dataset unlocked</string>
+    <string name="dataset_delete">Delete dataset</string>
+    <string name="dataset_delete_sub">Delete it with all its data, children and snapshots</string>
+    <string name="dataset_delete_title">Delete %1$s?</string>
+    <string name="dataset_delete_body">All data in %1$s is deleted for good. This can\'t be undone.</string>
+    <string name="dataset_delete_children">Also deletes %1$d child datasets: %2$s</string>
+    <string name="dataset_delete_snapshots">Also deletes %1$d snapshots.</string>
+    <string name="dataset_delete_attachments">In use by: %1$s</string>
+    <string name="dataset_delete_processes">Files open by: %1$s</string>
+    <string name="dataset_deleted">%1$s deleted</string>
+    <string name="dataset_role_hint">Changes are hidden because this user doesn\'t have the dataset roles for them.</string>
+    <string name="dataset_path">Path</string>
+    <string name="dataset_type">Type</string>
+    <string name="dataset_type_fs">Filesystem</string>
+    <string name="dataset_type_zvol">Zvol (block device)</string>
+    <string name="dataset_used_title">Used</string>
+    <string name="dataset_free_title">Available</string>
+    <string name="zvol_size_title">Size</string>
+    <string name="dataset_quota">Quota</string>
+    <string name="dataset_reservation">Reservation</string>
+    <string name="dataset_compression">Compression</string>
+    <string name="dataset_recordsize">Record size</string>
+    <string name="dataset_mountpoint">Mount point</string>
+    <string name="dataset_encryption">Encryption</string>
+    <string name="dataset_encryption_root">Encrypted (encryption root)</string>
+    <string name="dataset_encryption_inherited">Encrypted, key from %1$s</string>
+    <string name="dataset_readonly">Read-only</string>
+    <string name="dataset_comments">Comments</string>
+    <string name="dataset_quota_gib">Quota in GiB</string>
+    <string name="dataset_quota_hint">Empty or 0 for no quota</string>
+    <string name="dataset_quota_invalid">At least 1 GiB, or 0 for no quota</string>
+    <string name="dataset_saved">Saved</string>
+    <string name="dataset_create_in">The new dataset goes in %1$s.</string>
+    <string name="dataset_name">Name</string>
+    <string name="dataset_name_taken">A dataset with this name already exists here.</string>
+    <string name="dataset_preset">Preset</string>
+    <string name="dataset_created">%1$s created</string>
+    <string name="preset_generic">Generic</string>
+    <string name="preset_smb">SMB</string>
+    <string name="preset_nfs">NFS</string>
+    <string name="preset_multi">Multiprotocol</string>
+    <string name="preset_apps">Apps</string>
+    <string name="preset_generic_hint">Plain dataset with default settings.</string>
+    <string name="preset_smb_hint">Tuned for Windows and macOS file sharing (case-insensitive names, SMB permissions).</string>
+    <string name="preset_nfs_hint">Tuned for NFS shares to Linux and other Unix clients.</string>
+    <string name="preset_multi_hint">For data shared over both SMB and NFS.</string>
+    <string name="preset_apps_hint">Permissions suited to TrueNAS apps.</string>
 </resources>

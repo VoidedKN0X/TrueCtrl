@@ -33,6 +33,24 @@ object Jobs {
         }
     }
 
+    /**
+     * Waits up to [timeoutMs] for the job to finish and returns its result; throws its error as
+     * [TnError.Call] when it fails, and [TnError.Unreachable] when it doesn't finish in time.
+     */
+    suspend fun awaitResult(c: Connection, result: JsonElement, timeoutMs: Long = 120_000): JsonElement? {
+        val id = result.long() ?: return result
+        val until = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < until) {
+            delay(800)
+            val job = find(c, id) ?: continue
+            when (job["state"].str()) {
+                "SUCCESS" -> return job["result"]
+                "FAILED", "ABORTED" -> throw TnError.Call(job["state"].str(), errorOf(job))
+            }
+        }
+        throw TnError.Unreachable(null)
+    }
+
     private suspend fun find(c: Connection, id: Long): JsonElement? = runCatching {
         val filter = JsonArray(listOf(JsonArray(listOf(JsonPrimitive("id"), JsonPrimitive("="), JsonPrimitive(id)))))
         c.call("core.get_jobs", listOf(filter)).arr()?.firstOrNull()

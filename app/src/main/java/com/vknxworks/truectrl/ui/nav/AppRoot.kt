@@ -239,6 +239,8 @@ private fun AppNavHost(navController: NavHostController) {
         composable<AlertsRoute> { AlertsScreen() }
         composable<PoolRoute> { PoolScreen(it.toRoute<PoolRoute>().id) }
         composable<DiskRoute> { DiskScreen(it.toRoute<DiskRoute>().name) }
+        composable<DatasetRoute> { com.vknxworks.truectrl.ui.storage.DatasetScreen(it.toRoute<DatasetRoute>().id) }
+        composable<SnapshotsRoute> { com.vknxworks.truectrl.ui.protection.SnapshotsScreen(it.toRoute<SnapshotsRoute>().dataset) }
 
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }

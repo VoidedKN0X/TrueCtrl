@@ -4,6 +4,40 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.6.0 (2026-10-19)
+
+Protection and datasets: see whether your data is protected, run backup tasks, manage snapshots and work with datasets from the app.
+
+### New
+
+- **Protection tab** replaces the placeholder, with a group for each kind of task:
+  - **Periodic snapshots**: dataset, schedule in words ("Every day at 00:00"), how long snapshots are kept, the last run and the next run. A switch turns a task on or off, and tapping a task takes its snapshot now
+  - **Replication**: source and target, the last run (with progress while it runs) and TrueNAS's error when it failed. Tap to run it now
+  - **Cloud sync** and **Rsync**: path and remote, last run, next run. Tap to run now; tap a running cloud sync to stop it
+  - **Scrub schedules** per pool, with their threshold and a switch to turn them on or off
+  - Failed tasks show in red with an error icon; every run is confirmed before it starts
+- **Last success age**: TrueNAS only keeps a task's latest run, so TrueCtrl remembers when each replication, cloud sync and rsync task last succeeded and shows it when the latest run failed or the success is getting old
+- **Stale backup warning**: a backup task whose last success is older than your limit turns yellow on the Protection tab and shows on the Overview's attention list. Set the limit (1 to 30 days, 7 by default) under Settings › Warnings
+- **Snapshots** (from the Protection tab or a dataset), newest first, with when each was taken and the space it uses:
+  - **Take snapshot** with a name of your choice (a dated "manual-…" name is filled in), optionally including child datasets
+  - **Delete** one, or touch and hold to select several and delete them in one go. Deleting five or more asks you to type the dataset's name. Held snapshots are marked and can't be selected
+  - **Roll back**: always asks you to type the dataset's name, and warns how many newer snapshots will be destroyed with it
+  - **Clone** into a new dataset in the same pool
+  - **Copy name**
+- **Datasets** in the Storage tab, next to Pools and Disks: every dataset and zvol as a tree per pool, with space used, free space, quota and lock state
+- **Dataset page** with type, used and available space, quota, reservation, compression and ratio, record size, mount point, encryption and comments, plus its child datasets:
+  - **Edit quota and comments** (quota in GiB; 0 or empty for none)
+  - **Add dataset** inside it with the TrueNAS presets: Generic, SMB, NFS, Multiprotocol or Apps
+  - **Lock** an encrypted dataset (type its path to confirm)
+  - **Unlock** a passphrase-encrypted dataset
+  - **Delete** a dataset after a preview of what goes with it: child datasets, the number of snapshots, the shares, tasks and apps using it, and processes with files open on it. You type the full path to confirm
+
+### Security
+
+- The unlock passphrase is typed in a dialog that's blocked from screenshots and screen recording, is never saved (not even across a screen rotation), and is wiped from memory once it's sent to TrueNAS
+- Every action checks your TrueNAS roles and is hidden when your user doesn't have them or the server is in read-only mode. On TrueNAS 25.04, rolling back and cloning snapshots need a Full Admin user, as TrueNAS requires
+- Snapshot, task and dataset methods are picked for your TrueNAS version (`zfs.snapshot` on 25.04, `pool.snapshot` from 25.10)
+
 ## v0.5.0 (2026-10-19)
 
 Notifications: TrueCtrl can now tell you when something on your TrueNAS needs attention, without Google services.

@@ -12,6 +12,10 @@ import kotlinx.serialization.Serializable
 @Serializable data object AlertsRoute
 @Serializable data class PoolRoute(val id: Int)
 @Serializable data class DiskRoute(val name: String)
+@Serializable data class DatasetRoute(val id: String)
+
+/** Snapshots of [dataset], or a dataset picker when null. */
+@Serializable data class SnapshotsRoute(val dataset: String? = null)
 
 // Account and settings, opened from the profile picture
 @Serializable data object YouRoute

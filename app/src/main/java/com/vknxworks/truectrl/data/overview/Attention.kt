@@ -31,6 +31,11 @@ sealed interface AttentionItem {
         override val severity get() = Severity.WARNING
     }
 
+    /** A backup task (replication, cloud sync, rsync) whose last success is older than the limit. */
+    data class BackupStale(val task: TaskRun, val maxAgeDays: Int) : AttentionItem {
+        override val severity get() = Severity.WARNING
+    }
+
     data class TaskFailed(val task: TaskRun) : AttentionItem {
         override val severity get() = Severity.CRITICAL
     }
@@ -63,7 +68,12 @@ object Attention {
      * Everything that needs a look, most serious first. [poolWarnPercent] is the user's pool usage
      * warning; critical from 95 % or 10 points above it, whichever is lower.
      */
-    fun compute(s: OverviewSnapshot, poolWarnPercent: Int, now: Long = System.currentTimeMillis()): List<AttentionItem> {
+    fun compute(
+        s: OverviewSnapshot,
+        poolWarnPercent: Int,
+        now: Long = System.currentTimeMillis(),
+        backupMaxAgeDays: Int = 7,
+    ): List<AttentionItem> {
         val items = mutableListOf<AttentionItem>()
 
         val alerts = s.alerts.filter { !it.dismissed }.sortedWith(compareBy<AlertInfo> { it.severity.ordinal }.thenByDescending { it.atMs ?: 0 })
@@ -93,6 +103,10 @@ object Attention {
         }
 
         s.tasks.filter { it.enabled && it.failed }.forEach { items += AttentionItem.TaskFailed(it) }
+        s.tasks.filter {
+            it.enabled && it.kind != TaskKind.SNAPSHOT && !it.failed && (it.state == "FINISHED" || it.state == "SUCCESS") &&
+                it.atMs != null && now - it.atMs > backupMaxAgeDays * DAY_MS
+        }.forEach { items += AttentionItem.BackupStale(it, backupMaxAgeDays) }
         s.services.filter { it.enable && !it.running }.forEach { items += AttentionItem.ServiceStopped(it) }
         s.apps.filter { it.state == "CRASHED" }.forEach { items += AttentionItem.AppCrashed(it) }
         if (s.rebootReasons.isNotEmpty() || s.update?.applied == true) items += AttentionItem.RebootPending(s.rebootReasons)

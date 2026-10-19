@@ -104,7 +104,7 @@ fun OverviewScreen() {
     }
 
     val snapshot = state.snapshot
-    val attention = remember(snapshot, settings.poolWarnPercent) { Attention.compute(snapshot, settings.poolWarnPercent) }
+    val attention = remember(snapshot, settings.poolWarnPercent, settings.backupMaxAgeDays) { Attention.compute(snapshot, settings.poolWarnPercent, backupMaxAgeDays = settings.backupMaxAgeDays) }
     val open: (AttentionTarget) -> Unit = { target ->
         when (target) {
             AttentionTarget.ALERTS -> nav.navigate(AlertsRoute)

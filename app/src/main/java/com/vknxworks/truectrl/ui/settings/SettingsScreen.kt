@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.History
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.material.icons.filled.Notifications
 import com.vknxworks.truectrl.ui.components.GroupRow
 import com.vknxworks.truectrl.ui.nav.LocalNavigator
@@ -72,6 +74,12 @@ fun SettingsScreen() {
                     settings.poolWarnPercent,
                     icon = Icons.Filled.Storage,
                 ) { pct -> c.appScope.launch { c.settings.update { it.copy(poolWarnPercent = pct) } } }
+                GroupChoice(
+                    stringResource(R.string.backup_age_title),
+                    listOf(1, 2, 3, 7, 14, 30).map { it to pluralStringResource(R.plurals.backup_age_value, it, it) },
+                    settings.backupMaxAgeDays,
+                    icon = Icons.Filled.History,
+                ) { d -> c.appScope.launch { c.settings.update { it.copy(backupMaxAgeDays = d) } } }
             }
             if (c.telemetry.available) {
                 Group(stringResource(R.string.group_usage_stats), footer = stringResource(R.string.usage_stats_description)) {

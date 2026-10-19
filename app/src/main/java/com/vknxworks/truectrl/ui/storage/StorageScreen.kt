@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -61,6 +62,7 @@ import com.vknxworks.truectrl.ui.components.UsageBar
 import com.vknxworks.truectrl.ui.components.formatBytes
 import com.vknxworks.truectrl.ui.components.percent
 import com.vknxworks.truectrl.ui.components.usageColor
+import com.vknxworks.truectrl.ui.nav.DatasetRoute
 import com.vknxworks.truectrl.ui.nav.DiskRoute
 import com.vknxworks.truectrl.ui.nav.LocalNavigator
 import com.vknxworks.truectrl.ui.nav.PoolRoute
@@ -69,7 +71,7 @@ import kotlinx.coroutines.launch
 
 private const val POLL_MS = 30_000L
 
-/** Pools and disks. Datasets join this tab in a later version. */
+/** Pools, datasets and disks. */
 @Composable
 fun StorageScreen() {
     val c = LocalContext.current.container
@@ -83,9 +85,16 @@ fun StorageScreen() {
     var section by rememberSaveable { mutableStateOf(0) }
     var refreshing by remember { mutableStateOf(false) }
 
-    PollWhileVisible(listOf(server?.id, access.generation), POLL_MS) {
-        c.storage.refresh()
-        c.storage.state.value.error == null
+    val datasets by c.datasets.state.collectAsStateWithLifecycle()
+
+    PollWhileVisible(listOf(server?.id, access.generation, section == 1), POLL_MS) {
+        if (section == 1) {
+            c.datasets.refresh()
+            c.datasets.state.value.error == null
+        } else {
+            c.storage.refresh()
+            c.storage.state.value.error == null
+        }
     }
     val lifecycle = LocalLifecycleOwner.current
     LaunchedEffect(server?.id, access.generation, lifecycle) {
@@ -96,18 +105,21 @@ fun StorageScreen() {
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
         TabTitle(stringResource(R.string.tab_storage))
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = Gutter)) {
-            listOf(R.string.storage_pools, R.string.storage_disks).forEachIndexed { i, label ->
-                SegmentedButton(selected = section == i, onClick = { section = i }, shape = SegmentedButtonDefaults.itemShape(i, 2)) {
+            listOf(R.string.storage_pools, R.string.storage_datasets, R.string.storage_disks).forEachIndexed { i, label ->
+                SegmentedButton(selected = section == i, onClick = { section = i }, shape = SegmentedButtonDefaults.itemShape(i, 3)) {
                     Text(stringResource(label))
                 }
             }
         }
         Spacer(Modifier.height(4.dp))
-        val err = state.error
+        val err = if (section == 1) datasets.error else state.error
+        val updatedAt = if (section == 1) datasets.updatedAt else state.updatedAt
         if (!access.connected && access.error != null) {
             ConnectionBanner()
-        } else if (err != null && state.updatedAt > 0) {
-            StaleBanner(state.updatedAt, err, server?.host.orEmpty()) { scope.launch { c.storage.refresh() } }
+        } else if (err != null && updatedAt > 0) {
+            StaleBanner(updatedAt, err, server?.host.orEmpty()) {
+                scope.launch { if (section == 1) c.datasets.refresh() else c.storage.refresh() }
+            }
         }
         PullToRefreshBox(
             isRefreshing = refreshing,
@@ -115,7 +127,7 @@ fun StorageScreen() {
                 refreshing = true
                 scope.launch {
                     if (!access.connected) c.sessions.reconnect()
-                    c.storage.refresh()
+                    if (section == 1) c.datasets.refresh() else c.storage.refresh()
                     refreshing = false
                 }
             },
@@ -123,6 +135,34 @@ fun StorageScreen() {
         ) {
             val bottom = PaddingValues(bottom = LocalBottomClearance.current + 16.dp)
             when {
+                section == 1 && datasets.updatedAt == 0L -> EmptyState(
+                    Icons.Outlined.Folder,
+                    stringResource(if (access.loading || datasets.loading) R.string.overview_loading else R.string.overview_not_loaded),
+                    stringResource(R.string.storage_loading_body, server?.name.orEmpty()),
+                    Modifier.fillMaxSize().padding(bottom = LocalBottomClearance.current),
+                )
+                section == 1 && datasets.datasets.isEmpty() -> EmptyState(
+                    Icons.Outlined.Folder,
+                    stringResource(R.string.datasets_none),
+                    stringResource(R.string.datasets_none_body),
+                    Modifier.fillMaxSize().padding(bottom = LocalBottomClearance.current),
+                )
+                section == 1 -> LazyColumn(Modifier.fillMaxSize(), contentPadding = bottom) {
+                    val byPool = datasets.datasets.groupBy { it.pool }
+                    byPool.forEach { (pool, list) ->
+                        item(key = "ds-pool-$pool") {
+                            Surface(
+                                shape = MaterialTheme.shapes.large,
+                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
+                            ) {
+                                Column(Modifier.padding(vertical = 4.dp)) {
+                                    list.forEach { d -> DatasetTreeRow(d, level = d.depth) { nav.navigate(DatasetRoute(d.id)) } }
+                                }
+                            }
+                        }
+                    }
+                }
                 state.updatedAt == 0L -> EmptyState(
                     Icons.Outlined.Storage,
                     stringResource(if (access.loading || state.loading) R.string.overview_loading else R.string.overview_not_loaded),

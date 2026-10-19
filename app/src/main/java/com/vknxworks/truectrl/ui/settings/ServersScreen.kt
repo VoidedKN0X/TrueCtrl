@@ -116,6 +116,8 @@ fun ServersScreen() {
                     c.sessions.remove(server.id)
                     c.overview.forget(server.id)
                     c.storage.forget(server.id)
+                    c.datasets.forget(server.id)
+                    c.protection.forget(server.id)
                     com.vknxworks.truectrl.data.notify.CheckStore.forget(context, server.id)
                     com.vknxworks.truectrl.data.notify.Notifier.cancelServer(context, server.id)
                 }) { Text(stringResource(R.string.remove), color = MaterialTheme.colorScheme.error) }

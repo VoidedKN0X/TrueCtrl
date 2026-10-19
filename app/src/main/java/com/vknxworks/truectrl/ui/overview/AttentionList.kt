@@ -49,7 +49,7 @@ private const val COLLAPSED_COUNT = 5
 fun AttentionItem.target(): AttentionTarget = when (this) {
     is AttentionItem.Alert, is AttentionItem.MoreAlerts -> AttentionTarget.ALERTS
     is AttentionItem.PoolUnhealthy, is AttentionItem.PoolFull, is AttentionItem.ScrubErrors -> AttentionTarget.STORAGE
-    is AttentionItem.ScrubOverdue, is AttentionItem.TaskFailed -> AttentionTarget.PROTECTION
+    is AttentionItem.ScrubOverdue, is AttentionItem.TaskFailed, is AttentionItem.BackupStale -> AttentionTarget.PROTECTION
     is AttentionItem.ServiceStopped -> AttentionTarget.SHARING
     is AttentionItem.AppCrashed, is AttentionItem.UpdateAvailable, is AttentionItem.RebootPending -> AttentionTarget.SYSTEM
 }
@@ -87,6 +87,7 @@ private fun title(item: AttentionItem): String = when (item) {
     is AttentionItem.ScrubErrors -> pluralStringResource(R.plurals.att_scrub_errors, item.errors.toInt(), item.pool.name, item.errors.toInt())
     is AttentionItem.ScrubOverdue -> stringResource(R.string.att_scrub_overdue, item.pool.name)
     is AttentionItem.TaskFailed -> stringResource(R.string.att_task_failed, taskKind(item.task.kind), item.task.name)
+    is AttentionItem.BackupStale -> stringResource(R.string.att_backup_stale, taskKind(item.task.kind), item.task.name)
     is AttentionItem.ServiceStopped -> stringResource(R.string.att_service_stopped, serviceLabel(item.service.service))
     is AttentionItem.AppCrashed -> stringResource(R.string.att_app_crashed, item.app.name)
     is AttentionItem.UpdateAvailable -> item.version?.let { stringResource(R.string.att_update_version, it) } ?: stringResource(R.string.att_update)
@@ -105,6 +106,7 @@ private fun detail(item: AttentionItem): String? = when (item) {
     is AttentionItem.ScrubErrors -> stringResource(R.string.att_scrub_errors_detail)
     is AttentionItem.ScrubOverdue -> item.lastMs?.let { stringResource(R.string.att_scrub_last, relativeTime(it)) } ?: stringResource(R.string.att_scrub_never)
     is AttentionItem.TaskFailed -> listOfNotNull(item.task.error, item.task.atMs?.let { relativeTime(it) }).joinToString("  ·  ").takeIf { it.isNotBlank() }
+    is AttentionItem.BackupStale -> item.task.atMs?.let { stringResource(R.string.att_backup_stale_detail, relativeTime(it), item.maxAgeDays) }
     is AttentionItem.ServiceStopped -> stringResource(R.string.att_service_stopped_detail)
     is AttentionItem.AppCrashed -> stringResource(R.string.att_app_crashed_detail)
     is AttentionItem.UpdateAvailable -> stringResource(R.string.att_update_detail)

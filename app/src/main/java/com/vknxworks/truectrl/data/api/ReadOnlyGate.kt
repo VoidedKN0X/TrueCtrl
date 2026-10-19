@@ -24,6 +24,10 @@ object ReadOnlyGate {
         "alert.list",
         // Sends a test alert through an alert service; changes nothing.
         "alertservice.test",
+        // What deleting a dataset would affect (shown before asking).
+        "pool.dataset.snapshot_count",
+        "pool.dataset.attachments",
+        "pool.dataset.processes",
         // Job progress and results.
         "core.get_jobs",
         // Disk temperatures and graphs.

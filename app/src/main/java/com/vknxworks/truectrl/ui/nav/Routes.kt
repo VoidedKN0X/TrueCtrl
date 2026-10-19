@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
 @Serializable data object SharingRoute
 @Serializable data object SystemRoute
 
+@Serializable data object AlertsRoute
+
 // Account and settings, opened from the profile picture
 @Serializable data object YouRoute
 @Serializable data object SettingsRoute

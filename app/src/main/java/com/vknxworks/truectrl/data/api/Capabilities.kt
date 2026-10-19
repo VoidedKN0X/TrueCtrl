@@ -63,33 +63,9 @@ data class Capabilities(
          * docs, so asking per namespace keeps the download small.
          */
         val NAMESPACES = listOf(
-            "system", "pool", "pool.dataset", "pool.scrub", "pool.snapshot", "zfs.snapshot", "pool.snapshottask",
+            "system", "system.reboot", "pool", "pool.dataset", "pool.scrub", "pool.snapshot", "zfs.snapshot", "pool.snapshottask",
             "disk", "smart.test", "replication", "cloudsync", "rsynctask", "sharing.smb", "sharing.nfs",
             "service", "smb", "app", "alert", "update", "interface", "reporting",
         )
-    }
-}
-
-/** The basics from system.info, read leniently. */
-data class SystemInfo(
-    val hostname: String,
-    val version: String,
-    val model: String,
-    val cores: Int,
-    val physmem: Long,
-    val uptimeSeconds: Long,
-) {
-    companion object {
-        fun from(json: kotlinx.serialization.json.JsonElement?): SystemInfo? {
-            val o = json.obj() ?: return null
-            return SystemInfo(
-                hostname = o["hostname"].str().orEmpty(),
-                version = o["version"].str().orEmpty(),
-                model = o["model"].str().orEmpty(),
-                cores = o["cores"].long()?.toInt() ?: 0,
-                physmem = o["physmem"].long() ?: 0,
-                uptimeSeconds = o["uptime_seconds"].long() ?: 0,
-            )
-        }
     }
 }

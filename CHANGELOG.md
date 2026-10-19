@@ -4,6 +4,35 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.3.0 (2026-10-19)
+
+The Overview tab now shows your TrueNAS at a glance: what needs attention, live system graphs and your pools. Alerts get their own screen.
+
+### New
+
+- **Needs attention** list at the top of the Overview, most serious first, collapsed to five items with "Show all". It lists:
+  - Active TrueNAS alerts by severity. Warnings and errors are shown one by one; extra info alerts are folded into one line. SMART failures, disk temperatures and quota warnings come in this way
+  - Pools that aren't online or healthy
+  - Pools above your usage warning (80 % by default, under Settings › Warnings); critical from 95 % or 10 points above your level
+  - Scrubs that found errors, and scrubs that are overdue (no finished scrub within the schedule's threshold plus a week)
+  - Failed replication, periodic snapshot, cloud sync and rsync tasks, with TrueNAS's error
+  - Services set to start on boot that aren't running
+  - Apps that crashed
+  - A pending reboot, with the reasons TrueNAS gives
+  - An available TrueNAS update
+- Tapping an item opens where it can be dealt with: alerts open the Alerts screen, the rest open the matching tab
+- **System card** with hostname, uptime, TrueNAS version, CPU model and thread count, RAM in use, ZFS ARC size and hit rate, and CPU temperature when TrueNAS reports it
+- **Live graphs** for CPU, memory and network over the last 2 minutes, updated every 2 seconds while the Overview is on screen and stopped when you leave it
+- **Pools** with a usage bar (yellow from your warning level, red when critical), used, total and free space, and a running scrub or resilver with its progress. Tap to go to Storage
+- **Alerts screen** with every alert, active ones first. Tap one for the full text and its time. Dismiss it, or restore a dismissed one, when your user has the Alert List Write role and read-only mode is off
+- **Alerts update live**: new, changed and cleared alerts appear without refreshing
+- **Pull to refresh** on the Overview and Alerts, and the Overview refreshes every 30 seconds while it's open
+- **Works offline**: the last Overview is kept on the phone, so it shows right away when you open the app and stays visible, marked as stale with the reason, when TrueNAS can't be reached
+
+### Changed
+
+- The Overview reads only what your user may see and what your TrueNAS version offers. On TrueNAS 25.04 the update check asks the update server, so it runs once per connection and then every 6 hours; on 25.10 and newer it uses TrueNAS's own background check
+
 ## v0.2.3 (2026-10-19)
 
 A security and privacy check-up: read-only mode is now enforced for every request, sign-in screens are kept out of screenshots, and the connection to TrueNAS is locked to HTTPS even more strictly.

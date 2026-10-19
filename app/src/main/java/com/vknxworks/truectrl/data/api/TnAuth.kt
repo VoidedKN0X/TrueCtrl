@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl.data.api
 
+import com.vknxworks.truectrl.data.overview.SystemInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

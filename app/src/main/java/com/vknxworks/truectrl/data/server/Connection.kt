@@ -5,7 +5,7 @@ import com.vknxworks.truectrl.data.api.LoginResult
 import com.vknxworks.truectrl.data.api.ReadOnlyGate
 import com.vknxworks.truectrl.data.api.RpcEvent
 import com.vknxworks.truectrl.data.api.RpcSocket
-import com.vknxworks.truectrl.data.api.SystemInfo
+import com.vknxworks.truectrl.data.overview.SystemInfo
 import com.vknxworks.truectrl.data.api.TnAuth
 import com.vknxworks.truectrl.data.api.TnError
 import com.vknxworks.truectrl.data.api.httpFor
@@ -24,7 +24,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import com.vknxworks.truectrl.data.api.str
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 import okhttp3.OkHttpClient
 
 /** What the signed-in user may do, and the server's state, for the active server. */
@@ -37,6 +48,8 @@ data class Access(
     val loading: Boolean = true,
     /** Why the last attempt failed; cleared when connected. */
     val error: TnError? = null,
+    /** Goes up with every new signed-in socket, so subscriptions know to subscribe again. */
+    val generation: Int = 0,
 )
 
 /**
@@ -141,7 +154,10 @@ class Connection(
                 s.closed.await()
                 forward.cancel()
             }
-            _access.value = Access(capabilities = caps, info = info, connected = true, loading = false, error = null)
+            _access.value = Access(
+                capabilities = caps, info = info, connected = true, loading = false, error = null,
+                generation = _access.value.generation + 1,
+            )
             return s
         } catch (e: Throwable) {
             s.close()
@@ -167,6 +183,39 @@ class Connection(
             socket?.takeIf { it.isOpen } ?: throw (access.value.error ?: TnError.Unreachable(null))
         }
         return s.call(method, params)
+    }
+
+    /**
+     * Live updates for [event] (e.g. `alert.list` or `reporting.realtime:{"interval":2}`) while the
+     * flow is collected. Subscribes again after every reconnect and unsubscribes when collection
+     * stops. Nothing is emitted while disconnected; an event this user may not see ends quietly.
+     */
+    fun subscribe(event: String): Flow<RpcEvent> {
+        val shortName = event.substringBefore(':')
+        return access.map { if (it.connected) it.generation else -1 }.distinctUntilChanged().flatMapLatest { generation ->
+            if (generation < 0) {
+                emptyFlow()
+            } else {
+                channelFlow {
+                    // Listen first, so nothing sent right after subscribing is missed.
+                    val forward = launch {
+                        events.collect { e -> if (e.collection.substringBefore(':') == shortName) send(e) }
+                    }
+                    val id = runCatching { call("core.subscribe", listOf(JsonPrimitive(event))).str() }.getOrNull()
+                    if (id == null) {
+                        forward.cancel()
+                        return@channelFlow
+                    }
+                    try {
+                        awaitCancellation()
+                    } finally {
+                        withContext(NonCancellable) {
+                            runCatching { socket?.takeIf { it.isOpen }?.call("core.unsubscribe", listOf(JsonPrimitive(id))) }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private companion object {

@@ -47,7 +47,7 @@ import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.data.api.Capabilities
 import com.vknxworks.truectrl.data.api.LoginResult
 import com.vknxworks.truectrl.data.api.RpcSocket
-import com.vknxworks.truectrl.data.api.SystemInfo
+import com.vknxworks.truectrl.data.overview.SystemInfo
 import com.vknxworks.truectrl.data.api.TnAuth
 import com.vknxworks.truectrl.data.api.TnError
 import com.vknxworks.truectrl.data.api.TnVersion

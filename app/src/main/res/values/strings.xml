@@ -184,4 +184,90 @@
 
     <!-- Freshness -->
     <string name="stale_banner">Showing what TrueCtrl last saw %1$s. %2$s</string>
+
+    <!-- Common -->
+    <string name="close">Close</string>
+    <string name="percent">%1$d%%</string>
+    <string name="per_second">%1$s/s</string>
+    <string name="uptime_value">Up %1$s</string>
+    <string name="used_of">%1$s of %2$s</string>
+    <string name="label_mem">RAM</string>
+
+    <!-- Overview -->
+    <string name="overview_loading">Loading…</string>
+    <string name="overview_not_loaded">Not loaded yet</string>
+    <string name="overview_loading_body">Your pools, alerts and system health on %1$s show up here.</string>
+    <string name="system_title">System</string>
+    <string name="cpu_model_cores">%1$s, %2$d threads</string>
+    <string name="arc_size">ARC %1$s</string>
+    <string name="arc_size_hits">ARC %1$s, %2$d%% hits</string>
+    <string name="cpu_temp">CPU %1$s °C</string>
+    <string name="live_waiting">Waiting for live graphs…</string>
+    <string name="sparkline_cpu">CPU, last 2 minutes</string>
+    <string name="sparkline_mem">Memory, last 2 minutes</string>
+    <string name="sparkline_net">Network, last 2 minutes</string>
+    <string name="series_cpu">Usage</string>
+    <string name="series_used">Used</string>
+    <string name="series_in">In</string>
+    <string name="series_out">Out</string>
+    <string name="pools_title">Pools</string>
+    <string name="pool_usage">%1$s used of %2$s  ·  %3$s free</string>
+    <string name="pool_scrubbing">Scrub %1$d%%</string>
+    <string name="pool_resilvering">Resilver %1$d%%</string>
+    <plurals name="alerts_line">
+        <item quantity="one">%1$d active alert</item>
+        <item quantity="other">%1$d active alerts</item>
+    </plurals>
+    <plurals name="alerts_dismissed_line">
+        <item quantity="one">%1$d dismissed</item>
+        <item quantity="other">%1$d dismissed</item>
+    </plurals>
+
+    <!-- Attention list -->
+    <string name="attention_title">Needs attention</string>
+    <string name="attention_all_good">All good</string>
+    <string name="attention_all_good_body">Nothing needs your attention on %1$s right now.</string>
+    <string name="attention_show_all">Show all %1$d</string>
+    <string name="attention_show_less">Show less</string>
+    <string name="sev_critical">Critical</string>
+    <string name="sev_warning">Warning</string>
+    <string name="sev_info">Info</string>
+    <plurals name="att_more_alerts">
+        <item quantity="one">%1$d more info alert</item>
+        <item quantity="other">%1$d more info alerts</item>
+    </plurals>
+    <string name="att_pool_unhealthy">Pool %1$s is %2$s</string>
+    <string name="att_pool_unhealthy_detail">Check the pool\'s disks under Storage.</string>
+    <string name="att_pool_full">Pool %1$s is %2$d%% full</string>
+    <string name="att_pool_full_detail">%1$s used of %2$s</string>
+    <plurals name="att_scrub_errors">
+        <item quantity="one">The last scrub of %1$s found %2$d error</item>
+        <item quantity="other">The last scrub of %1$s found %2$d errors</item>
+    </plurals>
+    <string name="att_scrub_errors_detail">ZFS found damaged data. Check the pool and its disks.</string>
+    <string name="att_scrub_overdue">Scrub of %1$s is overdue</string>
+    <string name="att_scrub_last">Last scrub finished %1$s</string>
+    <string name="att_scrub_never">No finished scrub found</string>
+    <string name="att_task_failed">%1$s failed: %2$s</string>
+    <string name="task_replication">Replication</string>
+    <string name="task_snapshot">Snapshot task</string>
+    <string name="task_cloud_sync">Cloud sync</string>
+    <string name="task_rsync">Rsync</string>
+    <string name="att_service_stopped">%1$s is stopped</string>
+    <string name="att_service_stopped_detail">It\'s set to start on boot, but isn\'t running.</string>
+    <string name="att_app_crashed">App %1$s crashed</string>
+    <string name="att_app_crashed_detail">Check the app\'s logs under System.</string>
+    <string name="att_update">TrueNAS update available</string>
+    <string name="att_update_version">TrueNAS %1$s is available</string>
+    <string name="att_update_detail">Updating restarts TrueNAS.</string>
+    <string name="att_reboot">Reboot pending</string>
+    <string name="att_reboot_detail">TrueNAS needs a restart to finish applying changes.</string>
+
+    <!-- Alerts -->
+    <string name="alerts_title">Alerts</string>
+    <string name="alerts_none">No alerts</string>
+    <string name="alerts_none_body">%1$s has no alerts right now.</string>
+    <string name="alert_dismiss">Dismiss</string>
+    <string name="alert_restore">Restore</string>
+    <string name="alert_dismissed">Dismissed</string>
 </resources>

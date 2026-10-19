@@ -20,6 +20,8 @@ object ReadOnlyGate {
         "core.unsubscribe",
         // 25.04's update check: asks the update server, changes nothing.
         "update.check_available",
+        // The active and dismissed alerts (the Overview and the Alerts screen).
+        "alert.list",
     )
 
     /** Last name segments that only read: `<namespace>.query`, `.get_instance`, `.config` and so on. */

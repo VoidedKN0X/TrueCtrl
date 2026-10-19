@@ -65,6 +65,7 @@ import com.vknxworks.truectrl.ui.settings.ServersScreen
 import com.vknxworks.truectrl.ui.setup.SetupScreen
 import com.vknxworks.truectrl.ui.components.LocalBottomClearance
 import com.vknxworks.truectrl.ui.components.LocalHazeState
+import com.vknxworks.truectrl.ui.overview.AlertsScreen
 import com.vknxworks.truectrl.ui.overview.OverviewScreen
 import com.vknxworks.truectrl.ui.protection.ProtectionScreen
 import com.vknxworks.truectrl.ui.settings.SettingsScreen
@@ -232,6 +233,8 @@ private fun AppNavHost(navController: NavHostController) {
         composable<ProtectionRoute> { ProtectionScreen() }
         composable<SharingRoute> { SharingScreen() }
         composable<SystemRoute> { SystemScreen() }
+
+        composable<AlertsRoute> { AlertsScreen() }
 
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }

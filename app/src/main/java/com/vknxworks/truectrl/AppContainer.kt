@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.vknxworks.truectrl.data.overview.OverviewRepository
 import com.vknxworks.truectrl.data.server.ServerStore
 import com.vknxworks.truectrl.data.server.Sessions
 import com.vknxworks.truectrl.data.settings.SettingsRepository
@@ -47,6 +48,7 @@ class AppContainer(val context: Context) {
 
     val serverStore = ServerStore(context)
     val sessions = Sessions(serverStore, http, appScope)
+    val overview = OverviewRepository(context, sessions, appScope)
 
     init {
         // One live connection while the app is on screen; background checks come later with WorkManager.

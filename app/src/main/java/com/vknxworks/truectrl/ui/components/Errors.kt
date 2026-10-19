@@ -28,7 +28,8 @@ fun errorMessage(context: Context, e: Throwable, host: String): String {
     }
     // TrueNAS's own wording helps for permission and server errors; network errors' detail is noise.
     val detail = when (e) {
-        is TnError.Forbidden, is TnError.Call, is TnError.Denied -> e.detail
+        // What the server actually answered, so a wrong address or proxy is easy to spot.
+        is TnError.Forbidden, is TnError.Call, is TnError.Denied, is TnError.NotTrueNas -> e.detail
         is TnError.MethodMissing -> e.method
         else -> null
     }

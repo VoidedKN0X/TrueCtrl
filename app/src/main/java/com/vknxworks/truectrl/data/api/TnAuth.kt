@@ -36,18 +36,26 @@ object TnAuth {
         try {
             http.newCall(request).execute().use { response ->
                 val text = response.body?.string().orEmpty()
+                val code = response.code
                 when {
                     response.isSuccessful -> {
                         val list = runCatching { TnJson.parseToJsonElement(text).arr() }.getOrNull()
-                            ?: throw TnError.NotTrueNas(null)
+                            ?: throw TnError.NotTrueNas("HTTP $code, ${describe(response.header("Content-Type"), text)}")
                         list.mapNotNull { it.str() }
                     }
+                    // TrueNAS 24.10 and older have no /api route: their web server redirects unknown
+                    // paths to the web UI (/ui/). Redirects are never followed.
+                    code in 300..399 -> {
+                        val location = response.header("Location").orEmpty()
+                        if (location.contains("/ui")) throw TnError.RestOnly()
+                        throw TnError.NotTrueNas("HTTP $code → ${location.ifBlank { "?" }}")
+                    }
                     // A reverse proxy answers 502/503/504 while TrueNAS itself is down or rebooting.
-                    response.code >= 500 -> throw TnError.Unreachable(IOException("HTTP ${response.code}"))
+                    code >= 500 -> throw TnError.Unreachable(IOException("HTTP $code"))
                     // No /api/versions: an older TrueNAS that only has the REST API, or not TrueNAS at all.
                     // TrueCtrl never calls the REST API, so it doesn't probe further.
-                    response.code == 404 -> throw TnError.RestOnly()
-                    else -> throw TnError.NotTrueNas("HTTP ${response.code}")
+                    code == 404 -> throw TnError.RestOnly()
+                    else -> throw TnError.NotTrueNas("HTTP $code")
                 }
             }
         } catch (e: IOException) {
@@ -55,12 +63,19 @@ object TnAuth {
         }
     }
 
+    /** A short, safe description of an unexpected answer, shown in the error to help find the cause. */
+    private fun describe(contentType: String?, text: String): String {
+        val type = contentType?.substringBefore(';')?.trim().orEmpty().ifBlank { "no content type" }
+        val start = text.trim().take(40).replace(Regex("\\s+"), " ")
+        return if (start.isEmpty()) "$type, empty" else "$type: $start…"
+    }
+
     /** The newest API version the server offers; null when none can be read. */
     fun newest(versions: List<String>): TnVersion? = versions.mapNotNull { TnVersion.parse(it) }.maxOrNull()
 
     /** Throws [TnError.Unsupported] when the server is older than TrueCtrl supports. */
     fun requireSupported(versions: List<String>): TnVersion {
-        val newest = newest(versions) ?: throw TnError.NotTrueNas(null)
+        val newest = newest(versions) ?: throw TnError.NotTrueNas("versions: ${versions.joinToString().ifBlank { "none" }}")
         if (newest < TnVersion.MINIMUM) throw TnError.Unsupported(newest.label)
         return newest
     }

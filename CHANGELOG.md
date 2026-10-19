@@ -4,6 +4,18 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.2.1 (2026-10-19)
+
+Clearer errors when adding a server that TrueCtrl can't use.
+
+### Fixed
+
+- **TrueNAS 24.10 and older** were reported as "answered, but not like a TrueNAS server". Those versions send unknown addresses to the web UI instead of answering, and TrueCtrl now recognises that. It says the server runs a TrueNAS that only has the old REST API and needs updating to 25.04 or newer
+
+### Changed
+
+- **"Not like a TrueNAS server" errors now show what the server actually answered**, such as the HTTP status, where it redirected to, or the start of the page it sent. That makes a wrong address, a wrong port or a reverse proxy in the way easy to spot
+
 ## v0.2.0 (2026-10-19)
 
 TrueCtrl now connects to your TrueNAS: add a server, sign in, and see exactly what your user is allowed to do. The tabs themselves are filled in from the next version on.

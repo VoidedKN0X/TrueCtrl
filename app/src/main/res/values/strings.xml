@@ -28,7 +28,7 @@
     <string name="you_not_connected">Not connected</string>
     <string name="you_not_connected_body">Add your TrueNAS server to get started.</string>
     <string name="settings">Settings</string>
-    <string name="settings_subtitle">Appearance and warnings</string>
+    <string name="settings_subtitle">Appearance, warnings and usage stats</string>
     <string name="support_title">Support TrueCtrl</string>
     <string name="support_subtitle">TrueCtrl is free and open source. Sponsor development on GitHub</string>
     <string name="source_title">Source code and issues</string>
@@ -51,6 +51,15 @@
     <string name="group_warnings">Warnings</string>
     <string name="pool_warn_title">Pool usage warning</string>
     <string name="pool_warn_subtitle">From %1$d%% full</string>
+    <!-- Settings: usage stats -->
+    <string name="group_usage_stats">Usage stats</string>
+    <string name="usage_stats_switch">Share anonymous usage stats</string>
+    <string name="usage_stats_switch_subtitle">Helps decide what to improve next</string>
+    <string name="usage_stats_description">Which tabs and screens you open, how you set up a server (API key or password, pinned certificate or not), your theme, the app version, Android version, phone model and language. Never your server address, hostname, username, or the names of pools, datasets, shares or apps. Sent to VKNXWorks\' own server, not to any analytics company.</string>
+    <string name="usage_stats_prompt_title">Help improve TrueCtrl?</string>
+    <string name="usage_stats_prompt_body">Share anonymous usage stats so I can see which features people use and which Android versions to support.\n\n%1$s\n\nYou can change this any time in Settings.</string>
+    <string name="usage_stats_share">Share stats</string>
+    <string name="usage_stats_no_thanks">No thanks</string>
 
     <!-- Server setup -->
     <string name="setup_title">Add your TrueNAS server</string>

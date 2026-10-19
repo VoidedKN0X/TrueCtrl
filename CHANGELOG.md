@@ -4,6 +4,25 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.2.2 (2026-10-19)
+
+Optional anonymous usage stats, so it's clear which parts of TrueCtrl people use.
+
+### New
+
+- **Optional anonymous usage stats.** After you add your first server, TrueCtrl asks once whether you'd like to share anonymous usage stats. Nothing is sent unless you tap **Share stats**, and you can switch it on or off any time in **Settings > Usage stats**
+- **What's shared:** which tabs and screens you open (for example "Storage" or "Settings", never which pool, dataset, share or app), how a server was set up (API key or password, two-factor or not, pinned or trusted certificate, read-only mode on or off), your theme setting, the app version, Android version, phone model, language, and phone or tablet
+- **What's never shared:** your server address, hostname or IP, username, API key or password, the names of pools, datasets, shares, apps or anything else on your TrueNAS, or any ID that follows you between sessions. Each session gets a new random ID, and stats from before and after you switch them off and on again aren't linked
+- **Where it goes:** to VKNXWorks' own self-hosted server (Aptabase), not to Google or any analytics company. Stats that can't be sent are dropped, never saved for later. Builds you make from source can't send stats at all, and the setting doesn't appear in them
+
+### Security
+
+- The usage stats use their own connection with your phone's normal certificate checks. A self-signed TrueNAS certificate you trusted is only ever accepted from that TrueNAS, never for the stats server, and the stats connection never carries your sign-in
+
+### Changed
+
+- The README has a new **Usage stats** section listing exactly what's collected
+
 ## v0.2.1 (2026-10-19)
 
 Clearer errors when adding a server that TrueCtrl can't use.

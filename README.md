@@ -101,6 +101,16 @@ By default TrueCtrl checks your server in the background every so often. For ins
 
 Server-unreachable and threshold notifications (like pool usage above your own limit) can't come from TrueNAS itself, so TrueCtrl keeps a light background check for those either way.
 
+## Usage stats
+
+TrueCtrl can share anonymous usage stats, **only if you say yes**. It asks once after you've added your first server, and you can change it any time in **Settings > Usage stats**.
+
+- **Shared:** which tabs and screens you open (the kind of screen, never which pool, dataset, share or app), how a server was set up (API key or password, two-factor or not, pinned or trusted certificate, read-only mode on or off), your theme setting, the app version, Android version, phone model, language, and phone or tablet.
+- **Never shared:** your server address, hostname or IP, username, API key or password, the names of pools, datasets, shares, apps or anything else on your TrueNAS, or any ID that stays the same between sessions.
+- **Where:** VKNXWorks' own self-hosted [Aptabase](https://aptabase.com) server. Nothing goes to Google or analytics companies. Like any website, the server sees your IP address; Aptabase uses it only to work out the country and doesn't store it. The stats use their own connection with your phone's normal certificate checks; certificates you trusted for your TrueNAS are never used for it.
+
+Builds from source don't include the stats key, so they can't send anything and the setting is hidden. The code is in [`Telemetry.kt`](app/src/main/java/com/vknxworks/truectrl/data/telemetry/Telemetry.kt).
+
 ## Build from source
 
 You need [Android Studio](https://developer.android.com/studio), or JDK 17 and the Android SDK.

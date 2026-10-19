@@ -4,10 +4,18 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## v0.4.1 (2026-10-19)
+
+TrueCtrl is now completely Google-free. Nothing changes in how you use it.
+
+### Privacy
+
+- **Emoji no longer make TrueCtrl ask Google for a font.** A standard Android library inside the app asked Google Play services for a downloadable emoji font every time TrueCtrl started, which could make Google Play services fetch that font from Google. This lookup is now switched off: emoji are drawn with your phone's own emoji font. On phones without Google Play services nothing changes; on other phones, emoji can look slightly different if the phone's built-in emoji font is older.
+- **Checked: TrueCtrl is Google-free.** It contains no Google Play services, Firebase, ML Kit, Google Cast or Play Core, and it doesn't load fonts or anything else from Google's servers. It also never switches server addresses by itself: it always uses the address you set up, and only you can change it.
 
 ### Changed
 
+- **README: new Google-free line** under Requirements: works without Google Play services, contains no Google libraries that contact Google, and draws emoji with your phone's own emoji font.
 - **README brought up to date with 0.4.0.** Datasets and zvols, the Protection, Sharing and System tabs, notifications and the home screen widgets and Quick Settings tile aren't in the app yet, so they moved from the feature list to a new **Planned** section, and the ntfy push setup steps were taken out until notifications arrive. The feature list now describes what's there: the Overview, live alerts, pools and scrubs, disks with temperatures, graphs and SMART health, several servers, the offline view, and the blank recent-apps preview and encrypted API keys and passwords. The roles table now lists only the roles the app uses today (`READONLY_ADMIN`, `POOL_WRITE`, `ALERT_LIST_WRITE`, and Full Admin for SMART self-tests on 25.04), with the others in a separate table for planned features. There's a new **Getting started** section, the CtrlF-Droid badge and link in Install, and a line saying TrueCtrl only connects to your own TrueNAS besides the opt-in stats. No change to the app itself
 
 ## v0.4.0 (2026-10-19)

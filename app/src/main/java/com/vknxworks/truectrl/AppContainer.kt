@@ -9,6 +9,7 @@ import com.vknxworks.truectrl.data.overview.OverviewRepository
 import com.vknxworks.truectrl.data.server.ServerStore
 import com.vknxworks.truectrl.data.protection.ProtectionRepository
 import com.vknxworks.truectrl.data.sharing.SharingRepository
+import com.vknxworks.truectrl.data.system.SystemRepository
 import com.vknxworks.truectrl.data.storage.DatasetRepository
 import com.vknxworks.truectrl.data.storage.StorageRepository
 import com.vknxworks.truectrl.data.server.Sessions
@@ -59,6 +60,7 @@ class AppContainer(val context: Context) {
     val datasets = DatasetRepository(context, sessions, appScope)
     val protection = ProtectionRepository(context, sessions, appScope)
     val sharing = SharingRepository(context, sessions, appScope)
+    val system = SystemRepository(sessions)
 
     init {
         // One live connection while the app is on screen; background checks run in NotifyWorker.

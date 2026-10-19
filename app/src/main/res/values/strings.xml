@@ -744,4 +744,149 @@
     <string name="service_stop_body">Everything using this service is disconnected until it\'s started again. If it\'s set to start on boot, it starts again after the next reboot.</string>
     <string name="service_restart_title">Restart %1$s?</string>
     <string name="service_restart_body">Connected clients are disconnected for a moment while the service restarts.</string>
+    <!-- System tab -->
+    <string name="system_this_server">This server</string>
+    <string name="system_uptime">Up %1$s</string>
+    <string name="system_memory">%1$s memory</string>
+    <plurals name="cpu_cores">
+        <item quantity="one">%d core</item>
+        <item quantity="other">%d cores</item>
+    </plurals>
+    <string name="system_apps">Apps</string>
+    <string name="system_apps_sub">%1$d of %2$d running</string>
+    <plurals name="apps_crashed">
+        <item quantity="one">%d crashed</item>
+        <item quantity="other">%d crashed</item>
+    </plurals>
+    <plurals name="apps_upgrades">
+        <item quantity="one">%d upgrade</item>
+        <item quantity="other">%d upgrades</item>
+    </plurals>
+    <plurals name="alerts_active">
+        <item quantity="one">%d active alert</item>
+        <item quantity="other">%d active alerts</item>
+    </plurals>
+    <string name="system_jobs">Jobs</string>
+    <string name="system_jobs_sub">What TrueNAS is doing, with progress</string>
+    <string name="system_updates">Updates</string>
+    <string name="system_up_to_date">Up to date</string>
+    <string name="system_network">Network</string>
+    <string name="system_network_sub">Interfaces, addresses and live traffic</string>
+    <string name="system_power">Power</string>
+    <string name="power_admin_only">Rebooting and shutting down need a Full Admin user.</string>
+    <string name="power_reboot">Reboot</string>
+    <string name="power_reboot_sub">Restart TrueNAS</string>
+    <string name="power_reboot_title">Reboot %1$s?</string>
+    <string name="power_reboot_body">%1$s restarts now. Shares, apps and VMs are unavailable until it\'s back, usually a few minutes.</string>
+    <string name="power_reboot_done">Rebooting. TrueCtrl reconnects when it\'s back.</string>
+    <string name="power_shutdown">Shut down</string>
+    <string name="power_shutdown_sub">Turn TrueNAS off</string>
+    <string name="power_shutdown_title">Shut down %1$s?</string>
+    <string name="power_shutdown_body">%1$s turns off now. Shares, apps and VMs stay unavailable until it\'s started again.</string>
+    <string name="power_shutdown_proxmox">It runs as Proxmox VM %1$d: start it again from ProxCtrl or the Proxmox web UI. TrueCtrl can\'t start it.</string>
+    <string name="power_shutdown_physical">TrueCtrl can\'t start it again: you\'ll need to press the power button, use IPMI, or start its VM if it runs in one.</string>
+    <string name="power_shutdown_done">Shutting down</string>
+    <string name="proxmox_vm">Proxmox VM</string>
+    <string name="proxmox_vm_none">Not set. Set it if this TrueNAS runs as a Proxmox VM</string>
+    <string name="proxmox_vm_set">VM %1$d</string>
+    <string name="proxmox_vm_body">If this TrueNAS runs as a Proxmox VM, enter its VM ID. TrueCtrl then offers to open it in ProxCtrl, for example to start it again after a shutdown. Leave it empty if it doesn\'t.</string>
+    <string name="proxmox_vm_id">VM ID</string>
+    <string name="open_in_proxctrl">Open in ProxCtrl</string>
+    <string name="open_in_proxctrl_sub">VM %1$d</string>
+
+    <!-- Apps -->
+    <string name="apps_failed">Couldn\'t load apps</string>
+    <string name="apps_none">No apps</string>
+    <string name="apps_none_body">No apps are installed on this server.</string>
+    <string name="apps_role_hint">Starting, stopping and upgrading apps needs the Apps Write role.</string>
+    <string name="app_running">Running</string>
+    <string name="app_state_stopped">Stopped</string>
+    <string name="app_deploying">Deploying</string>
+    <string name="app_stopping">Stopping</string>
+    <string name="app_crashed">Crashed</string>
+    <string name="app_upgrade_to">Upgrade to %1$s</string>
+    <string name="app_image_updates">Image updates</string>
+    <string name="app_open_portal">Open %1$s</string>
+    <string name="app_start">Start</string>
+    <string name="app_stop">Stop</string>
+    <string name="app_redeploy">Redeploy</string>
+    <string name="app_redeploy_sub">Pull newer images and restart</string>
+    <string name="app_upgrade">Upgrade</string>
+    <string name="app_logs">Logs: %1$s</string>
+    <string name="app_stop_title">Stop %1$s?</string>
+    <string name="app_stop_body">The app stops until you start it again. Anything using it loses access.</string>
+    <string name="app_redeploy_title">Redeploy %1$s?</string>
+    <string name="app_redeploy_body">The app is stopped, its images are pulled again and it\'s started with its current settings.</string>
+    <string name="app_upgrade_title">Upgrade %1$s?</string>
+    <string name="app_upgrade_body">The app is upgraded to the latest version and restarted. Upgrades can\'t always be undone; TrueNAS may keep a snapshot of the app\'s data if it\'s set to.</string>
+    <string name="app_started">%1$s started</string>
+    <string name="app_stopped">%1$s stopped</string>
+    <string name="app_redeployed">%1$s redeployed</string>
+    <string name="app_upgraded">%1$s upgraded</string>
+    <string name="logs_waiting">Waiting for log lines…</string>
+    <string name="logs_pause">Stop following</string>
+    <string name="logs_follow">Follow new lines</string>
+
+    <!-- Jobs -->
+    <string name="jobs_failed">Couldn\'t load jobs</string>
+    <string name="jobs_none">No jobs</string>
+    <string name="jobs_none_body">TrueNAS hasn\'t run any jobs since it started.</string>
+    <string name="jobs_running">Running</string>
+    <string name="jobs_recent">Recent</string>
+    <string name="job_state_aborted">Stopped</string>
+    <string name="job_state_waiting">Waiting</string>
+    <string name="job_abort">Stop</string>
+    <string name="job_abort_title">Stop this job?</string>
+    <string name="job_abort_body">%1$s is stopped where it is. Some jobs leave things half done when stopped.</string>
+    <string name="job_aborted">Job stopped</string>
+
+    <!-- Updates -->
+    <string name="update_current">Installed version</string>
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_check_failed">Couldn\'t check for updates</string>
+    <string name="update_available_sub">A newer TrueNAS version is available for your update profile.</string>
+    <string name="update_reboot_pending">Reboot to finish the update.</string>
+    <string name="update_release_notes">Release notes</string>
+    <string name="update_downloading">Downloading</string>
+    <string name="update_install">Install update</string>
+    <string name="update_role_hint">Installing updates needs the System Update Write role.</string>
+    <string name="update_confirm_title">Install TrueNAS %1$s?</string>
+    <string name="update_confirm_body">TrueNAS downloads and installs the update as a new boot environment, so you can go back to the current version from the TrueNAS web UI. The new version runs after a reboot; shares, apps and VMs are unavailable while it reboots.</string>
+    <string name="update_reboot_after">Reboot automatically when it\'s installed</string>
+    <string name="update_started">Update started. It runs after the next reboot.</string>
+    <string name="update_started_reboot">Update started. TrueNAS reboots when it\'s installed.</string>
+
+    <!-- Network -->
+    <string name="network_failed">Couldn\'t load network interfaces</string>
+    <string name="network_none">No network interfaces</string>
+    <string name="network_link_up">Link up</string>
+    <string name="network_link_down">Link down</string>
+    <string name="network_speed">%1$d Mb/s</string>
+    <string name="network_mtu">MTU %1$d</string>
+    <string name="network_addresses">Addresses</string>
+    <string name="network_dhcp">Address from DHCP</string>
+    <string name="network_traffic">Traffic now</string>
+    <string name="network_rx_tx">↓ %1$s   ↑ %2$s</string>
+
+    <!-- Shell -->
+    <string name="shell_title">Shell</string>
+    <string name="shell_sub">The TrueNAS command line</string>
+    <string name="shell_title_on">Shell · %1$s</string>
+    <string name="console_closed">The shell was closed.</string>
+    <string name="console_reconnect">Connect again</string>
+    <string name="console_font_smaller">Smaller text</string>
+    <string name="console_font_bigger">Bigger text</string>
+    <string name="console_rotate">Rotate</string>
+    <string name="console_keyboard">Keyboard</string>
+    <string name="console_paste">Paste</string>
+    <string name="paste_empty">Nothing to paste</string>
+    <string name="key_esc">Esc</string>
+    <string name="key_tab">Tab</string>
+    <string name="key_ctrl">Ctrl</string>
+    <string name="key_alt">Alt</string>
+    <string name="key_home">Home</string>
+    <string name="key_end">End</string>
+    <string name="key_pgup">PgUp</string>
+    <string name="key_pgdn">PgDn</string>
+    <string name="key_del">Del</string>
 </resources>

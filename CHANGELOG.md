@@ -4,6 +4,30 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.8.0 (2026-10-19)
+
+System: apps, jobs, updates, network, power and the TrueNAS shell.
+
+### New
+
+- **System tab** replaces the placeholder. It shows the server (hostname, TrueNAS version, uptime, CPU, cores and memory) and links to everything below, each with a one-line status
+- **Apps**: every installed app with its state, version, available upgrade and image updates. Crashed apps show in red
+  - Tap an app to **open its web UI**, **start**, **stop**, **redeploy** (pull newer images and restart) or **upgrade** it. Stopping, redeploying and upgrading ask first; a spinner shows while TrueNAS works on it
+  - **Live logs** for each container of an app, following new lines as they arrive (last 500 lines to start with; the text can be selected and copied). Stop following to scroll back
+- **Jobs**: what TrueNAS is doing and has done recently, with live progress bars and the error when a job failed. Running jobs that allow it can be **stopped**
+- **Updates**: the installed version, whether a newer one is available for your update profile, release notes, and download progress
+  - **Install update** (with the System Update Write role): type the server's hostname to confirm, and choose whether TrueNAS reboots automatically once it's installed. TrueCtrl uses `update.run` on 25.10 and newer and `update.update` on 25.04
+- **Network**: each interface with link state, type, speed, MTU, addresses (and whether they come from DHCP) and live download and upload rates
+- **Shell**: the TrueNAS command line, full screen, with an extra-keys bar (Esc, Tab, Ctrl, Alt, arrows, Home/End, PgUp/PgDn, Del, paste), bigger and smaller text, and rotation. Only shown when your TrueNAS user has the web shell privilege and read-only mode is off
+- **Power**: **reboot** and **shut down** (Full Admin only). Both ask you to type the hostname; the shutdown dialog says how to start the server again
+- **Proxmox VM**: if your TrueNAS runs as a Proxmox VM, enter its VM ID under System › Power. TrueCtrl then shows **Open in ProxCtrl** (when ProxCtrl is installed), which opens that VM in ProxCtrl, for example to start it again after a shutdown
+
+### Security
+
+- The shell signs in with a one-minute token instead of your API key or password, goes through the same certificate pin as the rest of the app, and blocks screenshots and screen recording while it's open. Its page only loads files bundled with the app and can't reach the network itself
+- Switching on read-only mode closes an open shell
+- TrueCtrl asks Android only whether ProxCtrl is installed; it can't see your other apps
+
 ## v0.7.0 (2026-10-19)
 
 Sharing: your SMB and NFS shares and the services behind them.

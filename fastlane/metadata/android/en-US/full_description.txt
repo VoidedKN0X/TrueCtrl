@@ -1,0 +1,13 @@
+<p>Monitor and manage your TrueNAS server (25.04 or newer) from your phone: a fast, touch-first alternative to the web UI.</p>
+<ul>
+<li>Overview with a needs-attention list, system card and live graphs</li>
+<li>Live alerts with dismiss and restore</li>
+<li>Pools with health, space and layout</li>
+<li>Start, pause, resume and stop scrubs with live progress</li>
+<li>Disks with temperatures, graphs and SMART health</li>
+<li>Several servers, API key or password with two-factor</li>
+<li>Read-only mode, certificate pinning and screenshot blocking</li>
+</ul>
+<p>Needs HTTPS on your TrueNAS (a self-signed certificate is fine). Unofficial app, not affiliated with iXsystems.</p>
+<p>Google-free and de-Googled: no Google Play services, Firebase or other Google services, and the app never contacts Google. It works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps).</p>
+<p>Telemetry-free: no analytics, crash reporting, usage stats or tracking of any kind.</p>

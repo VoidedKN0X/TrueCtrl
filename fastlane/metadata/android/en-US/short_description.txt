@@ -1,0 +1,1 @@
+Monitor your TrueNAS pools, disks, scrubs and alerts from your phone

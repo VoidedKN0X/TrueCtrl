@@ -171,7 +171,7 @@ fun AppsScreen() {
                 val idle = app.name !in busy
                 app.portals.forEach { (name, url) ->
                     GroupRow(stringResource(R.string.app_open_portal, name), url, Icons.Outlined.Language, onClick = {
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                        runCatching { com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                     })
                 }
                 if (canWrite && idle) {

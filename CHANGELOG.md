@@ -4,6 +4,29 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.10.2 (2026-10-21)
+
+The app lock now works the same way in every Ctrl app, using the strongest of the options compared.
+
+### Changed
+
+- **The app lock has its own PIN**, separate from your phone's screen lock. It needs at least 6 digits, and very obvious ones (like 111111 or 123456) are refused. Someone who knows or has seen your phone's PIN can't open TrueCtrl with it
+- **Updating with the app lock already on**: the first time you open TrueCtrl, unlock once more with your fingerprint, face or screen lock as before, then choose your app PIN. This step can't be skipped. If your phone no longer has a screen lock, TrueCtrl goes straight to choosing the PIN
+- **Optional fingerprint unlock** (Settings › Security › Unlock with fingerprint). It only accepts strong biometrics such as the fingerprint sensor, not face unlock that only uses the camera, which a photo can sometimes fool. The PIN is still needed after the phone restarts and at least every 72 hours, the same as Android does for your screen lock
+- **Choose when the lock asks again** (Settings › Security › Lock again): as soon as you leave the app (the default, and how TrueCtrl always worked), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts
+- **Opening a link, ProxCtrl, ntfy or Android's settings from TrueCtrl no longer counts as leaving the app**, so you don't have to unlock again when you come back from them. Going to the home screen or another app yourself still does
+- **Change app PIN** is in Settings › Security and asks for your current PIN first. Turning the app lock off also asks for the PIN
+- **The screen you were on stays as it was** behind the lock screen, so a half-filled form is still there after unlocking. Screen readers can't read it while locked
+
+### Security
+
+- **Your saved API keys and passwords are encrypted with your PIN while TrueCtrl is locked.** The key that decrypts them only exists in memory while the app is unlocked and is wiped the moment it locks, and the connection to TrueNAS is closed until you unlock. A locked app, or a copy of its files, can't use your sign-in
+- **Exception, so notifications keep working**: background checks (and checks started by a push from TrueNAS) have to sign in while the app is locked. While either is turned on under Settings › Notifications, your API keys and passwords stay encrypted with the Android Keystore only, as before; Settings › Security says so. Turn both off and they are sealed with your PIN again the next time you unlock
+- **The PIN can't be guessed off the phone.** It's never stored: it's stretched with 600,000 rounds of PBKDF2 and mixed with a secret held in the phone's secure hardware (StrongBox where available), so copying TrueCtrl's files to a computer isn't enough to try PINs there
+- **Wrong PINs lock the screen**: after 5 tries you wait 30 seconds, doubling with every further 5 wrong tries up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't reset the wait
+- **Fingerprint unlock can't be faked**: the fingerprint has to unlock a key in the phone's secure hardware, so a tampered "success" on a rooted phone doesn't open the app. Adding a new fingerprint turns fingerprint unlock off until you turn it on again with your PIN
+- **Forgot your PIN?** The lock screen offers to remove every server with its sign-in, and the cached data, check results and notifications on the phone. Because the PIN encrypts your sign-ins, there's no way around it. Nothing changes on your TrueNAS
+
 ## v0.10.1 (2026-10-20)
 
 ### Changed

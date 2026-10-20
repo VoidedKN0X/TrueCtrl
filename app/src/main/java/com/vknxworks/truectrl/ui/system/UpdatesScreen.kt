@@ -128,7 +128,7 @@ fun UpdatesScreen() {
                     }
                     s?.releaseNotesUrl?.let { url ->
                         GroupRow(stringResource(R.string.update_release_notes), url, Icons.Outlined.Description, onClick = {
-                            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                            runCatching { com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                         })
                     }
                 }

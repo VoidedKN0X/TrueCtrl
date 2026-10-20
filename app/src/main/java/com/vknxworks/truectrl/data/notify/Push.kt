@@ -1,6 +1,12 @@
 package com.vknxworks.truectrl.data.notify
 
+import android.app.BroadcastOptions
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.data.api.TnJson
@@ -21,29 +27,62 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
-import org.unifiedpush.android.connector.FailedReason
-import org.unifiedpush.android.connector.PushService
-import org.unifiedpush.android.connector.UnifiedPush
-import org.unifiedpush.android.connector.data.PushEndpoint
-import org.unifiedpush.android.connector.data.PushMessage
+import java.util.UUID
 
-/** Where TrueCtrl's UnifiedPush registration stands. */
+/** Where TrueCtrl's push registration with ntfy stands. */
 sealed interface PushStatus {
     data object Off : PushStatus
-    data object NoDistributor : PushStatus
+    data object NtfyMissing : PushStatus
     data object Registering : PushStatus
-    data class Registered(val endpoint: String) : PushStatus
+
+    /** [tempUnavailable]: ntfy can't reach the ntfy server for now; the address stays valid. */
+    data class Registered(val endpoint: String, val tempUnavailable: Boolean = false) : PushStatus
     data class Failed(val reason: String) : PushStatus
 }
 
 /**
- * UnifiedPush: a distributor app like ntfy gives TrueCtrl an endpoint URL. TrueNAS has no ntfy or
- * webhook alert service, but its Slack alert service simply posts `{"text": "..."}` to any URL, so
- * a Slack-type alert service pointed at the endpoint delivers TrueNAS's alerts to [TruePushService].
+ * Push through ntfy only: the ntfy app gives TrueCtrl an endpoint URL on the user's ntfy server.
+ * TrueNAS has no ntfy or webhook alert service, but its Slack alert service simply posts
+ * `{"text": "..."}` to any URL, so a Slack-type alert service pointed at the endpoint delivers
+ * TrueNAS's alerts to [PushReceiver]. This is the app side of the UnifiedPush Android protocol
+ * (https://unifiedpush.org/developers/spec/android/), written out here instead of using a library,
+ * and it only ever talks to the ntfy app.
  */
 object Push {
+    /** The ntfy app, the only push app TrueCtrl registers with. */
+    const val NTFY = "io.heckel.ntfy"
+
+    /** Where to get ntfy. */
+    const val NTFY_DOWNLOAD = "https://f-droid.org/packages/io.heckel.ntfy/"
+
+    private const val ACTION_REGISTER = "org.unifiedpush.android.distributor.REGISTER"
+    private const val ACTION_UNREGISTER = "org.unifiedpush.android.distributor.UNREGISTER"
+    private const val ACTION_MESSAGE_ACK = "org.unifiedpush.android.distributor.MESSAGE_ACK"
+    const val ACTION_NEW_ENDPOINT = "org.unifiedpush.android.connector.NEW_ENDPOINT"
+    const val ACTION_REGISTRATION_FAILED = "org.unifiedpush.android.connector.REGISTRATION_FAILED"
+    const val ACTION_UNREGISTERED = "org.unifiedpush.android.connector.UNREGISTERED"
+    const val ACTION_MESSAGE = "org.unifiedpush.android.connector.MESSAGE"
+    const val ACTION_TEMP_UNAVAILABLE = "org.unifiedpush.android.connector.TEMP_UNAVAILABLE"
+    private const val FEATURE_BYTES_MESSAGE = "org.unifiedpush.android.distributor.feature.BYTES_MESSAGE"
+
+    const val EXTRA_TOKEN = "token"
+    const val EXTRA_ENDPOINT = "endpoint"
+    const val EXTRA_BYTES_MESSAGE = "bytesMessage"
+    const val EXTRA_MESSAGE = "message"
+    const val EXTRA_MESSAGE_ID = "id"
+    const val EXTRA_REASON = "reason"
+
     private const val PREFS = "push"
     private const val KEY_ENDPOINT = "endpoint"
+    private const val KEY_TOKEN = "token"
+    private const val KEY_DISTRIBUTOR = "distributor"
+    private const val KEY_ERROR = "error"
+    private const val KEY_TEMP_UNAVAILABLE = "temp_unavailable"
+
+    // Where the push library TrueCtrl used up to 0.9.2 kept its registration (read once, then deleted).
+    private const val LEGACY_PREFS = "unifiedpush.connector"
+    private const val LEGACY_DISTRIBUTOR = "unifiedpush.distributor"
+    private const val LEGACY_TOKEN = "default/unifiedpush.connector"
 
     /** The name of the alert service TrueCtrl creates on TrueNAS. */
     const val SERVICE_NAME = "TrueCtrl"
@@ -51,44 +90,165 @@ object Push {
     private val _status = MutableStateFlow<PushStatus>(PushStatus.Off)
     val status: StateFlow<PushStatus> = _status.asStateFlow()
 
+    @Volatile
+    private var enabled = false
+
+    private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    /**
+     * Reads the registration. Push is on ([enabled]) but not registered yet, e.g. because ntfy was
+     * just installed: TrueCtrl registers with ntfy now. Without ntfy, push stays off until it's installed.
+     */
     fun load(context: Context, enabled: Boolean) {
-        val endpoint = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_ENDPOINT, null)
+        this.enabled = enabled
+        val migrated = migrateLegacy(context)
+        val p = prefs(context)
+        val distributor = p.getString(KEY_DISTRIBUTOR, null)
+        if (distributor != null && distributor != NTFY) {
+            p.getString(KEY_TOKEN, null)?.let { sendUnregister(context, distributor, it) }
+            clearRegistration(context)
+        }
+        if (enabled && ntfyInstalled(context) && (migrated || p.getString(KEY_DISTRIBUTOR, null) == null)) {
+            register(context)
+            return
+        }
+        publish(context)
+    }
+
+    /**
+     * Moves a registration made by the push library TrueCtrl used before. With ntfy, TrueCtrl keeps the
+     * token, so ntfy keeps the same address and TrueNAS's alert service still reaches the phone. With
+     * any other push app, the registration is cancelled there. True when there was one to move.
+     */
+    private fun migrateLegacy(context: Context): Boolean {
+        val legacy = context.getSharedPreferences(LEGACY_PREFS, Context.MODE_PRIVATE)
+        if (legacy.all.isEmpty()) return false
+        val distributor = legacy.getString(LEGACY_DISTRIBUTOR, null)
+        val token = legacy.getString(LEGACY_TOKEN, null)
+        if (distributor == NTFY && token != null) {
+            prefs(context).edit().putString(KEY_TOKEN, token).putString(KEY_DISTRIBUTOR, NTFY).apply()
+        } else {
+            if (distributor != null && token != null) sendUnregister(context, distributor, token)
+            clearRegistration(context)
+        }
+        legacy.edit().clear().apply()
+        runCatching { context.deleteSharedPreferences(LEGACY_PREFS) }
+        return distributor != null && token != null
+    }
+
+    private fun clearRegistration(context: Context) {
+        prefs(context).edit()
+            .remove(KEY_TOKEN).remove(KEY_DISTRIBUTOR).remove(KEY_ENDPOINT).remove(KEY_ERROR).remove(KEY_TEMP_UNAVAILABLE)
+            .apply()
+    }
+
+    private fun publish(context: Context) {
+        val p = prefs(context)
+        val endpoint = p.getString(KEY_ENDPOINT, null)
+        val error = p.getString(KEY_ERROR, null)
         _status.value = when {
             !enabled -> PushStatus.Off
-            UnifiedPush.getDistributors(context).isEmpty() -> PushStatus.NoDistributor
-            endpoint != null -> PushStatus.Registered(endpoint)
+            !ntfyInstalled(context) -> PushStatus.NtfyMissing
+            error != null -> PushStatus.Failed(error)
+            endpoint != null -> PushStatus.Registered(endpoint, p.getBoolean(KEY_TEMP_UNAVAILABLE, false))
             else -> PushStatus.Registering
         }
     }
 
-    fun distributors(context: Context): List<String> = UnifiedPush.getDistributors(context)
+    /** Whether the ntfy app is installed and can hand out push addresses. */
+    fun ntfyInstalled(context: Context): Boolean =
+        context.packageManager.queryBroadcastReceivers(Intent(ACTION_REGISTER).setPackage(NTFY), PackageManager.ResolveInfoFlags.of(0))
+            .isNotEmpty()
 
-    /** Registers with [distributor] (a package name, e.g. io.heckel.ntfy). */
-    fun register(context: Context, distributor: String) {
-        UnifiedPush.saveDistributor(context, distributor)
-        _status.value = PushStatus.Registering
-        UnifiedPush.register(context, messageForDistributor = context.getString(R.string.app_name))
+    /** The random secret that proves a broadcast really comes from ntfy for this registration. */
+    fun token(context: Context): String? = prefs(context).getString(KEY_TOKEN, null)
+
+    /** Asks ntfy for an endpoint. The answer arrives in [PushReceiver]. */
+    fun register(context: Context) {
+        enabled = true
+        val p = prefs(context)
+        val token = p.getString(KEY_TOKEN, null) ?: UUID.randomUUID().toString()
+        p.edit().putString(KEY_TOKEN, token).putString(KEY_DISTRIBUTOR, NTFY).remove(KEY_ERROR).remove(KEY_TEMP_UNAVAILABLE).apply()
+        publish(context)
+        if (!ntfyInstalled(context)) return
+        val intent = Intent(ACTION_REGISTER)
+            .putExtra(EXTRA_TOKEN, token)
+            .putExtra("features", arrayOf(FEATURE_BYTES_MESSAGE))
+            .putExtra("application", context.packageName)
+            .putExtra(EXTRA_MESSAGE, context.getString(R.string.app_name))
+        runCatching { sendToDistributor(context, NTFY, intent) }
     }
 
     fun unregister(context: Context) {
-        runCatching { UnifiedPush.unregister(context) }
-        runCatching { UnifiedPush.removeDistributor(context) }
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_ENDPOINT).apply()
-        _status.value = PushStatus.Off
+        enabled = false
+        val p = prefs(context)
+        val token = p.getString(KEY_TOKEN, null)
+        val distributor = p.getString(KEY_DISTRIBUTOR, null)
+        if (token != null && distributor != null) sendUnregister(context, distributor, token)
+        // A fresh token next time, so an old address can't reach the app any more.
+        clearRegistration(context)
+        publish(context)
+    }
+
+    private fun sendUnregister(context: Context, distributor: String, token: String) {
+        runCatching { sendToDistributor(context, distributor, Intent(ACTION_UNREGISTER).putExtra(EXTRA_TOKEN, token)) }
+    }
+
+    /**
+     * Sends [intent] to [distributor] with TrueCtrl's identity: shared with the broadcast from
+     * Android 14, through a pending intent before that.
+     */
+    private fun sendToDistributor(context: Context, distributor: String, intent: Intent) {
+        intent.setPackage(distributor)
+        if (Build.VERSION.SDK_INT >= 34) {
+            val options = BroadcastOptions.makeBasic().setShareIdentityEnabled(true)
+            context.sendBroadcast(intent, null, options.toBundle())
+        } else {
+            val pi = PendingIntent.getBroadcast(
+                context,
+                0,
+                Intent("org.unifiedpush.dummy_app").setPackage(context.packageName),
+                PendingIntent.FLAG_IMMUTABLE,
+            )
+            context.sendBroadcast(intent.putExtra("pi", pi))
+        }
     }
 
     internal fun onEndpoint(context: Context, url: String) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_ENDPOINT, url).apply()
-        _status.value = PushStatus.Registered(url)
+        prefs(context).edit().putString(KEY_ENDPOINT, url).remove(KEY_ERROR).remove(KEY_TEMP_UNAVAILABLE).apply()
+        publish(context)
     }
 
-    internal fun onFailed(reason: String) {
-        _status.value = PushStatus.Failed(reason)
+    internal fun onFailed(context: Context, reason: String) {
+        val p = prefs(context)
+        // Ignored once ntfy has given an address for this token.
+        if (p.getString(KEY_ENDPOINT, null) != null) return
+        // A new token for the next try.
+        p.edit().remove(KEY_TOKEN).putString(KEY_ERROR, reason).apply()
+        publish(context)
     }
 
     internal fun onUnregistered(context: Context) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_ENDPOINT).apply()
-        _status.value = PushStatus.NoDistributor
+        prefs(context).edit()
+            .remove(KEY_TOKEN).remove(KEY_ENDPOINT).remove(KEY_TEMP_UNAVAILABLE)
+            .putString(KEY_ERROR, "UNREGISTERED")
+            .apply()
+        publish(context)
+    }
+
+    internal fun onTempUnavailable(context: Context) {
+        prefs(context).edit().putBoolean(KEY_TEMP_UNAVAILABLE, true).apply()
+        publish(context)
+    }
+
+    internal fun ack(context: Context, id: String?) {
+        if (id == null) return
+        val token = token(context) ?: return
+        runCatching {
+            context.sendBroadcast(
+                Intent(ACTION_MESSAGE_ACK).setPackage(NTFY).putExtra(EXTRA_TOKEN, token).putExtra(EXTRA_MESSAGE_ID, id),
+            )
+        }
     }
 
     /**
@@ -170,29 +330,49 @@ object Push {
     }
 }
 
-/** Receives UnifiedPush events from the distributor (ntfy). */
-class TruePushService : PushService() {
-    override fun onNewEndpoint(endpoint: PushEndpoint, instance: String) {
-        Push.onEndpoint(applicationContext, endpoint.url)
-    }
-
-    override fun onMessage(message: PushMessage, instance: String) {
-        val c = applicationContext.container
-        val text = message.content.toString(Charsets.UTF_8)
-        c.appScope.launch {
-            val settings = c.notifySettings.current()
-            if (!settings.push) return@launch
-            Notifier.post(applicationContext, Push.toAlert(applicationContext, text), Notifier.CH_TRUENAS)
-            // Something happened on the server: refresh the background check too.
-            NotifyWorker.runNow(applicationContext)
+/**
+ * Receives ntfy's answers and TrueNAS's alerts. Exported (ntfy is another app), so every broadcast must
+ * carry TrueCtrl's secret token, and from Android 14 come from the ntfy app, or it's ignored.
+ */
+class PushReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (Build.VERSION.SDK_INT >= 34) {
+            val from = sentFromPackage
+            if (from != null && from != Push.NTFY) return
         }
-    }
-
-    override fun onRegistrationFailed(reason: FailedReason, instance: String) {
-        Push.onFailed(reason.name)
-    }
-
-    override fun onUnregistered(instance: String) {
-        Push.onUnregistered(applicationContext)
+        val token = intent.getStringExtra(Push.EXTRA_TOKEN) ?: return
+        if (token != Push.token(context)) return
+        val app = context.applicationContext
+        when (intent.action) {
+            Push.ACTION_NEW_ENDPOINT -> {
+                val endpoint = intent.getStringExtra(Push.EXTRA_ENDPOINT) ?: return
+                Push.onEndpoint(app, endpoint)
+                Push.ack(app, intent.getStringExtra(Push.EXTRA_MESSAGE_ID))
+            }
+            Push.ACTION_REGISTRATION_FAILED -> Push.onFailed(app, intent.getStringExtra(Push.EXTRA_REASON) ?: "UNKNOWN")
+            Push.ACTION_UNREGISTERED -> Push.onUnregistered(app)
+            Push.ACTION_TEMP_UNAVAILABLE -> Push.onTempUnavailable(app)
+            Push.ACTION_MESSAGE -> {
+                val bytes = intent.getByteArrayExtra(Push.EXTRA_BYTES_MESSAGE)
+                    ?: intent.getStringExtra(Push.EXTRA_MESSAGE)?.toByteArray()
+                    ?: return
+                Push.ack(app, intent.getStringExtra(Push.EXTRA_MESSAGE_ID))
+                val text = bytes.toString(Charsets.UTF_8)
+                val c = app.container
+                // Keeps the process alive until the notification is posted.
+                val pending = goAsync()
+                c.appScope.launch {
+                    try {
+                        val settings = c.notifySettings.current()
+                        if (!settings.push) return@launch
+                        Notifier.post(app, Push.toAlert(app, text), Notifier.CH_TRUENAS)
+                        // Something happened on the server: refresh the background check too.
+                        NotifyWorker.runNow(app)
+                    } finally {
+                        pending.finish()
+                    }
+                }
+            }
+        }
     }
 }

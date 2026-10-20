@@ -22,8 +22,8 @@ android {
         minSdk = 33
         targetSdk = 36
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 15
-        versionName = "0.9.2"
+        versionCode = 16
+        versionName = "0.10.0"
     }
 
     signingConfigs {
@@ -67,7 +67,7 @@ android {
         buildConfig = true
     }
 
-    // F-Droid: no Google dependency-info block in the APK.
+    // F-Droid: no dependency-info block in the APK.
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -108,7 +108,6 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.webkit)
-    implementation(libs.unifiedpush.connector)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

@@ -21,7 +21,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Snapshots**: browse per dataset, take, delete one or many, roll back and clone
 - **Sharing**: SMB and NFS shares (turn them on and off), who's connected over SMB, and the services behind them (start, stop, restart, start on boot)
 - **System**: apps (start, stop, redeploy, upgrade, open their web UI, live container logs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
-- **Notifications without Google services**: background checks every 15 to 120 minutes, or TrueNAS alerts pushed within seconds through [UnifiedPush](https://unifiedpush.org) and your own ntfy (TrueCtrl can set it up on TrueNAS for you)
+- **Notifications**: background checks every 15 to 120 minutes, and TrueNAS alerts pushed within seconds through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server (TrueCtrl can set it up on TrueNAS for you), with the background checks as a fallback
 - **Widgets and a Quick Settings tile** with pool health and usage, the number of active alerts, and whether anything needs attention
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
 - **Several servers**, signed in with an API key or a password (two-factor codes work too), with a list of what each sign-in is allowed to do
@@ -37,7 +37,8 @@ Coming soon.
 - Android 13 or newer
 - TrueNAS 25.04 or newer (Community Edition). TrueCtrl only uses the JSON-RPC WebSocket API; the old REST API isn't used, so older versions aren't supported (see [supported versions](#supported-truenas-versions))
 - HTTPS on your TrueNAS (TrueNAS only accepts API keys over a secure connection). A self-signed certificate is fine: TrueCtrl shows its fingerprint the first time and pins it
-- **Google-free:** works without Google Play services, contains no Google libraries that contact Google, and draws emoji with your phone's own emoji font
+- **Google-free and de-Googled:** no Google Play services, Firebase or other Google services, and the app never contacts Google. It works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps).
+- Optional: the [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) app, for instant push alerts
 
 ## Install
 
@@ -103,10 +104,12 @@ TrueCtrl checks what your key can do when it connects and greys out anything it 
 
 ## Push notifications with ntfy
 
-TrueNAS has no ntfy or UnifiedPush alert type, but its **Slack** alert type posts a small JSON message to any address, which ntfy accepts.
+Push comes through the **ntfy** app only; other push apps can't be used. TrueCtrl's own background checks keep running as a fallback, with or without push.
 
-1. Install [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) (or another UnifiedPush distributor) on your phone and point it at your ntfy server.
-2. In TrueCtrl, open **Settings › Notifications › Push from TrueNAS**, pick the distributor, and wait for the push address to appear.
+TrueNAS has no ntfy alert type, but its **Slack** alert type posts a small JSON message to any address, which ntfy accepts.
+
+1. Install [ntfy from F-Droid](https://f-droid.org/packages/io.heckel.ntfy/) on your phone and point it at your ntfy server. If ntfy isn't installed, TrueCtrl's notification settings show an **Install ntfy** button.
+2. In TrueCtrl, open **Settings › Notifications › Push from TrueNAS**, turn on **Receive TrueNAS alerts instantly**, and wait for the push address from ntfy to appear.
 3. Tap **Set up on TrueNAS**. TrueCtrl adds a "TrueCtrl" alert service (type Slack, pointed at the push address, at your chosen alert level). This needs the `ALERT_WRITE` role; without it, the page shows the steps to add the service in the TrueNAS web UI yourself.
 4. Tap **Send a test alert** to check the whole path.
 
@@ -133,8 +136,7 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 
 **Telemetry-free.** TrueCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add.
 
-- **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket. Push alerts come from TrueNAS through your own ntfy server and the ntfy app (UnifiedPush); TrueCtrl doesn't connect to ntfy itself.
-- **Google-free:** no Google Play services or Google libraries that contact Google.
+- **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket. Push alerts come from TrueNAS through your own ntfy server and the ntfy app, the only push app TrueCtrl works with; TrueCtrl doesn't connect to ntfy itself.
 - **Links:** the Support, Report a bug, Source code and Licence rows in About open in your browser; the app itself doesn't contact GitHub.
 
 ## Build from source

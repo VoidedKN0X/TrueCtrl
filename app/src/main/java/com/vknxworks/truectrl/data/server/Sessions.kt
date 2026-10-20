@@ -24,7 +24,12 @@ class Sessions(
     private val store: ServerStore,
     private val baseHttp: OkHttpClient,
     private val scope: CoroutineScope,
+    lockedAtStart: Boolean,
 ) {
+    /** While the app lock is locked, no connection is opened (the sign-in may be sealed anyway). */
+    @Volatile
+    private var locked = lockedAtStart
+
     val servers: StateFlow<List<Server>> = store.servers
 
     /** Bumped when secrets change (signing in again), so the connection is rebuilt. */
@@ -68,7 +73,7 @@ class Sessions(
             onVersion = { v -> if (v != server.tnVersion) store.update(server.id) { it.copy(tnVersion = v) } },
         )
         cached = key to connection
-        if (foreground) connection.start()
+        if (foreground && !locked) connection.start()
         return connection
     }
 
@@ -94,7 +99,18 @@ class Sessions(
     fun setForeground(value: Boolean) {
         foreground = value
         val connection = active.value?.connection ?: return
-        if (value) connection.start() else connection.stop()
+        if (value && !locked) connection.start() else if (!value) connection.stop()
+    }
+
+    /**
+     * The app locked (close the connection and forget it) or unlocked (connect again with the
+     * sign-in, which can be read again now). The server list stays, so no sign-in screen shows.
+     */
+    fun setLocked(value: Boolean) {
+        if (locked == value) return
+        locked = value
+        if (value) active.value?.connection?.stop()
+        revision.value++
     }
 
     /** Connects again now (the Retry button). */

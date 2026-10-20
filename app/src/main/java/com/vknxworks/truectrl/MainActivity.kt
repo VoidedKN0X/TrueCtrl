@@ -3,11 +3,13 @@ package com.vknxworks.truectrl
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import com.vknxworks.truectrl.ui.lock.LockScreen
+import com.vknxworks.truectrl.ui.lock.AppLockOverlay
+import com.vknxworks.truectrl.ui.lock.lockCovering
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -41,15 +43,15 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose { }
             }
-            val locked by c.appLock.locked.collectAsStateWithLifecycle()
+            val stored by c.settings.stored.collectAsState(initial = null)
+            // Until the settings are read, trust the synchronous read made at start-up.
+            val lockSetting = stored?.appLock ?: c.lockAtStart
+            val covered = lockCovering(lockSetting, c.vault)
             TrueCtrlTheme(settings.theme, settings.dynamicColor) {
                 Box(Modifier.fillMaxSize()) {
-                    AppRoot()
-                    if (locked && settings.appLock) {
-                        // Back leaves the app instead of moving around underneath the lock.
-                        BackHandler { moveTaskToBack(true) }
-                        LockScreen()
-                    }
+                    // The app stays underneath (so nothing you typed is lost), hidden from TalkBack too.
+                    Box(if (covered) Modifier.fillMaxSize().clearAndSetSemantics { } else Modifier.fillMaxSize()) { AppRoot() }
+                    AppLockOverlay(lockSetting)
                 }
             }
         }

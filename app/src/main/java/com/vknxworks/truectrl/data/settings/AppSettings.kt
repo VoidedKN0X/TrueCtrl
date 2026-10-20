@@ -28,6 +28,16 @@ enum class ThemeChoice(@StringRes val label: Int) {
     BLACK(R.string.theme_black),
 }
 
+/** When the app lock asks again after you leave the app. */
+enum class LockTimeout(@StringRes val label: Int, val millis: Long) {
+    IMMEDIATELY(R.string.lock_again_immediately, 0L),
+    MINUTE_1(R.string.lock_again_1m, 60_000L),
+    MINUTES_5(R.string.lock_again_5m, 5 * 60_000L),
+    MINUTES_15(R.string.lock_again_15m, 15 * 60_000L),
+    HOUR_1(R.string.lock_again_1h, 60 * 60_000L),
+    RESTART(R.string.lock_again_restart, -1L),
+}
+
 data class AppSettings(
     val theme: ThemeChoice = ThemeChoice.SYSTEM,
     val dynamicColor: Boolean = false,
@@ -35,8 +45,9 @@ data class AppSettings(
     val poolWarnPercent: Int = 80,
     /** A replication, cloud sync or rsync task whose last success is older than this is flagged. */
     val backupMaxAgeDays: Int = 7,
-    /** Ask for the fingerprint, face or screen lock when TrueCtrl opens. */
+    /** The app lock is on (the PIN itself lives in LockVault). */
     val appLock: Boolean = false,
+    val lockTimeout: LockTimeout = LockTimeout.IMMEDIATELY,
 )
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
@@ -46,6 +57,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val poolWarn = intPreferencesKey("pool_warn_percent")
         val backupAge = intPreferencesKey("backup_max_age_days")
         val appLock = booleanPreferencesKey("app_lock")
+        val lockTimeout = stringPreferencesKey("lock_timeout")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -73,6 +85,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         poolWarnPercent = (this[K.poolWarn] ?: 80).coerceIn(50, 99),
         backupMaxAgeDays = (this[K.backupAge] ?: 7).coerceIn(1, 90),
         appLock = this[K.appLock] ?: false,
+        lockTimeout = enumOr(this[K.lockTimeout], LockTimeout.IMMEDIATELY),
     )
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
@@ -83,6 +96,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.poolWarn] = s.poolWarnPercent
             p[K.backupAge] = s.backupMaxAgeDays
             p[K.appLock] = s.appLock
+            p[K.lockTimeout] = s.lockTimeout.name
         }
     }
 

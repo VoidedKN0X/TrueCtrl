@@ -217,7 +217,7 @@ fun SystemScreen() {
                                 stringResource(R.string.open_in_proxctrl),
                                 stringResource(R.string.open_in_proxctrl_sub, vmId ?: 0),
                                 Icons.Outlined.OpenInNew,
-                                onClick = { runCatching { context.startActivity(proxCtrl) } },
+                                onClick = { runCatching { com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(proxCtrl) } },
                             )
                         }
                     }

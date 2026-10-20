@@ -249,17 +249,6 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     fun save() {
         val result = connected ?: return
         c.sessions.add(result.server.copy(readOnly = readOnly), result.secrets)
-        // Usage stats (if opted in): only how the server was set up, never its address, name or user.
-        c.telemetry.track(
-            "server_saved",
-            mapOf(
-                "kind" to if (editId != null) "edited" else "added",
-                "auth" to if (result.server.auth == AuthMethod.API_KEY) "api_key" else "password",
-                "two_factor" to result.server.usesOtp.toString(),
-                "certificate" to if (result.server.certPin.isNotBlank()) "pinned" else "trusted",
-                "read_only" to readOnly.toString(),
-            ),
-        )
         onDone()
     }
 

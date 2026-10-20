@@ -15,7 +15,6 @@ import com.vknxworks.truectrl.data.storage.DatasetRepository
 import com.vknxworks.truectrl.data.storage.StorageRepository
 import com.vknxworks.truectrl.data.server.Sessions
 import com.vknxworks.truectrl.data.settings.SettingsRepository
-import com.vknxworks.truectrl.data.telemetry.Telemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -31,9 +30,6 @@ class AppContainer(val context: Context) {
 
     val settings = SettingsRepository(context, appScope)
     val notifySettings = NotifySettingsRepository(context, appScope)
-
-    /** Opt-in anonymous usage stats, with its own HTTP client (normal certificate checks, no TrueNAS pins). */
-    val telemetry = Telemetry(context, settings, appScope)
 
     /**
      * Shared HTTP client. Each server gets a copy with its own certificate pin (see httpFor), so a

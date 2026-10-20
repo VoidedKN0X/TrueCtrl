@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
         // The recent-apps view shows a blank card instead of a snapshot of pools, datasets and shares.
         setRecentsScreenshotEnabled(false)
         val c = container
-        if (savedInstanceState == null) c.telemetry.appOpened()
         setContent {
             val settings by c.settings.settings.collectAsStateWithLifecycle()
             val dark = when (settings.theme) {

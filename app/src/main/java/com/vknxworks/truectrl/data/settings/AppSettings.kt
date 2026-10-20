@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /** App-wide preferences (not per server). Server settings and secrets live elsewhere, encrypted. */
 val Context.appDataStore: DataStore<Preferences> by preferencesDataStore(name = "truectrl")
@@ -36,10 +37,6 @@ data class AppSettings(
     val backupMaxAgeDays: Int = 7,
     /** Ask for the fingerprint, face or screen lock when TrueCtrl opens. */
     val appLock: Boolean = false,
-    /** Opt-in anonymous usage stats (off until the user says yes). */
-    val usageStats: Boolean = false,
-    /** Whether the one-time usage stats question has been answered. */
-    val usageStatsAsked: Boolean = false,
 )
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
@@ -49,8 +46,6 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val poolWarn = intPreferencesKey("pool_warn_percent")
         val backupAge = intPreferencesKey("backup_max_age_days")
         val appLock = booleanPreferencesKey("app_lock")
-        val usageStats = booleanPreferencesKey("usage_stats")
-        val usageStatsAsked = booleanPreferencesKey("usage_stats_asked")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -60,14 +55,24 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
     /** The stored settings as they're read and changed, without [settings]' placeholder defaults at start-up. */
     val stored: Flow<AppSettings> = context.appDataStore.data.map { it.toSettings() }
 
+    init {
+        // Versions before 0.9.2 stored the choice for the old opt-in stats under keys starting with
+        // "usage_". Nothing uses them any more, so they're deleted from the phone.
+        scope.launch {
+            runCatching {
+                context.appDataStore.edit { p ->
+                    p.asMap().keys.filter { it.name.startsWith("usage_") }.forEach { p.remove(it) }
+                }
+            }
+        }
+    }
+
     private fun Preferences.toSettings() = AppSettings(
         theme = enumOr(this[K.theme], ThemeChoice.SYSTEM),
         dynamicColor = this[K.dynamic] ?: false,
         poolWarnPercent = (this[K.poolWarn] ?: 80).coerceIn(50, 99),
         backupMaxAgeDays = (this[K.backupAge] ?: 7).coerceIn(1, 90),
         appLock = this[K.appLock] ?: false,
-        usageStats = this[K.usageStats] ?: false,
-        usageStatsAsked = this[K.usageStatsAsked] ?: false,
     )
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
@@ -78,8 +83,6 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.poolWarn] = s.poolWarnPercent
             p[K.backupAge] = s.backupMaxAgeDays
             p[K.appLock] = s.appLock
-            p[K.usageStats] = s.usageStats
-            p[K.usageStatsAsked] = s.usageStatsAsked
         }
     }
 

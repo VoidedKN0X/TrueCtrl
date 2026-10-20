@@ -36,7 +36,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,7 +68,6 @@ import com.vknxworks.truectrl.ui.overview.AlertsScreen
 import com.vknxworks.truectrl.ui.overview.OverviewScreen
 import com.vknxworks.truectrl.ui.protection.ProtectionScreen
 import com.vknxworks.truectrl.ui.settings.SettingsScreen
-import com.vknxworks.truectrl.ui.settings.UsageStatsPrompt
 import com.vknxworks.truectrl.ui.settings.YouScreen
 import com.vknxworks.truectrl.ui.sharing.SharingScreen
 import com.vknxworks.truectrl.ui.storage.DiskScreen
@@ -98,17 +96,15 @@ private data class TopDest(
     @StringRes val label: Int,
     val icon: ImageVector,
     val selectedIcon: ImageVector,
-    /** Fixed name for usage stats. */
-    val statsName: String,
 )
 
 /** The five tabs. Overview is the only summary screen; account and settings open from the profile picture. */
 private val topDestinations = listOf(
-    TopDest(OverviewRoute, R.string.tab_overview, Icons.Outlined.Dashboard, Icons.Filled.Dashboard, "overview"),
-    TopDest(StorageRoute, R.string.tab_storage, Icons.Outlined.Storage, Icons.Filled.Storage, "storage"),
-    TopDest(ProtectionRoute, R.string.tab_protection, Icons.Outlined.Shield, Icons.Filled.Shield, "protection"),
-    TopDest(SharingRoute, R.string.tab_sharing, Icons.Outlined.FolderShared, Icons.Filled.FolderShared, "sharing"),
-    TopDest(SystemRoute, R.string.tab_system, Icons.Outlined.Dns, Icons.Filled.Dns, "system"),
+    TopDest(OverviewRoute, R.string.tab_overview, Icons.Outlined.Dashboard, Icons.Filled.Dashboard),
+    TopDest(StorageRoute, R.string.tab_storage, Icons.Outlined.Storage, Icons.Filled.Storage),
+    TopDest(ProtectionRoute, R.string.tab_protection, Icons.Outlined.Shield, Icons.Filled.Shield),
+    TopDest(SharingRoute, R.string.tab_sharing, Icons.Outlined.FolderShared, Icons.Filled.FolderShared),
+    TopDest(SystemRoute, R.string.tab_system, Icons.Outlined.Dns, Icons.Filled.Dns),
 )
 
 @Composable
@@ -120,18 +116,7 @@ private fun MainScaffold() {
     val selectedIndex = topDestinations.indexOfFirst { top -> dest?.hierarchy?.any { it.hasRoute(top.route::class) } == true }
     val tabs = topDestinations.map { TabItem(stringResource(it.label), it.icon, it.selectedIcon) }
 
-    // Usage stats (only if the user opted in): the kind of screen, never its arguments (like a server ID).
-    val c = LocalContext.current.container
-    val entryId = backStack?.id
-    val screen = dest?.route?.let(::screenName)
-    LaunchedEffect(entryId) {
-        if (screen != null) c.telemetry.track("screen_viewed", mapOf("screen" to screen))
-    }
-    // Shown only here, after the first server has been set up and signed in.
-    UsageStatsPrompt()
-
     fun selectTab(i: Int) {
-        if (i != selectedIndex) c.telemetry.track("section_opened", mapOf("section" to topDestinations[i].statsName))
         navController.navigate(topDestinations[i].route) {
             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
             launchSingleTop = true
@@ -219,13 +204,6 @@ private fun PhoneLayout(
         }
     }
 }
-
-/**
- * "com.vknxworks.truectrl.ui.nav.EditServerRoute/{id}" -> "EditServer". Only the route's class name:
- * arguments (server IDs) are dropped.
- */
-private fun screenName(route: String): String =
-    route.substringBefore('/').substringBefore('?').substringAfterLast('.').removeSuffix("Route")
 
 @Composable
 private fun AppNavHost(navController: NavHostController) {

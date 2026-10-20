@@ -8,7 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.runtime.Composable
@@ -34,7 +33,7 @@ import com.vknxworks.truectrl.ui.components.GroupSwitch
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
 import kotlinx.coroutines.launch
 
-/** App settings: appearance, notifications, warnings, usage stats. */
+/** App settings: appearance, notifications, warnings and app lock. */
 @Composable
 fun SettingsScreen() {
     val context = LocalContext.current
@@ -96,16 +95,6 @@ fun SettingsScreen() {
                         if (on) c.appLock.unlocked()
                         c.appScope.launch { c.settings.update { it.copy(appLock = on) } }
                     }
-                }
-            }
-            if (c.telemetry.available) {
-                Group(stringResource(R.string.group_usage_stats), footer = stringResource(R.string.usage_stats_description)) {
-                    GroupSwitch(
-                        stringResource(R.string.usage_stats_switch),
-                        stringResource(R.string.usage_stats_switch_subtitle),
-                        checked = settings.usageStats,
-                        icon = Icons.Filled.Insights,
-                    ) { on -> c.appScope.launch { c.settings.update { it.copy(usageStats = on, usageStatsAsked = true) } } }
                 }
             }
         }

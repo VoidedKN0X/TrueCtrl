@@ -105,26 +105,32 @@ object AppLock {
         expectReturnAt = SystemClock.elapsedRealtime()
     }
 
+    /** The current trip away was started by the app itself (picker, share sheet, browser …). */
+    private var exemptTrip = false
+
     fun onBackground(enabled: Boolean, timeoutMillis: Long) {
         if (authenticating) return
-        // Only right after the app opened something itself; leaving later still counts.
-        if (expectReturnAt > 0 && SystemClock.elapsedRealtime() - expectReturnAt < 5_000) {
-            expectReturnAt = 0L
-            backgroundAt = 0L
-            return
-        }
         backgroundAt = SystemClock.elapsedRealtime()
+        // Only right after the app opened something itself; leaving later still counts.
+        exemptTrip = expectReturnAt > 0 && backgroundAt - expectReturnAt < 5_000
+        expectReturnAt = 0L
         // "As soon as you leave" locks right away, so the key is gone while the app is in the background.
-        if (enabled && unlocked && timeoutMillis == 0L) lock()
+        if (enabled && unlocked && timeoutMillis == 0L && !exemptTrip) lock()
     }
 
     fun onForeground(enabled: Boolean, timeoutMillis: Long) {
         val since = backgroundAt
+        val exempt = exemptTrip
         backgroundAt = 0L
         expectReturnAt = 0L
+        exemptTrip = false
         if (!enabled || !unlocked || since <= 0 || timeoutMillis < 0) return
-        if (SystemClock.elapsedRealtime() - since >= timeoutMillis) lock()
+        // A trip the app started still locks if you stay away long: after 5 minutes, or the chosen time if longer.
+        val limit = if (exempt) maxOf(timeoutMillis, EXEMPT_TRIP_MAX) else timeoutMillis
+        if (SystemClock.elapsedRealtime() - since >= limit) lock()
     }
+
+    private const val EXEMPT_TRIP_MAX = 5 * 60_000L
 
     fun lock() {
         unlocked = false

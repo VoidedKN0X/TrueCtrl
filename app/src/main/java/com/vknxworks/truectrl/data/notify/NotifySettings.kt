@@ -35,7 +35,7 @@ data class NotifySettings(
     /** Check the servers in the background with WorkManager. */
     val polling: Boolean = false,
     val intervalMinutes: Int = 15,
-    /** Receive TrueNAS's own alerts through UnifiedPush (e.g. ntfy). */
+    /** Receive TrueNAS's own alerts through the ntfy app. */
     val push: Boolean = false,
     val disabled: Set<NotifyEvent> = emptySet(),
     /** The least serious TrueNAS alert level that's notified. */

@@ -379,7 +379,7 @@
     <string name="group_notifications">Notifications</string>
     <string name="notifications">Notifications</string>
     <string name="notifications_subtitle">Background checks, push from TrueNAS, what to notify about</string>
-    <string name="notif_intro">TrueCtrl can check your TrueNAS in the background and tell you when something needs attention. Push through your own ntfy adds instant notifications for every TrueNAS alert. Neither uses Google services.</string>
+    <string name="notif_intro">TrueCtrl can check your TrueNAS in the background and tell you when something needs attention. Push through the ntfy app and your own ntfy server adds instant notifications for every TrueNAS alert, with the background check as a fallback.</string>
     <string name="notif_permission_off">Notifications are turned off for TrueCtrl.</string>
     <string name="notif_permission_allow">Allow notifications</string>
     <string name="group_polling">Background checks</string>
@@ -398,11 +398,12 @@
     <string name="last_check_failed">Last check %1$s couldn\'t reach the server</string>
     <string name="group_push">Push from TrueNAS</string>
     <string name="push_title">Receive TrueNAS alerts instantly</string>
-    <string name="push_subtitle">Through UnifiedPush, for example your own ntfy</string>
-    <string name="push_no_distributor">No UnifiedPush app found. Install ntfy (from F-Droid), connect it to your ntfy server, then come back here.</string>
-    <string name="push_pick_distributor">Choose a push app</string>
-    <string name="push_registering">Waiting for the push app…</string>
-    <string name="push_failed">The push app couldn\'t register TrueCtrl (%1$s).</string>
+    <string name="push_subtitle">Through the ntfy app and your own ntfy server</string>
+    <string name="push_no_distributor">ntfy isn\'t installed. Push comes through the ntfy app only: install it from F-Droid, connect it to your ntfy server, then come back here. Until then, the background check keeps running.</string>
+    <string name="push_install_ntfy">Install ntfy</string>
+    <string name="push_registering">Waiting for ntfy…</string>
+    <string name="push_failed">ntfy couldn\'t register TrueCtrl (%1$s).</string>
+    <string name="push_temp_unavailable">ntfy temporarily unavailable: it can\'t reach your ntfy server right now. The push address stays the same, and alerts arrive again once the server is back.</string>
     <string name="push_endpoint">Push address</string>
     <string name="copy">Copy</string>
     <string name="copied">Copied</string>
@@ -445,7 +446,7 @@
     <string name="battery_unrestricted">TrueCtrl may run in the background</string>
     <string name="battery_restricted">Battery optimisation can delay or skip checks</string>
     <string name="battery_open">Open battery settings</string>
-    <string name="battery_footer">On ColorOS (OPPO, OnePlus) and other phones that close background apps aggressively: open TrueCtrl\'s app info, then under Battery choose Allow background activity (or Don\'t optimise), and allow Auto launch if your phone has it. Push keeps working as long as your push app (ntfy) is allowed to run in the background.</string>
+    <string name="battery_footer">On ColorOS (OPPO, OnePlus) and other phones that close background apps aggressively: open TrueCtrl\'s app info, then under Battery choose Allow background activity (or Don\'t optimise), and allow Auto launch if your phone has it. Push keeps working as long as the ntfy app is allowed to run in the background.</string>
     <string name="ch_critical">Critical problems</string>
     <string name="ch_critical_desc">Unhealthy or full pools, scrub errors, failed tasks, crashed apps</string>
     <string name="ch_warning">Warnings</string>
@@ -453,7 +454,7 @@
     <string name="ch_info">Updates and info</string>
     <string name="ch_info_desc">Available updates</string>
     <string name="ch_truenas">From TrueNAS</string>
-    <string name="ch_truenas_desc">Alerts your TrueNAS pushes through UnifiedPush</string>
+    <string name="ch_truenas_desc">Alerts your TrueNAS pushes through ntfy</string>
     <string name="nt_public_text">New alert from your TrueNAS. Unlock to see it.</string>
     <string name="nt_pool_unhealthy">Pool %1$s is %2$s</string>
     <string name="nt_pool_unhealthy_text">Check the pool and its disks in TrueCtrl.</string>

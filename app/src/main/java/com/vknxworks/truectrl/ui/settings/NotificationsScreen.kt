@@ -57,7 +57,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.container
-import com.vknxworks.truectrl.ui.components.ChoiceSheet
 import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupChoice
 import com.vknxworks.truectrl.ui.components.GroupRow
@@ -100,7 +99,6 @@ fun NotificationsScreen() {
     val unrestricted = remember(batteryVersion) {
         context.getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(context.packageName) == true
     }
-    var pickDistributor by remember { mutableStateOf<List<String>?>(null) }
     var serverSetUp by remember { mutableStateOf<Boolean?>(null) }
     var serverBusy by remember { mutableStateOf(false) }
 
@@ -138,11 +136,11 @@ fun NotificationsScreen() {
         Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()
     }
     fun startPush() {
-        val list = Push.distributors(context)
-        when {
-            list.isEmpty() -> Push.load(context, true)
-            list.size == 1 -> Push.register(context, list.first())
-            else -> pickDistributor = list
+        if (Push.ntfyInstalled(context)) Push.register(context) else Push.load(context, true)
+    }
+    fun installNtfy() {
+        runCatching {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Push.NTFY_DOWNLOAD)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
     fun onServer(action: suspend () -> Unit, done: Int) {
@@ -248,16 +246,19 @@ fun NotificationsScreen() {
                 }
                 if (settings.push) {
                     when (val st = pushStatus) {
-                        PushStatus.NoDistributor, PushStatus.Off -> PushNote(stringResource(R.string.push_no_distributor)) {
-                            TextButton(onClick = ::startPush) { Text(stringResource(R.string.retry)) }
+                        PushStatus.NtfyMissing -> PushNote(stringResource(R.string.push_no_distributor)) {
+                            TextButton(onClick = ::installNtfy) { Text(stringResource(R.string.push_install_ntfy)) }
                         }
-                        PushStatus.Registering -> PushNote(stringResource(R.string.push_registering)) {
+                        PushStatus.Off, PushStatus.Registering -> PushNote(stringResource(R.string.push_registering)) {
                             TextButton(onClick = ::startPush) { Text(stringResource(R.string.retry)) }
                         }
                         is PushStatus.Failed -> PushNote(stringResource(R.string.push_failed, st.reason)) {
                             TextButton(onClick = ::startPush) { Text(stringResource(R.string.retry)) }
                         }
                         is PushStatus.Registered -> {
+                            if (st.tempUnavailable) {
+                                PushNote(stringResource(R.string.push_temp_unavailable)) {}
+                            }
                             GroupRow(
                                 stringResource(R.string.push_endpoint),
                                 st.endpoint,
@@ -358,17 +359,6 @@ fun NotificationsScreen() {
                     },
                 )
             }
-        }
-    }
-
-    pickDistributor?.let { list ->
-        val pm = context.packageManager
-        val options = list.map { pkg ->
-            pkg to runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
-        }
-        ChoiceSheet(stringResource(R.string.push_pick_distributor), options, null, onDismiss = { pickDistributor = null }) { pkg ->
-            pickDistributor = null
-            Push.register(context, pkg)
         }
     }
 }

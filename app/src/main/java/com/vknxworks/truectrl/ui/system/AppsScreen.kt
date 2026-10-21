@@ -170,8 +170,10 @@ fun AppsScreen() {
                 )
                 val idle = app.name !in busy
                 app.portals.forEach { (name, url) ->
+                    // Only web addresses: the server decides what's in this list.
+                    val uri = webUri(url) ?: return@forEach
                     GroupRow(stringResource(R.string.app_open_portal, name), url, Icons.Outlined.Language, onClick = {
-                        runCatching { com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                        runCatching { com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
                     })
                 }
                 if (canWrite && idle) {
@@ -329,4 +331,12 @@ fun AppLogsScreen(app: String, container: String, service: String) {
             }
         }
     }
+}
+
+/** [url] as a Uri when it's an http or https address with a host; null for anything else (intent:, file:, …). */
+internal fun webUri(url: String): Uri? {
+    val uri = runCatching { Uri.parse(url.trim()) }.getOrNull() ?: return null
+    val scheme = uri.scheme?.lowercase() ?: return null
+    if (scheme != "http" && scheme != "https") return null
+    return uri.takeIf { !it.host.isNullOrBlank() }
 }

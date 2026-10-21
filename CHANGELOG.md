@@ -4,6 +4,13 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.10.8 (2026-10-21)
+
+### Security
+
+- **Only web links from the server are opened**: the **Open** links of an app on the Apps screen and the **Release notes** link on the Updates screen open whatever address TrueNAS sends. TrueCtrl now only shows and opens them when they're ordinary `http://` or `https://` web addresses, so an address of another kind can't make the phone open some other app or file.
+- **Your sign-ins are never saved without the app lock's seal**: if TrueCtrl had to save a server's API key or password while it was locked (with the app lock on and background checks off), it saved them encrypted with the Android Keystore only, because the PIN's key wasn't in memory. It now keeps what's stored instead and saves new sign-ins only while unlocked, like ProxCtrl.
+
 ## v0.10.7 (2026-10-21)
 
 ### Fixed

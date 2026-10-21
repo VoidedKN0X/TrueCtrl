@@ -1,7 +1,6 @@
 package com.vknxworks.truectrl.ui.system
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -126,9 +125,10 @@ fun UpdatesScreen() {
                         )
                         else -> GroupRow(stringResource(R.string.system_up_to_date), null, Icons.Outlined.CheckCircle, iconTint = Health.ok)
                     }
-                    s?.releaseNotesUrl?.let { url ->
+                    // Only web addresses: the server decides what this link is.
+                    s?.releaseNotesUrl?.let { url -> webUri(url)?.let { url to it } }?.let { (url, uri) ->
                         GroupRow(stringResource(R.string.update_release_notes), url, Icons.Outlined.Description, onClick = {
-                            runCatching { com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                            runCatching { com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
                         })
                     }
                 }

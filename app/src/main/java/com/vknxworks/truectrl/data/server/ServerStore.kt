@@ -88,10 +88,11 @@ class ServerStore(context: Context, private val vault: LockVault) {
         return if (LockVault.isSealed(plain)) vault.open(plain).orEmpty() else plain
     }
 
-    /** Keystore-encrypted, and sealed with the app lock's key when [seal]. */
+    /** Keystore-encrypted, and sealed with the app lock's key when [seal]. Null when it can't be sealed. */
     private fun write(plain: String, seal: Boolean): String? {
         if (plain.isEmpty()) return null
-        return encrypt(if (seal) vault.seal(plain) ?: plain else plain)
+        // Never fall back to a secret that isn't sealed when it should be.
+        return encrypt(if (seal) vault.seal(plain) ?: return null else plain)
     }
 
     /**
@@ -124,10 +125,15 @@ class ServerStore(context: Context, private val vault: LockVault) {
     /** Whether a usable API key is saved for [id], without handing the key itself to the caller. */
     fun hasApiKey(id: String): Boolean = secrets(id).apiKey.isNotBlank()
 
+    @Synchronized
     fun saveSecrets(id: String, s: ServerSecrets) {
+        val seal = sealPolicy()
+        // Locked: the key isn't in memory, so nothing can be sealed. Keep what's stored rather than
+        // writing a sign-in that isn't sealed (or losing it).
+        if (seal && !vault.isOpen) return
         sp.edit()
-            .putString(secretKey(id, "api_key"), write(s.apiKey, sealPolicy()))
-            .putString(secretKey(id, "password"), write(s.password, sealPolicy()))
+            .putString(secretKey(id, "api_key"), write(s.apiKey, seal))
+            .putString(secretKey(id, "password"), write(s.password, seal))
             .apply()
     }
 

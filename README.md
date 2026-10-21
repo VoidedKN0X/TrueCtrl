@@ -26,7 +26,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
 - **Several servers**, signed in with an API key or a password (two-factor codes work too), with a list of what each sign-in is allowed to do
 - **Works offline**: the last known state stays on screen, marked as out of date, when TrueNAS can't be reached
-- **Safe by design**: read-only mode that blocks every change at the connection level, confirmations for anything disruptive (typing the dataset path or hostname for the most dangerous ones), certificate pinning, an optional app lock with its own PIN and fingerprint unlock that keeps your saved sign-ins encrypted while locked, screenshots blocked wherever you type keys, passwords, passphrases or use the shell, a blank preview in recent apps, API keys and passwords encrypted with the Android Keystore, and dataset passphrases that are never saved
+- **Safe by design**: read-only mode that blocks every change at the connection level, confirmations for anything disruptive (typing the dataset path or hostname for the most dangerous ones), certificate pinning, an optional [app lock](#app-lock) with its own PIN and fingerprint unlock that keeps your saved sign-ins encrypted while locked, **Hide in screenshots and recent apps**, screenshots always blocked wherever you type keys, passwords, passphrases or use the shell, a blank preview in recent apps, API keys and passwords encrypted with the Android Keystore, and dataset passphrases that are never saved
 
 ## Screenshots
 
@@ -121,6 +121,21 @@ TrueNAS has no ntfy alert type, but its **Slack** alert type posts a small JSON 
 
 They update whenever TrueCtrl reads the server and after every background check, so with background checks off they only change while the app is open.
 
+## App lock
+
+Turn it on under **Settings > Privacy and security > App lock**. It's off until you turn it on.
+
+- **Its own app PIN** of at least 6 digits, separate from your phone's screen lock. Very obvious PINs such as 111111 or 123456 are refused.
+- **Unlock with fingerprint** (optional) only accepts strong biometrics, such as the fingerprint sensor, checked by the phone's secure hardware. Face unlock that only uses the camera isn't accepted. The PIN is still needed after the phone restarts and at least every 72 hours, and adding a new fingerprint to the phone turns fingerprint unlock off until you turn it on again.
+- **Your saved sign-ins are encrypted with the PIN while TrueCtrl is locked**, and the connection to TrueNAS is closed. The key only exists in memory while the app is unlocked and is wiped the moment it locks. The PIN itself is never stored: it's stretched with 600,000 rounds of PBKDF2 and mixed with a key held in the phone's secure hardware, so a copy of the app's files isn't enough to guess it on a computer.
+- **Wrong PINs:** after 5 tries you wait 30 seconds, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't skip the wait.
+- **Lock again:** as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Opening an app's web UI, ProxCtrl, ntfy, a link in your browser or Android's settings from TrueCtrl doesn't count as leaving, unless you stay away for more than 5 minutes.
+- **Change app PIN** asks for your current PIN first, and turning the app lock off asks for the PIN too.
+- **Forgot your PIN?** It can't be recovered, because it encrypts your sign-ins. The lock screen offers to remove every server with its API key or password, and the cached data kept on this phone; nothing changes on your TrueNAS.
+- **Background checks while locked:** with background checks or push on (Settings > Notifications), they keep running while TrueCtrl is locked, so your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Settings says so under the app lock. Turn background checks and push off to keep them sealed with your PIN too. The widgets and the Quick Settings tile keep showing the last check.
+
+**Hide in screenshots and recent apps** (in the same section, also without the app lock) keeps TrueCtrl out of screenshots and screen recordings. The recent-apps preview is always blank, and the lock screen, the shell and every screen where you type an API key, password, one-time password or passphrase are always kept out of screenshots.
+
 ## Supported TrueNAS versions
 
 | Version | Status |
@@ -137,7 +152,9 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 **Telemetry-free.** TrueCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add.
 
 - **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket. Push alerts come from TrueNAS through your own ntfy server and the ntfy app, the only push app TrueCtrl works with; TrueCtrl doesn't connect to ntfy itself.
-- **Links:** the Support, Report a bug, Source code and Licence rows in About open in your browser; the app itself doesn't contact GitHub.
+- **Links:** the Support, Report a bug, Source code and Licence rows in About, and an app's web UI, open in your browser only when you tap them; the app itself doesn't contact GitHub.
+- **Notifications** on the lock screen hide server details when you hide sensitive notification content in Android's settings.
+- **No backups:** Android doesn't back up TrueCtrl's data or move it to a new phone.
 
 ## Build from source
 
@@ -169,6 +186,7 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 
 | App | What it's for |
 | --- | --- |
+| [AdCtrl](https://github.com/VoidedKN0X/AdCtrl) | Control your AdGuard Home DNS server |
 | [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) | Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app |
 | [BeamCtrl](https://github.com/VoidedKN0X/BeamCtrl) | TV remote for phones with an IR blaster |
 | [CraftyCtrl](https://github.com/VoidedKN0X/CraftyCtrl) | Manage Minecraft servers on Crafty Controller |
@@ -177,6 +195,7 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 | [FrigateCtrl](https://github.com/VoidedKN0X/FrigateCtrl) | Watch and review your Frigate NVR cameras |
 | [ImmichCtrl](https://github.com/VoidedKN0X/ImmichCtrl) | Photos and backup for your Immich server |
 | [JellyCtrl](https://github.com/VoidedKN0X/JellyCtrl) | Movies, shows, music and Live TV from Jellyfin |
+| [MemoCtrl](https://github.com/VoidedKN0X/MemoCtrl) | Notes on your Memos server |
 | [NaviCtrl](https://github.com/VoidedKN0X/NaviCtrl) | Music player for Navidrome servers |
 | [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) | Scan and browse documents on Paperless-ngx |
 | [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) | Bambu Lab printers through Bambuddy, and Spoolman spools |

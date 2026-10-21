@@ -73,6 +73,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.crypto.Cipher
 import kotlin.math.roundToInt
+import androidx.compose.foundation.layout.fillMaxWidth
 
 /**
  * App lock state: whether the app is unlocked, and when it locks again. The secrets live in [LockVault].
@@ -323,13 +324,23 @@ private fun LegacyLockedScreen() {
     }
     BackHandler { activity?.moveTaskToBack(true) }
     Surface(Modifier.fillMaxSize().blockTouches(), color = MaterialTheme.colorScheme.background) {
-        Box(Modifier.systemBarsPadding()) {
-            EmptyState(
-                Icons.Outlined.Lock,
-                stringResource(R.string.lock_title),
-                error ?: stringResource(R.string.lock_legacy_body),
-                action = { PillButton(stringResource(R.string.lock_unlock), onClick = ::unlock) },
-            )
+        Box(Modifier.fillMaxSize().systemBarsPadding().padding(32.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier.widthIn(max = 360.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                LockBadge()
+                Text(stringResource(R.string.lock_title), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+                Text(
+                    stringResource(R.string.lock_legacy_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center) }
+                PillButton(stringResource(R.string.lock_unlock), onClick = ::unlock, modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }
@@ -337,9 +348,9 @@ private fun LegacyLockedScreen() {
 @Composable
 private fun LockBadge() {
     Box(
-        Modifier.size(72.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)),
+        Modifier.size(72.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)),
         contentAlignment = Alignment.Center,
-    ) { Icon(Icons.Outlined.Lock, null, Modifier.size(36.dp), tint = MaterialTheme.colorScheme.primary) }
+    ) { Icon(Icons.Outlined.Lock, null, Modifier.size(34.dp), tint = MaterialTheme.colorScheme.primary) }
 }
 
 /** The lock screen: PIN pad, fingerprint, and "Forgot PIN?". */

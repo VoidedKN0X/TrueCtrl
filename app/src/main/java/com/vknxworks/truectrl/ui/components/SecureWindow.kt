@@ -1,32 +1,36 @@
 package com.vknxworks.truectrl.ui.components
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
-import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 
 /**
- * Keeps the screen out of screenshots, screen recordings, casting and the recent-apps preview
- * (FLAG_SECURE) while it's shown. Used on screens where an API key, password or one-time password
- * is typed. Dialogs opened from such a screen inherit it.
+ * Screens that always get FLAG_SECURE, whatever "Hide in screenshots and recent apps" says: where an
+ * API key, password, one-time password or dataset passphrase is typed, and the shell. MainActivity
+ * applies the flag. A count rather than a flag, so two such screens overlapping during a transition
+ * can't clear it early, and leaving one never lifts the user's own setting.
+ */
+object ScreenPrivacy {
+    var forced by mutableIntStateOf(0)
+        private set
+
+    internal fun acquire() { forced++ }
+    internal fun release() { forced = (forced - 1).coerceAtLeast(0) }
+}
+
+/**
+ * Keeps the window out of screenshots, screen recordings, casting and the recent-apps preview
+ * (FLAG_SECURE) while the calling screen is shown. Dialogs opened from such a screen inherit it.
  */
 @Composable
 fun SecureWindow() {
-    val context = LocalContext.current
-    DisposableEffect(context) {
-        val window = context.findActivity()?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose { window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+    DisposableEffect(Unit) {
+        ScreenPrivacy.acquire()
+        onDispose { ScreenPrivacy.release() }
     }
-}
-
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }
 
 /**

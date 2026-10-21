@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.VisibilityOff
 import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupChoice
 import com.vknxworks.truectrl.ui.components.GroupSwitch
@@ -78,20 +79,6 @@ fun SettingsScreen() {
                     showChevron = true,
                     onClick = { nav.navigate(NotificationsRoute) },
                 )
-            }
-            Group(stringResource(R.string.group_warnings)) {
-                GroupChoice(
-                    stringResource(R.string.pool_warn_title),
-                    listOf(70, 75, 80, 85, 90, 95).map { it to stringResource(R.string.pool_warn_subtitle, it) },
-                    settings.poolWarnPercent,
-                    icon = Icons.Filled.Storage,
-                ) { pct -> c.appScope.launch { c.settings.update { it.copy(poolWarnPercent = pct) } } }
-                GroupChoice(
-                    stringResource(R.string.backup_age_title),
-                    listOf(1, 2, 3, 7, 14, 30).map { it to pluralStringResource(R.plurals.backup_age_value, it, it) },
-                    settings.backupMaxAgeDays,
-                    icon = Icons.Filled.History,
-                ) { d -> c.appScope.launch { c.settings.update { it.copy(backupMaxAgeDays = d) } } }
             }
             val notify by c.notifySettings.settings.collectAsStateWithLifecycle()
             val lockOn = c.vault.enabled
@@ -148,6 +135,26 @@ fun SettingsScreen() {
                         icon = Icons.Filled.Timer,
                     ) { t -> c.appScope.launch { c.settings.update { it.copy(lockTimeout = t) } } }
                 }
+                GroupSwitch(
+                    stringResource(R.string.hide_content),
+                    stringResource(R.string.hide_content_subtitle),
+                    checked = settings.hideContent,
+                    icon = Icons.Filled.VisibilityOff,
+                ) { on -> c.appScope.launch { c.settings.update { it.copy(hideContent = on) } } }
+            }
+            Group(stringResource(R.string.group_warnings)) {
+                GroupChoice(
+                    stringResource(R.string.pool_warn_title),
+                    listOf(70, 75, 80, 85, 90, 95).map { it to stringResource(R.string.pool_warn_subtitle, it) },
+                    settings.poolWarnPercent,
+                    icon = Icons.Filled.Storage,
+                ) { pct -> c.appScope.launch { c.settings.update { it.copy(poolWarnPercent = pct) } } }
+                GroupChoice(
+                    stringResource(R.string.backup_age_title),
+                    listOf(1, 2, 3, 7, 14, 30).map { it to pluralStringResource(R.plurals.backup_age_value, it, it) },
+                    settings.backupMaxAgeDays,
+                    icon = Icons.Filled.History,
+                ) { d -> c.appScope.launch { c.settings.update { it.copy(backupMaxAgeDays = d) } } }
             }
         }
     }

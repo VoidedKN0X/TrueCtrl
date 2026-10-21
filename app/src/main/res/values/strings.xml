@@ -47,8 +47,8 @@
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
     <string name="theme_black">Pure black</string>
-    <string name="dynamic_colour">Dynamic colour</string>
-    <string name="dynamic_colour_subtitle">Use colours from your wallpaper</string>
+    <string name="dynamic_colour">Use wallpaper colours</string>
+    <string name="dynamic_colour_subtitle">Replaces the default colours with ones from your wallpaper</string>
     <!-- Settings: warnings -->
     <string name="group_warnings">Warnings</string>
     <string name="pool_warn_title">Pool usage warning</string>
@@ -884,7 +884,9 @@
     <string name="key_pgdn">PgDn</string>
     <string name="key_del">Del</string>
     <!-- App lock -->
-    <string name="group_security">Security</string>
+    <string name="group_security">Privacy and security</string>
+    <string name="hide_content">Hide in screenshots and recent apps</string>
+    <string name="hide_content_subtitle">Screenshots, screen recordings and the recent apps view show a blank screen</string>
     <string name="app_lock">App lock</string>
     <string name="app_lock_subtitle">Ask for an app PIN (and optionally your fingerprint) to open TrueCtrl. Separate from your phone\'s PIN</string>
     <string name="app_lock_footer">While TrueCtrl is locked, your saved API keys and passwords stay encrypted with your PIN and the connection to TrueNAS is closed. Widgets and the Quick Settings tile keep showing the last check.</string>

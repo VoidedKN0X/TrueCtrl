@@ -4,6 +4,25 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.10.4 (2026-10-21)
+
+Settings now follow the same layout as the other Ctrl apps, with a new option to keep TrueCtrl out of screenshots.
+
+### New
+
+- **Hide in screenshots and recent apps** (**Settings > Privacy and security**). When it's on, screenshots, screen recordings and casting show a blank screen instead of TrueCtrl. It's off by default and works with or without the app lock. The recent-apps preview is blank either way, as before.
+
+### Changed
+
+- **Settings are in the same order as in every Ctrl app:** Appearance first, then Notifications, then **Privacy and security** (renamed from Security: app lock, change app PIN, fingerprint unlock, lock again and the new screenshot setting), then Warnings.
+- **"Dynamic colour" is now called "Use wallpaper colours"**, the same name as in the other Ctrl apps. It works as before.
+- **The lock screen after updating from the old app lock** looks like the PIN screen and the other Ctrl apps: the same lock badge, and a full-width **Unlock** button.
+
+### Security
+
+- **The lock screen and every PIN screen are always kept out of screenshots and screen recordings**, so a recording can't show the PIN being typed.
+- **Screens where you type secrets stay protected when you move between them.** Leaving one screen that blocks screenshots (sign-in, a dataset passphrase, the shell) while another is still open no longer lifts the protection early.
+
 ## v0.10.3 (2026-10-21)
 
 ### Security

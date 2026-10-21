@@ -48,6 +48,8 @@ data class AppSettings(
     /** The app lock is on (the PIN itself lives in LockVault). */
     val appLock: Boolean = false,
     val lockTimeout: LockTimeout = LockTimeout.IMMEDIATELY,
+    /** FLAG_SECURE everywhere: keep the app out of screenshots, screen recordings and the recent-apps view. */
+    val hideContent: Boolean = false,
 )
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
@@ -58,6 +60,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val backupAge = intPreferencesKey("backup_max_age_days")
         val appLock = booleanPreferencesKey("app_lock")
         val lockTimeout = stringPreferencesKey("lock_timeout")
+        val hideContent = booleanPreferencesKey("hide_content")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -86,6 +89,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         backupMaxAgeDays = (this[K.backupAge] ?: 7).coerceIn(1, 90),
         appLock = this[K.appLock] ?: false,
         lockTimeout = enumOr(this[K.lockTimeout], LockTimeout.IMMEDIATELY),
+        hideContent = this[K.hideContent] ?: false,
     )
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
@@ -97,6 +101,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.backupAge] = s.backupMaxAgeDays
             p[K.appLock] = s.appLock
             p[K.lockTimeout] = s.lockTimeout.name
+            p[K.hideContent] = s.hideContent
         }
     }
 

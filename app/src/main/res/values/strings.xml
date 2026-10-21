@@ -14,7 +14,6 @@
     <string name="back">Back</string>
     <string name="cancel">Cancel</string>
     <string name="selected">Selected</string>
-    <string name="account_and_settings">Account and settings</string>
 
     <!-- What each tab shows -->
     <string name="overview_empty_hint">System health and anything that needs attention.</string>
@@ -23,8 +22,8 @@
     <string name="sharing_empty_hint">SMB and NFS shares and the services behind them.</string>
     <string name="system_empty_hint">Apps, alerts, jobs, updates, network and power.</string>
 
-    <!-- Account page (opened from the profile picture) -->
-    <string name="you_title">Account</string>
+    <!-- You page (opened from the profile picture) -->
+    <string name="you_title">You</string>
     <string name="you_not_connected">Not connected</string>
     <string name="you_not_connected_body">Add your TrueNAS server to get started.</string>
     <string name="settings">Settings</string>

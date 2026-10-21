@@ -26,7 +26,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
 - **Several servers**, signed in with an API key or a password (two-factor codes work too), with a list of what each sign-in is allowed to do
 - **Works offline**: the last known state stays on screen, marked as out of date, when TrueNAS can't be reached
-- **Safe by design**: read-only mode that blocks every change at the connection level, confirmations for anything disruptive (typing the dataset path or hostname for the most dangerous ones), certificate pinning, an optional [app lock](#app-lock) with its own PIN and fingerprint unlock that keeps your saved sign-ins encrypted while locked, **Hide in screenshots and recent apps**, screenshots always blocked wherever you type keys, passwords, passphrases or use the shell, a blank preview in recent apps, API keys and passwords encrypted with the Android Keystore, and dataset passphrases that are never saved
+- **Safe by design**: read-only mode that blocks every change at the connection level, confirmations for anything disruptive (typing the dataset path or hostname for the most dangerous ones), certificate pinning, an optional [app lock](#app-lock) with its own PIN and fingerprint unlock that keeps your saved sign-ins encrypted while locked, **Hide in screenshots** and **Hide in recent apps** switches, screenshots always blocked wherever you type keys, passwords, passphrases or use the shell, API keys and passwords encrypted with the Android Keystore, and dataset passphrases that are never saved
 
 ## Screenshots
 
@@ -134,7 +134,12 @@ Turn it on under **Settings > Privacy and security > App lock**. It's off until 
 - **Forgot your PIN?** It can't be recovered, because it encrypts your sign-ins. The lock screen offers to remove every server with its API key or password, and the cached data kept on this phone; nothing changes on your TrueNAS.
 - **Background checks while locked:** with background checks or push on (Settings > Notifications), they keep running while TrueCtrl is locked, so your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Settings says so under the app lock. Turn background checks and push off to keep them sealed with your PIN too. The widgets and the Quick Settings tile keep showing the last check.
 
-**Hide in screenshots and recent apps** (in the same section, also without the app lock) keeps TrueCtrl out of screenshots and screen recordings. The recent-apps preview is always blank, and the lock screen, the shell and every screen where you type an API key, password, one-time password or passphrase are always kept out of screenshots.
+Two more switches in the same section work with or without the app lock, and are both off until you turn them on:
+
+- **Hide in screenshots**: screenshots and screen recordings show a blank screen (and so does the recent-apps view).
+- **Hide in recent apps**: the recent-apps view shows a blank card instead of TrueCtrl. Screenshots still work.
+
+The lock and PIN screens, the shell and every screen where you type an API key, password, one-time password or passphrase are always kept out of screenshots and recordings, whatever these switches say. With the app lock on, the recent-apps view always shows a blank card.
 
 ## Supported TrueNAS versions
 

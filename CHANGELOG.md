@@ -4,6 +4,14 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.10.5 (2026-10-21)
+
+### Changed
+
+- **Hide in screenshots** and **Hide in recent apps** are now two separate switches in **Settings > Privacy and security**, both off by default. **Hide in screenshots** makes screenshots and screen recordings show a blank screen (the recent-apps view too). **Hide in recent apps** only shows a blank card in the recent-apps view, so screenshots still work. They replace the single "Hide in screenshots and recent apps" switch from 0.10.4: if you had turned that on, both new switches are on after the update, so nothing changes for you.
+- **The recent-apps preview is no longer always blank.** Before, TrueCtrl always showed a blank card in recent apps; now it only does with **Hide in recent apps** on, or while the app lock is on (a preview would otherwise show your server without the PIN). Turn on **Hide in recent apps** to keep the old behaviour.
+- The lock and PIN screens, the shell and every screen where you type an API key, password, one-time password or passphrase are still always kept out of screenshots and recordings, whatever the switches say.
+
 ## v0.10.4 (2026-10-21)
 
 Settings now follow the same layout as the other Ctrl apps, with a new option to keep TrueCtrl out of screenshots.

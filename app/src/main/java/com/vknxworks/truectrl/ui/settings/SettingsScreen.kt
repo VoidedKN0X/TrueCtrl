@@ -37,7 +37,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.outlined.Layers
 import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupChoice
 import com.vknxworks.truectrl.ui.components.GroupSwitch
@@ -136,11 +137,17 @@ fun SettingsScreen() {
                     ) { t -> c.appScope.launch { c.settings.update { it.copy(lockTimeout = t) } } }
                 }
                 GroupSwitch(
-                    stringResource(R.string.hide_content),
-                    stringResource(R.string.hide_content_subtitle),
-                    checked = settings.hideContent,
-                    icon = Icons.Filled.VisibilityOff,
-                ) { on -> c.appScope.launch { c.settings.update { it.copy(hideContent = on) } } }
+                    stringResource(R.string.hide_screenshots),
+                    stringResource(R.string.hide_screenshots_subtitle),
+                    checked = settings.hideScreenshots,
+                    icon = Icons.Outlined.VisibilityOff,
+                ) { on -> c.appScope.launch { c.settings.update { it.copy(hideScreenshots = on) } } }
+                GroupSwitch(
+                    stringResource(R.string.hide_recents),
+                    stringResource(R.string.hide_recents_subtitle),
+                    checked = settings.hideRecents,
+                    icon = Icons.Outlined.Layers,
+                ) { on -> c.appScope.launch { c.settings.update { it.copy(hideRecents = on) } } }
             }
             Group(stringResource(R.string.group_warnings)) {
                 GroupChoice(

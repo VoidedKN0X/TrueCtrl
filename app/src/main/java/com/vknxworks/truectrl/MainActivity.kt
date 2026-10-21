@@ -23,14 +23,13 @@ import com.vknxworks.truectrl.ui.theme.TrueCtrlTheme
 import android.view.WindowManager
 import androidx.compose.runtime.LaunchedEffect
 import com.vknxworks.truectrl.ui.components.ScreenPrivacy
+import com.vknxworks.truectrl.ui.components.WindowPrivacy
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // The recent-apps view shows a blank card instead of a snapshot of pools, datasets and shares.
-        setRecentsScreenshotEnabled(false)
         val c = container
         setContent {
             val settings by c.settings.settings.collectAsStateWithLifecycle()
@@ -50,13 +49,11 @@ class MainActivity : ComponentActivity() {
             // Until the settings are read, trust the synchronous read made at start-up.
             val lockSetting = stored?.appLock ?: c.lockAtStart
             val covered = lockCovering(lockSetting, c.vault)
-            // "Hide in screenshots and recent apps", and always for the lock and PIN screens and the
-            // screens where secrets are typed (see SecureWindow).
-            val secure = settings.hideContent || covered || ScreenPrivacy.forced > 0
-            LaunchedEffect(secure) {
-                if (secure) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-            }
+            // "Hide in screenshots" and "Hide in recent apps" (both off by default). FLAG_SECURE is always on
+            // for the lock and PIN screens and the screens where secrets are typed (see SecureWindow), and
+            // with the app lock on Recents always shows a blank card (a preview would skip the PIN).
+            val secure = settings.hideScreenshots || covered || ScreenPrivacy.forced > 0
+            WindowPrivacy(this, secure, hideRecents = settings.hideRecents || lockSetting || c.vault.enabled)
             TrueCtrlTheme(settings.theme, settings.dynamicColor) {
                 Box(Modifier.fillMaxSize()) {
                     // The app stays underneath (so nothing you typed is lost), hidden from TalkBack too.

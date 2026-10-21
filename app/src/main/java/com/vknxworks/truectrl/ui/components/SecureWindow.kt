@@ -1,14 +1,17 @@
 package com.vknxworks.truectrl.ui.components
 
+import android.app.Activity
 import android.content.Context
+import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 
 /**
- * Screens that always get FLAG_SECURE, whatever "Hide in screenshots and recent apps" says: where an
+ * Screens that always get FLAG_SECURE, whatever "Hide in screenshots" says: where an
  * API key, password, one-time password or dataset passphrase is typed, and the shell. MainActivity
  * applies the flag. A count rather than a flag, so two such screens overlapping during a transition
  * can't clear it early, and leaving one never lifts the user's own setting.
@@ -31,6 +34,20 @@ fun SecureWindow() {
         ScreenPrivacy.acquire()
         onDispose { ScreenPrivacy.release() }
     }
+}
+
+/**
+ * Applies "Hide in screenshots" ([secure]: FLAG_SECURE, which also blanks the recent-apps preview) and
+ * "Hide in recent apps" ([hideRecents]: a blank card in Recents, screenshots still work) to [activity]'s
+ * window, and again whenever they change, so a switch works at once in every open screen.
+ */
+@Composable
+fun WindowPrivacy(activity: Activity, secure: Boolean, hideRecents: Boolean) {
+    LaunchedEffect(secure) {
+        if (secure) activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        else activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    }
+    LaunchedEffect(hideRecents) { activity.setRecentsScreenshotEnabled(!hideRecents) }
 }
 
 /**

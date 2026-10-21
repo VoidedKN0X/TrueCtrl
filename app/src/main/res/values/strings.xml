@@ -964,4 +964,5 @@
     </plurals>
     <string name="tile_label">TrueNAS</string>
     <string name="tile_unreachable">Can\'t reach it</string>
+    <string name="error_cert_unreadable">Couldn\'t read the certificate %1$s presents, so it can\'t be checked. Try again, or check the address.</string>
 </resources>

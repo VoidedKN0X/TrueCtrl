@@ -70,7 +70,13 @@ import com.vknxworks.truectrl.ui.components.PillButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.WindowInfo
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import javax.crypto.Cipher
 import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -94,7 +100,49 @@ object AppLock {
     /** Set by the app: wipes the vault key and closes the connection. */
     var onLocked: () -> Unit = {}
 
-    private var authenticating = false
+    /**
+     * Goes up every time you come back to the app after really leaving it (not for the fingerprint prompt
+     * itself), so the lock screen offers the fingerprint again on every return, not just once per lock.
+     */
+    var returns by mutableIntStateOf(0)
+        private set
+
+    /** The fingerprint or screen lock prompt that is open right now, if any. */
+    private var promptSignal: CancellationSignal? = null
+    private var promptStartedAt = 0L
+    private var promptGeneration = 0
+
+    /**
+     * A prompt is open. Some phones drop a prompt without ever answering (for example one asked for while
+     * the app was still coming back on screen); such a prompt stops counting after a minute, and asking
+     * again always replaces it, so it can never block fingerprint unlock until the app is closed.
+     */
+    private val authenticating: Boolean
+        get() = promptSignal != null && SystemClock.elapsedRealtime() - promptStartedAt < PROMPT_STALE_MS
+
+    private const val PROMPT_STALE_MS = 60_000L
+
+    /**
+     * Starts tracking a new prompt, replacing one that is still marked as open (its late answer, if any, is
+     * ignored). The returned check is true once, and only for the newest prompt.
+     */
+    private fun openPrompt(): Pair<CancellationSignal, () -> Boolean> {
+        promptSignal?.let { runCatching { it.cancel() } }
+        val generation = ++promptGeneration
+        val signal = CancellationSignal()
+        promptSignal = signal
+        promptStartedAt = SystemClock.elapsedRealtime()
+        val finish: () -> Boolean = {
+            if (generation != promptGeneration || promptSignal !== signal) {
+                false
+            } else {
+                promptSignal = null
+                true
+            }
+        }
+        return signal to finish
+    }
+
     private var backgroundAt = 0L
     private var expectReturnAt = 0L
 
@@ -125,6 +173,7 @@ object AppLock {
         backgroundAt = 0L
         expectReturnAt = 0L
         exemptTrip = false
+        if (since > 0) returns++
         if (!enabled || !unlocked || since <= 0 || timeoutMillis < 0) return
         // A trip the app started still locks if you stay away long: after 5 minutes, or the chosen time if longer.
         val limit = if (exempt) maxOf(timeoutMillis, EXEMPT_TRIP_MAX) else timeoutMillis
@@ -163,31 +212,30 @@ object AppLock {
         onError: (String?) -> Unit = {},
         onSuccess: (Cipher) -> Unit,
     ) {
-        if (authenticating) return
-        authenticating = true
+        // Replaces a prompt that is still marked as open; its late answer (if any) is ignored.
+        val (signal, finish) = openPrompt()
         try {
             val prompt = BiometricPrompt.Builder(activity)
                 .setTitle(title)
                 .setSubtitle(subtitle)
                 .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
                 .setNegativeButton(activity.getString(R.string.lock_use_pin), activity.mainExecutor) { _, _ ->
-                    authenticating = false
-                    onError(null)
+                    if (finish()) onError(null)
                 }
                 .build()
             prompt.authenticate(
                 BiometricPrompt.CryptoObject(cipher),
-                CancellationSignal(),
+                signal,
                 activity.mainExecutor,
                 object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                        authenticating = false
+                        if (!finish()) return
                         val c = result.cryptoObject?.cipher
                         if (c != null) onSuccess(c) else onError(activity.getString(R.string.lock_fingerprint_failed))
                     }
 
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                        authenticating = false
+                        if (!finish()) return
                         val cancelled = errorCode == BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED ||
                             errorCode == BiometricPrompt.BIOMETRIC_ERROR_CANCELED
                         onError(if (cancelled) null else errString.toString())
@@ -195,8 +243,7 @@ object AppLock {
                 },
             )
         } catch (e: Exception) {
-            authenticating = false
-            onError(e.message ?: activity.getString(R.string.lock_fingerprint_failed))
+            if (finish()) onError(e.message ?: activity.getString(R.string.lock_fingerprint_failed))
         }
     }
 
@@ -210,31 +257,39 @@ object AppLock {
 
     /** The old app lock: confirms it's you once, before you choose a PIN. */
     fun legacyAuthenticate(activity: Activity, onResult: (String?) -> Unit) {
-        if (authenticating) return
-        authenticating = true
+        // Replaces a prompt that is still marked as open; its late answer (if any) is ignored.
+        val (signal, finish) = openPrompt()
         try {
             val prompt = BiometricPrompt.Builder(activity)
                 .setTitle(activity.getString(R.string.lock_prompt_title))
                 .setSubtitle(activity.getString(R.string.lock_legacy_prompt_subtitle))
                 .setAllowedAuthenticators(LEGACY_AUTHENTICATORS)
                 .build()
-            prompt.authenticate(CancellationSignal(), activity.mainExecutor, object : BiometricPrompt.AuthenticationCallback() {
+            prompt.authenticate(signal, activity.mainExecutor, object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    authenticating = false
+                    if (!finish()) return
                     markUnlocked()
                     onResult(null)
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    authenticating = false
-                    onResult(errString.toString())
+                    if (finish()) onResult(errString.toString())
                 }
             })
         } catch (e: Exception) {
-            authenticating = false
-            onResult(e.message ?: activity.getString(R.string.lock_fingerprint_failed))
+            if (finish()) onResult(e.message ?: activity.getString(R.string.lock_fingerprint_failed))
         }
     }
+}
+
+/**
+ * Waits until the app is really back on screen: resumed, with its window focused. A prompt asked for earlier
+ * (while the app is still coming back from the background) is dropped by the system, on some phones without
+ * any answer, which used to leave fingerprint unlock not working until the app was closed.
+ */
+suspend fun awaitOnScreen(lifecycle: Lifecycle, windowInfo: WindowInfo) {
+    lifecycle.currentStateFlow.first { it.isAtLeast(Lifecycle.State.RESUMED) }
+    snapshotFlow { windowInfo.isWindowFocused }.first { it }
 }
 
 /** What a PIN screen on top of the app is for. */
@@ -317,10 +372,18 @@ private fun LegacyLockedScreen() {
         val a = activity ?: return
         AppLock.legacyAuthenticate(a) { error = it }
     }
-    LaunchedEffect(AppLock.lockCount) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val windowInfo = LocalWindowInfo.current
+    LaunchedEffect(AppLock.lockCount, AppLock.returns) {
         // No screen lock on the phone any more: nothing to confirm with, and anyone holding the phone
         // could already open it, so go straight to choosing a PIN.
-        if (!AppLock.legacyAvailable(context)) AppLock.markUnlocked() else unlock()
+        if (!AppLock.legacyAvailable(context)) {
+            AppLock.markUnlocked()
+            return@LaunchedEffect
+        }
+        // Asked on every lock and every return, once the app is really on screen.
+        awaitOnScreen(lifecycle, windowInfo)
+        unlock()
     }
     BackHandler { activity?.moveTaskToBack(true) }
     Surface(Modifier.fillMaxSize().blockTouches(), color = MaterialTheme.colorScheme.background) {
@@ -368,7 +431,7 @@ private fun PinLockScreen() {
     var checking by remember { mutableStateOf(false) }
     var lockout by remember { mutableLongStateOf(vault.lockoutRemaining()) }
     var forgetting by remember { mutableStateOf(false) }
-    val bioAvailable = remember(AppLock.lockCount) {
+    val bioAvailable = remember(AppLock.lockCount, AppLock.returns) {
         vault.biometricEnabled && AppLock.biometricAvailable(context) && !vault.pinRequired()
     }
 
@@ -395,7 +458,14 @@ private fun PinLockScreen() {
             if (vault.unlockWithBiometric(unlocked)) c.onUnlocked() else message = context.getString(R.string.lock_fingerprint_failed)
         }
     }
-    LaunchedEffect(AppLock.lockCount) { if (bioAvailable) askFingerprint() }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val windowInfo = LocalWindowInfo.current
+    // Offered on every lock and every time you come back to the lock screen, once the app is really on screen.
+    LaunchedEffect(AppLock.lockCount, AppLock.returns) {
+        if (!bioAvailable) return@LaunchedEffect
+        awaitOnScreen(lifecycle, windowInfo)
+        askFingerprint()
+    }
 
     fun submit() {
         if (checking || lockout > 0 || pin.length < LockVault.PIN_MIN) return

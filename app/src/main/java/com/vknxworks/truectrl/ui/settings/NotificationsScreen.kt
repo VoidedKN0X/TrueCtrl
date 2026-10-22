@@ -1,14 +1,10 @@
 package com.vknxworks.truectrl.ui.settings
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
@@ -50,13 +46,13 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.container
+import com.vknxworks.truectrl.ui.components.rememberNotificationAccess
 import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupChoice
 import com.vknxworks.truectrl.ui.components.GroupRow
@@ -74,7 +70,6 @@ import com.vknxworks.truectrl.data.notify.CheckStore
 import com.vknxworks.truectrl.data.notify.NotifyEvent
 import com.vknxworks.truectrl.data.notify.NotifySettings
 import com.vknxworks.truectrl.data.notify.NotifyWorker
-import com.vknxworks.truectrl.data.notify.Notifier
 import com.vknxworks.truectrl.data.notify.Push
 import com.vknxworks.truectrl.data.notify.PushStatus
 import com.vknxworks.truectrl.data.overview.Severity
@@ -93,8 +88,9 @@ fun NotificationsScreen() {
     val access by c.sessions.access.collectAsStateWithLifecycle()
     val lastCheck by CheckStore.lastCheck.collectAsStateWithLifecycle()
     val pushStatus by Push.status.collectAsStateWithLifecycle()
-    var permissionVersion by remember { mutableIntStateOf(0) }
-    val canPost = remember(permissionVersion) { Notifier.canPost(context) }
+    // Re-checked after the permission dialog and whenever the screen comes back (from Android's settings).
+    val notificationAccess = rememberNotificationAccess()
+    val canPost = notificationAccess.canPost
     var batteryVersion by remember { mutableIntStateOf(0) }
     val unrestricted = remember(batteryVersion) {
         context.getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(context.packageName) == true
@@ -106,7 +102,6 @@ fun NotificationsScreen() {
     val owner = LocalLifecycleOwner.current
     LaunchedEffect(owner) {
         owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            permissionVersion++
             batteryVersion++
             servers.forEach { CheckStore.read(context, it.id) }
             Push.load(context, c.notifySettings.current().push)
@@ -121,11 +116,9 @@ fun NotificationsScreen() {
         }
     }
 
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionVersion++ }
+    /** Turning a notification feature on asks for the permission (or opens Android's settings) when notifications are blocked. */
     fun ensurePermission() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        if (!canPost) notificationAccess.fix()
     }
     fun update(transform: (NotifySettings) -> NotifySettings) {
         c.appScope.launch { c.notifySettings.update(transform) }
@@ -175,16 +168,7 @@ fun NotificationsScreen() {
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text(stringResource(R.string.notif_permission_off), color = MaterialTheme.colorScheme.onErrorContainer)
-                        TextButton(onClick = {
-                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                                ensurePermission()
-                            } else {
-                                com.vknxworks.truectrl.ui.lock.AppLock.expectReturn(); context.startActivity(
-                                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                                )
-                            }
-                        }) { Text(stringResource(R.string.notif_permission_allow)) }
+                        TextButton(onClick = { notificationAccess.fix() }) { Text(stringResource(R.string.notif_permission_allow)) }
                     }
                 }
             }
@@ -194,13 +178,14 @@ fun NotificationsScreen() {
                 GroupSwitch(
                     stringResource(R.string.polling_title),
                     stringResource(R.string.polling_subtitle),
-                    checked = settings.polling,
+                    // Shown off while notifications are blocked: the checks can't tell you anything then.
+                    checked = settings.polling && canPost,
                     icon = Icons.Filled.Schedule,
                 ) { on ->
                     if (on) ensurePermission()
                     update { it.copy(polling = on) }
                 }
-                if (settings.polling) {
+                if (settings.polling && canPost) {
                     GroupChoice(
                         stringResource(R.string.polling_interval),
                         NotifySettings.INTERVALS.map { it to pluralStringResource(R.plurals.polling_interval_value, it, it) },
@@ -221,7 +206,7 @@ fun NotificationsScreen() {
                     stringResource(R.string.check_now),
                     icon = Icons.Filled.Refresh,
                     onClick = {
-                        ensurePermission()
+                        notificationAccess.askIfPossible()
                         NotifyWorker.runNow(context)
                         Toast.makeText(context, context.getString(R.string.check_started), Toast.LENGTH_SHORT).show()
                     },
@@ -233,7 +218,7 @@ fun NotificationsScreen() {
                 GroupSwitch(
                     stringResource(R.string.push_title),
                     stringResource(R.string.push_subtitle),
-                    checked = settings.push,
+                    checked = settings.push && canPost,
                     icon = Icons.Filled.Campaign,
                 ) { on ->
                     update { it.copy(push = on) }
@@ -244,7 +229,7 @@ fun NotificationsScreen() {
                         Push.unregister(context)
                     }
                 }
-                if (settings.push) {
+                if (settings.push && canPost) {
                     when (val st = pushStatus) {
                         PushStatus.NtfyMissing -> PushNote(stringResource(R.string.push_no_distributor)) {
                             TextButton(onClick = ::installNtfy) { Text(stringResource(R.string.push_install_ntfy)) }
@@ -332,8 +317,11 @@ fun NotificationsScreen() {
                     GroupSwitch(
                         stringResource(e.label),
                         if (coveredByPush) stringResource(e.summary) + "\n" + stringResource(R.string.ev_sent_by_truenas) else stringResource(e.summary),
-                        checked = settings.on(e),
-                    ) { on -> update { s -> s.copy(disabled = if (on) s.disabled - e else s.disabled + e) } }
+                        checked = settings.on(e) && canPost,
+                    ) { on ->
+                        if (on) ensurePermission()
+                        update { s -> s.copy(disabled = if (on) s.disabled - e else s.disabled + e) }
+                    }
                 }
             }
 

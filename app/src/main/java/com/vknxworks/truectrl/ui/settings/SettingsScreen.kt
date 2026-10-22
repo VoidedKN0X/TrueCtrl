@@ -43,6 +43,7 @@ import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupChoice
 import com.vknxworks.truectrl.ui.components.GroupSwitch
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
+import com.vknxworks.truectrl.ui.components.rememberNotificationAccess
 import kotlinx.coroutines.launch
 
 /** App settings: appearance, notifications, warnings and app lock. */
@@ -73,9 +74,13 @@ fun SettingsScreen() {
                 ) { on -> c.appScope.launch { c.settings.update { it.copy(dynamicColor = on) } } }
             }
             Group(stringResource(R.string.group_notifications)) {
+                val notify by c.notifySettings.settings.collectAsStateWithLifecycle()
+                val notificationAccess = rememberNotificationAccess()
                 GroupRow(
                     stringResource(R.string.notifications),
-                    stringResource(R.string.notifications_subtitle),
+                    stringResource(
+                        if ((notify.polling || notify.push) && !notificationAccess.canPost) R.string.notifications_subtitle_blocked else R.string.notifications_subtitle,
+                    ),
                     icon = Icons.Filled.Notifications,
                     showChevron = true,
                     onClick = { nav.navigate(NotificationsRoute) },

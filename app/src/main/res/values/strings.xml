@@ -378,6 +378,7 @@
     <string name="group_notifications">Notifications</string>
     <string name="notifications">Notifications</string>
     <string name="notifications_subtitle">Background checks, push from TrueNAS, what to notify about</string>
+    <string name="notifications_subtitle_blocked">Notifications are blocked: tap to allow them</string>
     <string name="notif_intro">TrueCtrl can check your TrueNAS in the background and tell you when something needs attention. Push through the ntfy app and your own ntfy server adds instant notifications for every TrueNAS alert, with the background check as a fallback.</string>
     <string name="notif_permission_off">Notifications are turned off for TrueCtrl.</string>
     <string name="notif_permission_allow">Allow notifications</string>

@@ -37,6 +37,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,6 +66,8 @@ import com.vknxworks.truectrl.ui.settings.ServersScreen
 import com.vknxworks.truectrl.ui.setup.SetupScreen
 import com.vknxworks.truectrl.ui.components.LocalBottomClearance
 import com.vknxworks.truectrl.ui.components.LocalHazeState
+import com.vknxworks.truectrl.ui.components.rememberNotificationAccess
+import com.vknxworks.truectrl.ui.lock.lockCovering
 import com.vknxworks.truectrl.ui.overview.AlertsScreen
 import com.vknxworks.truectrl.ui.overview.OverviewScreen
 import com.vknxworks.truectrl.ui.protection.ProtectionScreen
@@ -122,6 +126,18 @@ private fun MainScaffold() {
             launchSingleTop = true
             restoreState = true
         }
+    }
+
+    // Android 13+ drops notifications until they're allowed: with background checks or push on, ask
+    // once, as soon as TrueCtrl is unlocked. After that, the Notifications screen shows it and offers the fix.
+    val c = LocalContext.current.container
+    val notifySettings by c.notifySettings.settings.collectAsStateWithLifecycle()
+    val stored by c.settings.stored.collectAsState(initial = null)
+    val covered = lockCovering(stored?.appLock ?: c.lockAtStart, c.vault)
+    val notificationAccess = rememberNotificationAccess()
+    val notificationsInUse = notifySettings.polling || notifySettings.push
+    LaunchedEffect(covered, notificationsInUse, notificationAccess.granted) {
+        if (!covered && notificationsInUse) notificationAccess.askOnce()
     }
 
     CompositionLocalProvider(LocalNavigator provides navigator) {

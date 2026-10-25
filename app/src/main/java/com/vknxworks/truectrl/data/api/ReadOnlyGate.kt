@@ -28,6 +28,8 @@ object ReadOnlyGate {
         "pool.dataset.snapshot_count",
         "pool.dataset.attachments",
         "pool.dataset.processes",
+        // The SMB share purposes this server offers.
+        "sharing.smb.presets",
         // Job progress and results.
         "core.get_jobs",
         // Disk temperatures and graphs.

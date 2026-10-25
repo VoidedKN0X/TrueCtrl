@@ -19,7 +19,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Disks** with temperatures, temperature and speed graphs, and SMART health (self-tests and attributes on TrueNAS 25.04)
 - **Protection**: periodic snapshot, replication, cloud sync, rsync and scrub tasks with their schedule, last and next run, and the age of the last good backup. Run tasks now, stop a cloud sync, turn snapshot and scrub tasks on and off
 - **Snapshots**: browse per dataset, take, delete one or many, roll back and clone
-- **Sharing**: SMB and NFS shares (turn them on and off), who's connected over SMB, and the services behind them (start, stop, restart, start on boot)
+- **Sharing**: create, edit and delete SMB and NFS shares (pick the dataset, name, purpose, description, read-only, show in the share list, guest access, allowed networks and hosts, map root / map all, security), turn them on and off, see who's connected over SMB, and the services behind them (start, stop, restart, start on boot). TrueCtrl shows when the SMB or NFS service isn't running and offers to start it
 - **System**: apps (start, stop, redeploy, upgrade, open their web UI, live container logs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
 - **Notifications**: background checks every 15 to 120 minutes, and TrueNAS alerts pushed within seconds through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server (TrueCtrl can set it up on TrueNAS for you), with the background checks as a fallback
 - **Widgets and a Quick Settings tile** with pool health and usage, the number of active alerts, and whether anything needs attention
@@ -93,7 +93,7 @@ TrueCtrl works best with its own TrueNAS user and an API key that can only do wh
 | `SNAPSHOT_TASK_WRITE` | Turning periodic snapshot tasks on and off and running them |
 | `REPLICATION_TASK_WRITE` | Running replication tasks |
 | `CLOUD_SYNC_WRITE` | Running and stopping cloud sync tasks |
-| `SHARING_SMB_WRITE`, `SHARING_NFS_WRITE` | Turning SMB and NFS shares on and off |
+| `SHARING_SMB_WRITE`, `SHARING_NFS_WRITE` | Creating, editing, deleting and turning SMB and NFS shares on and off |
 | `SERVICE_READ` + `SERVICE_WRITE` | Starting, stopping and restarting services and choosing whether they start on boot (`SERVICE_WRITE` doesn't include `SERVICE_READ`, so add both) |
 | `APPS_WRITE` | Starting, stopping, redeploying and upgrading apps |
 | `SYSTEM_UPDATE_WRITE` | Installing TrueNAS updates |

@@ -238,6 +238,14 @@ private fun AppNavHost(navController: NavHostController) {
         composable<DatasetRoute> { com.vknxworks.truectrl.ui.storage.DatasetScreen(it.toRoute<DatasetRoute>().id) }
         composable<SnapshotsRoute> { com.vknxworks.truectrl.ui.protection.SnapshotsScreen(it.toRoute<SnapshotsRoute>().dataset) }
 
+        composable<ShareEditRoute> {
+            val r = it.toRoute<ShareEditRoute>()
+            com.vknxworks.truectrl.ui.sharing.ShareEditScreen(
+                if (r.kind == "NFS") com.vknxworks.truectrl.data.sharing.ShareKind.NFS else com.vknxworks.truectrl.data.sharing.ShareKind.SMB,
+                r.id.takeIf { id -> id >= 0 },
+            )
+        }
+
         composable<AppsRoute> { com.vknxworks.truectrl.ui.system.AppsScreen() }
         composable<AppLogsRoute> {
             val r = it.toRoute<AppLogsRoute>()

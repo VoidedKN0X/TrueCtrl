@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.FolderShared
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -53,6 +54,8 @@ import com.vknxworks.truectrl.ui.components.PollWhileVisible
 import com.vknxworks.truectrl.ui.components.StaleBanner
 import com.vknxworks.truectrl.ui.components.TabTitle
 import com.vknxworks.truectrl.ui.components.errorMessage
+import com.vknxworks.truectrl.ui.nav.LocalNavigator
+import com.vknxworks.truectrl.ui.nav.ShareEditRoute
 import com.vknxworks.truectrl.ui.overview.serviceLabel
 import com.vknxworks.truectrl.ui.theme.Gutter
 import com.vknxworks.truectrl.ui.theme.Health
@@ -70,6 +73,7 @@ private sealed interface SharePending {
 fun SharingScreen() {
     val context = LocalContext.current
     val c = context.container
+    val nav = LocalNavigator.current
     val scope = rememberCoroutineScope()
     val state by c.sharing.state.collectAsStateWithLifecycle()
     val active by c.sessions.active.collectAsStateWithLifecycle()
@@ -108,6 +112,8 @@ fun SharingScreen() {
 
     val canSmb = caps?.has("sharing.smb.update") == true && c.sessions.canWrite("SHARING_SMB_WRITE")
     val canNfs = caps?.has("sharing.nfs.update") == true && c.sessions.canWrite("SHARING_NFS_WRITE")
+    val canSmbCreate = caps?.has("sharing.smb.create") == true && c.sessions.canWrite("SHARING_SMB_WRITE")
+    val canNfsCreate = caps?.has("sharing.nfs.create") == true && c.sessions.canWrite("SHARING_NFS_WRITE")
     val canServiceUpdate = caps?.has("service.update") == true && c.sessions.canWrite("SERVICE_WRITE")
     val canControl = (caps?.has("service.control") == true || caps?.has("service.start") == true) && c.sessions.canWrite("SERVICE_WRITE")
     val snap = state.snapshot
@@ -156,12 +162,17 @@ fun SharingScreen() {
                                 Group(
                                     stringResource(R.string.group_smb),
                                     footer = when {
-                                        snap.smb.isEmpty() -> stringResource(R.string.none_set_up)
+                                        snap.smb.isEmpty() && !canSmbCreate -> stringResource(R.string.none_set_up)
                                         smbService != null && !smbService.running -> stringResource(R.string.service_not_running_footer, "SMB")
                                         else -> null
                                     },
                                 ) {
-                                    snap.smb.forEach { s -> ShareRow(s, canSmb) { on -> toggle(s, on) } }
+                                    snap.smb.forEach { s ->
+                                        ShareRow(s, canSmb, onOpen = { nav.navigate(ShareEditRoute("SMB", s.id)) }) { on -> toggle(s, on) }
+                                    }
+                                    if (canSmbCreate) {
+                                        GroupRow(stringResource(R.string.share_new_smb), null, Icons.Outlined.Add, showChevron = true, onClick = { nav.navigate(ShareEditRoute("SMB")) })
+                                    }
                                 }
                             }
                             snap.smbSessions?.let { sessions ->
@@ -179,12 +190,17 @@ fun SharingScreen() {
                                 Group(
                                     stringResource(R.string.group_nfs),
                                     footer = when {
-                                        snap.nfs.isEmpty() -> stringResource(R.string.none_set_up)
+                                        snap.nfs.isEmpty() && !canNfsCreate -> stringResource(R.string.none_set_up)
                                         nfsService != null && !nfsService.running -> stringResource(R.string.service_not_running_footer, "NFS")
                                         else -> null
                                     },
                                 ) {
-                                    snap.nfs.forEach { s -> ShareRow(s, canNfs) { on -> toggle(s, on) } }
+                                    snap.nfs.forEach { s ->
+                                        ShareRow(s, canNfs, onOpen = { nav.navigate(ShareEditRoute("NFS", s.id)) }) { on -> toggle(s, on) }
+                                    }
+                                    if (canNfsCreate) {
+                                        GroupRow(stringResource(R.string.share_new_nfs), null, Icons.Outlined.Add, showChevron = true, onClick = { nav.navigate(ShareEditRoute("NFS")) })
+                                    }
                                 }
                             }
                         } else {
@@ -283,7 +299,7 @@ private fun verbLabel(v: ServiceVerb): Int = when (v) {
 }
 
 @Composable
-private fun ShareRow(s: ShareInfo, canEdit: Boolean, onToggle: (Boolean) -> Unit) {
+private fun ShareRow(s: ShareInfo, canEdit: Boolean, onOpen: () -> Unit, onToggle: (Boolean) -> Unit) {
     val details = listOfNotNull(
         s.path.takeIf { s.kind == ShareKind.SMB && it.isNotBlank() },
         s.comment.takeIf { it.isNotBlank() },
@@ -300,6 +316,9 @@ private fun ShareRow(s: ShareInfo, canEdit: Boolean, onToggle: (Boolean) -> Unit
             !s.enabled -> MaterialTheme.colorScheme.onSurfaceVariant
             else -> MaterialTheme.colorScheme.onSurface
         },
+        // Opens the share's settings (read-only without the role; delete is there too).
+        showChevron = true,
+        onClick = onOpen,
         trailing = if (canEdit) ({ CtrlSwitch(checked = s.enabled, onCheckedChange = onToggle) }) else null,
     )
 }

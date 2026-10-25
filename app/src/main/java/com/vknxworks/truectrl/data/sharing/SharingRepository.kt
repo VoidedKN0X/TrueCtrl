@@ -26,7 +26,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -199,6 +201,79 @@ class SharingRepository(
         val ns = if (share.kind == ShareKind.SMB) "sharing.smb" else "sharing.nfs"
         conn().call("$ns.update", listOf(JsonPrimitive(share.id), buildJsonObject { put("enabled", enabled) }))
         refresh()
+    }
+
+    // --- Creating, editing and deleting shares ---
+
+    /** TrueNAS 25.10 and newer: the new SMB share shape (`readonly`, purpose `options`). */
+    fun smbNewApi(): Boolean = sessions.access.value.capabilities?.version?.atLeast(25, 10) ?: true
+
+    private fun idFilter(id: Int) = JsonArray(listOf(JsonArray(listOf(JsonPrimitive("id"), JsonPrimitive("="), JsonPrimitive(id)))))
+
+    /** One share as TrueNAS returns it, for the editor (keeps fields TrueCtrl doesn't edit). */
+    suspend fun shareRaw(kind: ShareKind, id: Int): JsonObject? {
+        val ns = if (kind == ShareKind.SMB) "sharing.smb" else "sharing.nfs"
+        return conn().call("$ns.query", listOf(idFilter(id))).arr()?.firstOrNull().obj()
+    }
+
+    /**
+     * The SMB share purposes this server offers (sharing.smb.presets), as name → TrueNAS's own
+     * description. Falls back to the default purpose when the call isn't available.
+     */
+    suspend fun smbPurposes(): List<Pair<String, String>> {
+        val caps = sessions.access.value.capabilities
+        val fromServer = if (caps?.has("sharing.smb.presets") == true) {
+            runCatching { conn().call("sharing.smb.presets").obj() }.getOrNull()?.mapNotNull { (k, v) ->
+                // 25.04's "No presets" is the only purpose whose read-only, browsable and ABE settings
+                // aren't overridden by the purpose; from 25.10 on it doesn't exist.
+                if (k == "NO_PRESET" && smbNewApi()) return@mapNotNull null
+                k to (v.obj()?.get("verbose_name").str() ?: k)
+            }
+        } else {
+            null
+        }
+        return fromServer?.takeIf { it.isNotEmpty() } ?: listOf(SmbForm.DEFAULT_PURPOSE to SmbForm.DEFAULT_PURPOSE)
+    }
+
+    suspend fun saveSmb(id: Int?, form: SmbForm) {
+        val payload = form.toPayload(smbNewApi())
+        if (id == null) {
+            conn().call("sharing.smb.create", listOf(payload))
+        } else {
+            conn().call("sharing.smb.update", listOf(JsonPrimitive(id), payload))
+        }
+        refresh()
+    }
+
+    suspend fun saveNfs(id: Int?, form: NfsForm) {
+        val payload = form.toPayload()
+        if (id == null) {
+            conn().call("sharing.nfs.create", listOf(payload))
+        } else {
+            conn().call("sharing.nfs.update", listOf(JsonPrimitive(id), payload))
+        }
+        refresh()
+    }
+
+    /** Deletes the share only; the dataset and its files stay. SMB clients on it are disconnected. */
+    suspend fun deleteShare(kind: ShareKind, id: Int) {
+        val ns = if (kind == ShareKind.SMB) "sharing.smb" else "sharing.nfs"
+        conn().call("$ns.delete", listOf(JsonPrimitive(id)))
+        refresh()
+    }
+
+    /** The service behind [kind] shares (`cifs` or `nfs`), from the last refresh. */
+    fun serviceFor(kind: ShareKind): ServiceInfo? {
+        val name = if (kind == ShareKind.SMB) "cifs" else "nfs"
+        return _state.value.snapshot.services.firstOrNull { it.service == name }
+    }
+
+    /** Starts the service now and sets it to start on boot; each step only when needed. */
+    suspend fun startAndEnable(service: ServiceInfo) {
+        if (!service.enable) {
+            conn().call("service.update", listOf(JsonPrimitive(service.id), buildJsonObject { put("enable", true) }))
+        }
+        if (!service.running) control(service, ServiceVerb.START) else refresh()
     }
 
     /** Start automatically on boot. */

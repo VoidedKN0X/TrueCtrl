@@ -9,11 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +35,16 @@ import com.vknxworks.truectrl.ui.components.percent
 import com.vknxworks.truectrl.ui.components.relativeTime
 import com.vknxworks.truectrl.ui.theme.Gutter
 import com.vknxworks.truectrl.ui.theme.Health
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
+import com.vknxworks.truectrl.ui.components.CtrlLabel
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 
 /** Where tapping an attention item goes. */
 enum class AttentionTarget { ALERTS, STORAGE, PROTECTION, SHARING, SYSTEM }
@@ -117,9 +122,9 @@ private fun detail(item: AttentionItem): String? = when (item) {
 @Composable
 fun SeverityIcon(severity: Severity) {
     val (icon, tint, label) = when (severity) {
-        Severity.CRITICAL -> Triple(Icons.Filled.Error, Health.critical, R.string.sev_critical)
-        Severity.WARNING -> Triple(Icons.Filled.Warning, Health.warn, R.string.sev_warning)
-        Severity.INFO -> Triple(Icons.Filled.Info, MaterialTheme.colorScheme.onSurfaceVariant, R.string.sev_info)
+        Severity.CRITICAL -> Triple(Icons.Outlined.ErrorOutline, Health.critical, R.string.sev_critical)
+        Severity.WARNING -> Triple(Icons.Outlined.WarningAmber, Health.warn, R.string.sev_warning)
+        Severity.INFO -> Triple(Icons.Outlined.Info, CtrlColors.Muted, R.string.sev_info)
     }
     Icon(icon, stringResource(label), Modifier.size(22.dp), tint = tint)
 }
@@ -129,16 +134,11 @@ fun SeverityIcon(severity: Severity) {
 fun AttentionCard(items: List<AttentionItem>, serverName: String, onOpen: (AttentionTarget) -> Unit) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp)) {
-        Text(
-            stringResource(R.string.attention_title),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
-        )
-        Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
+        CtrlLabel(stringResource(R.string.attention_title), Modifier.padding(start = 4.dp, bottom = 8.dp))
+        Surface(shape = CtrlShapes.Card, color = CtrlColors.Surface, border = CtrlColors.CardStroke, modifier = Modifier.fillMaxWidth()) {
             if (items.isEmpty()) {
                 Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.CheckCircle, null, Modifier.size(22.dp), tint = Health.ok)
+                    Icon(Icons.Outlined.CheckCircle, null, Modifier.size(22.dp), tint = Health.ok)
                     Spacer(Modifier.width(14.dp))
                     Column {
                         Text(stringResource(R.string.attention_all_good), style = MaterialTheme.typography.bodyLarge)
@@ -153,11 +153,11 @@ fun AttentionCard(items: List<AttentionItem>, serverName: String, onOpen: (Atten
                 Column(Modifier.padding(vertical = 4.dp)) {
                     val shown = if (expanded) items else items.take(COLLAPSED_COUNT)
                     shown.forEachIndexed { i, item ->
-                        if (i > 0) HorizontalDivider(Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        if (i > 0) HorizontalDivider(Modifier.padding(start = 52.dp), color = CtrlColors.CardBorder)
                         AttentionRow(item, onOpen)
                     }
                     if (items.size > COLLAPSED_COUNT) {
-                        TextButton(onClick = { expanded = !expanded }, modifier = Modifier.padding(start = 40.dp)) {
+                        TextButton(onClick = { expanded = !expanded }, modifier = Modifier.padding(start = 40.dp), colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Accent)) {
                             Text(if (expanded) stringResource(R.string.attention_show_less) else stringResource(R.string.attention_show_all, items.size))
                         }
                     }
@@ -180,11 +180,11 @@ private fun AttentionRow(item: AttentionItem, onOpen: (AttentionTarget) -> Unit)
         SeverityIcon(item.severity)
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(title(item), style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(title(item), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis)
             detail(item)?.let {
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(20.dp), tint = CtrlColors.Muted)
     }
 }

@@ -1,5 +1,7 @@
 package com.vknxworks.truectrl.ui.setup
 
+import com.vknxworks.truectrl.ui.components.CtrlDialog
+import com.vknxworks.truectrl.ui.components.CtrlTextField
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,10 +12,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,7 +48,7 @@ suspend fun fetchCertInfo(url: HttpUrl): CertInfo = withContext(Dispatchers.IO) 
 @Composable
 fun CertTrustDialog(cert: CertInfo, changed: Boolean, onTrust: () -> Unit, onCancel: () -> Unit) {
     val cs = MaterialTheme.colorScheme
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onCancel,
         icon = { Icon(Icons.Outlined.VerifiedUser, null) },
         title = { Text(stringResource(if (changed) R.string.cert_changed_title else R.string.cert_title)) },
@@ -85,14 +85,14 @@ fun CertTrustDialog(cert: CertInfo, changed: Boolean, onTrust: () -> Unit, onCan
 fun OtpDialog(error: String?, busy: Boolean, onSubmit: (String) -> Unit, onCancel: () -> Unit) {
     var value by remember { mutableStateOf("") }
     val canSubmit = !busy && value.length == 6
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onCancel,
         icon = { Icon(Icons.Outlined.Password, null) },
         title = { Text(stringResource(R.string.otp_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(stringResource(R.string.otp_body))
-                OutlinedTextField(
+                CtrlTextField(
                     value = value,
                     onValueChange = { v -> value = v.filter { it.isDigit() }.take(6) },
                     label = { Text(stringResource(R.string.otp_code)) },

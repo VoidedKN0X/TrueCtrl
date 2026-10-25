@@ -1,5 +1,20 @@
 package com.vknxworks.truectrl.ui.settings
 
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.BorderStroke
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
+import androidx.compose.material.icons.outlined.BatteryAlert
+import androidx.compose.material.icons.outlined.BatteryFull
+import androidx.compose.material.icons.outlined.Campaign
+import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
 import android.content.Intent
 import android.net.Uri
 import android.os.PowerManager
@@ -19,13 +34,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatteryAlert
-import androidx.compose.material.icons.filled.BatteryFull
-import androidx.compose.material.icons.filled.Campaign
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,10 +69,6 @@ import com.vknxworks.truectrl.ui.components.ScreenTopBar
 import com.vknxworks.truectrl.ui.components.relativeTime
 import com.vknxworks.truectrl.ui.theme.Gutter
 import kotlinx.coroutines.launch
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.rememberCoroutineScope
 import com.vknxworks.truectrl.data.notify.CheckStore
 import com.vknxworks.truectrl.data.notify.NotifyEvent
@@ -162,13 +166,14 @@ fun NotificationsScreen() {
 
             if (!canPost && (settings.polling || settings.push)) {
                 Surface(
-                    shape = MaterialTheme.shapes.large,
+                    shape = CtrlShapes.Card,
                     color = MaterialTheme.colorScheme.errorContainer,
+                    border = BorderStroke(1.dp, CtrlColors.Error.copy(alpha = 0.45f)),
                     modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text(stringResource(R.string.notif_permission_off), color = MaterialTheme.colorScheme.onErrorContainer)
-                        TextButton(onClick = { notificationAccess.fix() }) { Text(stringResource(R.string.notif_permission_allow)) }
+                        TextButton(onClick = { notificationAccess.fix() }, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Error)) { Text(stringResource(R.string.notif_permission_allow)) }
                     }
                 }
             }
@@ -180,7 +185,7 @@ fun NotificationsScreen() {
                     stringResource(R.string.polling_subtitle),
                     // Shown off while notifications are blocked: the checks can't tell you anything then.
                     checked = settings.polling && canPost,
-                    icon = Icons.Filled.Schedule,
+                    icon = Icons.Outlined.Schedule,
                 ) { on ->
                     if (on) ensurePermission()
                     update { it.copy(polling = on) }
@@ -190,7 +195,7 @@ fun NotificationsScreen() {
                         stringResource(R.string.polling_interval),
                         NotifySettings.INTERVALS.map { it to pluralStringResource(R.plurals.polling_interval_value, it, it) },
                         settings.intervalMinutes,
-                        icon = Icons.Filled.Timer,
+                        icon = Icons.Outlined.Timer,
                     ) { m -> update { it.copy(intervalMinutes = m) } }
                 }
                 servers.forEach { server ->
@@ -204,7 +209,7 @@ fun NotificationsScreen() {
                 }
                 GroupRow(
                     stringResource(R.string.check_now),
-                    icon = Icons.Filled.Refresh,
+                    icon = Icons.Outlined.Refresh,
                     onClick = {
                         notificationAccess.askIfPossible()
                         NotifyWorker.runNow(context)
@@ -219,7 +224,7 @@ fun NotificationsScreen() {
                     stringResource(R.string.push_title),
                     stringResource(R.string.push_subtitle),
                     checked = settings.push && canPost,
-                    icon = Icons.Filled.Campaign,
+                    icon = Icons.Outlined.Campaign,
                 ) { on ->
                     update { it.copy(push = on) }
                     if (on) {
@@ -247,8 +252,8 @@ fun NotificationsScreen() {
                             GroupRow(
                                 stringResource(R.string.push_endpoint),
                                 st.endpoint,
-                                icon = Icons.Filled.NotificationsActive,
-                                trailing = { Icon(Icons.Filled.ContentCopy, stringResource(R.string.copy)) },
+                                icon = Icons.Outlined.NotificationsActive,
+                                trailing = { Icon(Icons.Outlined.ContentCopy, stringResource(R.string.copy)) },
                                 onClick = { copy(st.endpoint) },
                             )
                             val server = active?.server
@@ -271,7 +276,7 @@ fun NotificationsScreen() {
                                 GroupRow(
                                     stringResource(R.string.push_set_up, server.name),
                                     stringResource(R.string.push_set_up_sub),
-                                    icon = Icons.Filled.CloudUpload,
+                                    icon = Icons.Outlined.CloudUpload,
                                     onClick = {
                                         if (!serverBusy) onServer({
                                             Push.setUpOnServer(conn, st.endpoint, settings.minAlertLevel, access.capabilities?.version)
@@ -281,7 +286,7 @@ fun NotificationsScreen() {
                                 )
                                 GroupRow(
                                     stringResource(R.string.push_test),
-                                    icon = Icons.Filled.Send,
+                                    icon = Icons.Outlined.Send,
                                     onClick = {
                                         if (!serverBusy) onServer({
                                             Push.testOnServer(conn, st.endpoint, settings.minAlertLevel, access.capabilities?.version)
@@ -310,7 +315,7 @@ fun NotificationsScreen() {
                         )
                     },
                     settings.minAlertLevel,
-                    icon = Icons.Filled.Tune,
+                    icon = Icons.Outlined.Tune,
                 ) { v -> update { it.copy(minAlertLevel = v) } }
                 NotifyEvent.entries.forEach { e ->
                     val coveredByPush = settings.push && (e == NotifyEvent.NEW_ALERT || e == NotifyEvent.SMART)
@@ -329,7 +334,7 @@ fun NotificationsScreen() {
             Group(stringResource(R.string.group_battery), footer = stringResource(R.string.battery_footer)) {
                 GroupRow(
                     stringResource(if (unrestricted) R.string.battery_unrestricted else R.string.battery_restricted),
-                    icon = if (unrestricted) Icons.Filled.BatteryFull else Icons.Filled.BatteryAlert,
+                    icon = if (unrestricted) Icons.Outlined.BatteryFull else Icons.Outlined.BatteryAlert,
                     iconTint = if (unrestricted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                 )
                 GroupRow(
@@ -371,8 +376,8 @@ private fun ManualSetup() {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .clip(RoundedCornerShape(10.dp))
+                .background(CtrlColors.Raised)
                 .padding(10.dp),
         )
     }

@@ -1,5 +1,7 @@
 package com.vknxworks.truectrl.ui.system
 
+import com.vknxworks.truectrl.ui.components.CtrlDialog
+import com.vknxworks.truectrl.ui.components.CtrlTextField
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
@@ -24,9 +26,7 @@ import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.WorkHistory
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -263,13 +263,13 @@ fun SystemScreen() {
         var text by remember { mutableStateOf(vmId?.toString().orEmpty()) }
         val parsed = text.trim().toIntOrNull()
         val ok = text.isBlank() || (parsed != null && parsed in 100..999_999_999)
-        AlertDialog(
+        CtrlDialog(
             onDismissRequest = { editVm = false },
             title = { Text(stringResource(R.string.proxmox_vm)) },
             text = {
                 Column {
                     Text(stringResource(R.string.proxmox_vm_body))
-                    OutlinedTextField(
+                    CtrlTextField(
                         value = text,
                         onValueChange = { text = it.filter(Char::isDigit).take(9) },
                         label = { Text(stringResource(R.string.proxmox_vm_id)) },

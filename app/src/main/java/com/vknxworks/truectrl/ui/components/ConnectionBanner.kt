@@ -1,5 +1,9 @@
 package com.vknxworks.truectrl.ui.components
 
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.BorderStroke
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,8 +53,9 @@ fun ConnectionBanner(modifier: Modifier = Modifier) {
         error is TnError.KeyExpired || error is TnError.BadPassword || error is TnError.Denied ||
         error is TnError.InsecureAddress
     Surface(
-        shape = MaterialTheme.shapes.large,
+        shape = CtrlShapes.Card,
         color = MaterialTheme.colorScheme.errorContainer,
+        border = BorderStroke(1.dp, CtrlColors.Error.copy(alpha = 0.45f)),
         modifier = modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
     ) {
         Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 14.dp, bottom = 4.dp)) {
@@ -68,11 +73,11 @@ fun ConnectionBanner(modifier: Modifier = Modifier) {
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End) {
                 if (needsSetup) {
-                    TextButton(onClick = { nav.navigate(EditServerRoute(server.id)) }) {
+                    TextButton(onClick = { nav.navigate(EditServerRoute(server.id)) }, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Error)) {
                         Text(stringResource(if (certificate) R.string.check_again else R.string.sign_in_again))
                     }
                 } else {
-                    TextButton(onClick = c.sessions::reconnect) { Text(stringResource(R.string.retry)) }
+                    TextButton(onClick = c.sessions::reconnect, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Error)) { Text(stringResource(R.string.retry)) }
                 }
             }
         }

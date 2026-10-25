@@ -1,5 +1,13 @@
 package com.vknxworks.truectrl.ui.storage
 
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.components.CtrlOutlinedButton
+import com.vknxworks.truectrl.ui.components.CtrlProgressBar
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,16 +21,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -152,7 +154,7 @@ fun PoolScreen(poolId: Int) {
                         if (vdevs.isNotEmpty()) {
                             Group(groupLabel(group)) {
                                 vdevs.forEachIndexed { i, v ->
-                                    if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                    if (i > 0) HorizontalDivider(color = CtrlColors.CardBorder)
                                     VdevBlock(v) { disk -> nav.navigate(DiskRoute(disk)) }
                                 }
                             }
@@ -204,8 +206,9 @@ private fun StatusCard(pool: PoolDetail, warn: Int) {
     val info = pool.info
     val accent = MaterialTheme.colorScheme.primary
     Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = CtrlShapes.Card,
+        color = CtrlColors.Surface,
+        border = CtrlColors.CardStroke,
         modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -261,7 +264,7 @@ private fun ScrubCard(pool: PoolDetail, schedule: ScrubSchedule?, canScrub: Bool
                     ),
                     style = MaterialTheme.typography.titleSmall,
                 )
-                LinearProgressIndicator(progress = { (scan.percentage / 100).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                CtrlProgressBar(progress = { (scan.percentage / 100).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
                 Text(
                     listOfNotNull(
                         scan.startMs?.let { stringResource(R.string.scan_started, relativeTime(it)) },
@@ -299,22 +302,22 @@ private fun ScrubCard(pool: PoolDetail, schedule: ScrubSchedule?, canScrub: Bool
             if (canScrub) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!running || scan?.paused == true) {
-                        OutlinedButton(onClick = { onAction(ScrubAction.START) }) {
-                            Icon(Icons.Filled.PlayArrow, null)
+                        CtrlOutlinedButton(onClick = { onAction(ScrubAction.START) }) {
+                            Icon(Icons.Outlined.PlayArrow, null)
                             Spacer(Modifier.width(6.dp))
                             Text(stringResource(if (scan?.paused == true) R.string.scrub_resume else R.string.scrub_start))
                         }
                     }
                     if (running && scan?.isScrub == true && !scan.paused) {
-                        OutlinedButton(onClick = { onAction(ScrubAction.PAUSE) }) {
-                            Icon(Icons.Filled.Pause, null)
+                        CtrlOutlinedButton(onClick = { onAction(ScrubAction.PAUSE) }) {
+                            Icon(Icons.Outlined.Pause, null)
                             Spacer(Modifier.width(6.dp))
                             Text(stringResource(R.string.scrub_pause))
                         }
                     }
                     if (running && scan?.isScrub == true) {
-                        OutlinedButton(onClick = { onAction(ScrubAction.STOP) }) {
-                            Icon(Icons.Filled.Stop, null)
+                        CtrlOutlinedButton(onClick = { onAction(ScrubAction.STOP) }) {
+                            Icon(Icons.Outlined.Stop, null)
                             Spacer(Modifier.width(6.dp))
                             Text(stringResource(R.string.scrub_stop))
                         }
@@ -396,6 +399,6 @@ private fun DiskLine(d: Vdev, indent: Boolean, onDisk: (String) -> Unit) {
                 color = if (d.errors > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        if (disk != null) Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (disk != null) Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

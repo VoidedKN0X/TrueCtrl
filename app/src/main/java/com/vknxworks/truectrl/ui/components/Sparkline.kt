@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlType
 
 /**
  * A small trend line without axes: a title with the latest value(s) as text, and the line below.
@@ -42,7 +44,7 @@ fun Sparkline(
     val max = (top ?: series.flatMap { it.values }.filterNotNull().maxOrNull() ?: 0.0).let { if (it <= 0) 1.0 else it }
     Column(modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+            Text(title.uppercase(), style = CtrlType.Label, color = CtrlColors.Muted, modifier = Modifier.weight(1f), maxLines = 1)
             series.forEachIndexed { i, s ->
                 if (series.size > 1) {
                     Spacer(Modifier.width(10.dp))
@@ -51,7 +53,7 @@ fun Sparkline(
                     Text(s.label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.width(4.dp))
                 }
-                Text(s.values.lastOrNull { it != null }?.let(format) ?: "—", style = MaterialTheme.typography.labelMedium)
+                Text(s.values.lastOrNull { it != null }?.let(format) ?: "—", style = CtrlType.Mono, color = CtrlColors.Text)
             }
         }
         Spacer(Modifier.height(4.dp))

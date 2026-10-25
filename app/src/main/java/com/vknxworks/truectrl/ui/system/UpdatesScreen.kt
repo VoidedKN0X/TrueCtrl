@@ -1,5 +1,8 @@
 package com.vknxworks.truectrl.ui.system
 
+import com.vknxworks.truectrl.ui.components.CtrlProgressBar
+import com.vknxworks.truectrl.ui.components.CtrlDialog
+import com.vknxworks.truectrl.ui.components.CtrlTextField
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,11 +19,8 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -134,7 +134,7 @@ fun UpdatesScreen() {
                 }
                 s?.downloadPercent?.let { p ->
                     Group(stringResource(R.string.update_downloading)) {
-                        LinearProgressIndicator(
+                        CtrlProgressBar(
                             progress = { (p / 100).toFloat().coerceIn(0f, 1f) },
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
                         )
@@ -190,7 +190,7 @@ private fun UpdateDialog(version: String, hostname: String, onDismiss: () -> Uni
     var typed by remember { mutableStateOf("") }
     var reboot by remember { mutableStateOf(true) }
     val ok = typed == hostname
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.update_confirm_title, version)) },
         text = {
@@ -201,7 +201,7 @@ private fun UpdateDialog(version: String, hostname: String, onDismiss: () -> Uni
                     Text(stringResource(R.string.update_reboot_after), style = MaterialTheme.typography.bodyMedium)
                 }
                 Text(stringResource(R.string.confirm_type, hostname), style = MaterialTheme.typography.bodyMedium)
-                OutlinedTextField(
+                CtrlTextField(
                     value = typed,
                     onValueChange = { typed = it },
                     singleLine = true,

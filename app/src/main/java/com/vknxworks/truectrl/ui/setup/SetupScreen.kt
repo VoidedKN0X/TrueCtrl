@@ -1,5 +1,11 @@
 package com.vknxworks.truectrl.ui.setup
 
+import com.vknxworks.truectrl.ui.components.ctrlSegmentColors
+import com.vknxworks.truectrl.ui.components.ctrlSegmentShape
+import com.vknxworks.truectrl.ui.components.CtrlTextField
+import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,16 +21,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Storage
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -270,7 +271,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
             if (result == null) {
                 if (onCancel == null) {
                     Column(Modifier.padding(horizontal = Gutter, vertical = 16.dp)) {
-                        Icon(Icons.Filled.Storage, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Outlined.Storage, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.height(16.dp))
                         Text(stringResource(R.string.setup_title), style = MaterialTheme.typography.headlineMedium)
                         Spacer(Modifier.height(8.dp))
@@ -278,7 +279,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                     }
                 }
                 Column(Modifier.padding(horizontal = Gutter), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
+                    CtrlTextField(
                         value = address,
                         onValueChange = { address = it.trim() },
                         label = { Text(stringResource(R.string.field_address)) },
@@ -294,7 +295,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    OutlinedTextField(
+                    CtrlTextField(
                         value = name,
                         onValueChange = { name = it },
                         label = { Text(stringResource(R.string.field_name)) },
@@ -308,7 +309,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                             SegmentedButton(
                                 selected = method == m,
                                 onClick = { method = m; error = null },
-                                shape = SegmentedButtonDefaults.itemShape(i, 2),
+                                shape = ctrlSegmentShape(i, 2), colors = ctrlSegmentColors(),
                             ) { Text(stringResource(label)) }
                         }
                     }
@@ -321,14 +322,14 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                     val secretToggle: @Composable () -> Unit = {
                         IconButton(onClick = { showSecret = !showSecret }) {
                             Icon(
-                                if (showSecret) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                if (showSecret) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                                 stringResource(if (showSecret) R.string.hide_secret else R.string.show_secret),
                             )
                         }
                     }
                     val secretTransform = if (showSecret) VisualTransformation.None else PasswordVisualTransformation()
 
-                    OutlinedTextField(
+                    CtrlTextField(
                         value = username,
                         onValueChange = { username = it.trim() },
                         label = { Text(stringResource(R.string.field_username)) },
@@ -343,7 +344,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                         modifier = Modifier.fillMaxWidth(),
                     )
                     when (method) {
-                        AuthMethod.API_KEY -> OutlinedTextField(
+                        AuthMethod.API_KEY -> CtrlTextField(
                             value = apiKey,
                             onValueChange = { apiKey = it },
                             label = { Text(stringResource(R.string.field_api_key)) },
@@ -358,7 +359,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done, autoCorrectEnabled = false),
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        AuthMethod.PASSWORD -> OutlinedTextField(
+                        AuthMethod.PASSWORD -> CtrlTextField(
                             value = password,
                             onValueChange = { password = it },
                             label = { Text(stringResource(R.string.field_password)) },
@@ -440,7 +441,7 @@ private suspend fun askToTrust(
 private fun ConnectedSummary(result: Connected, readOnly: Boolean, onReadOnly: (Boolean) -> Unit) {
     val server = result.server
     Column(Modifier.padding(horizontal = Gutter, vertical = 16.dp)) {
-        Icon(Icons.Filled.Storage, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+        Icon(Icons.Outlined.Storage, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.height(16.dp))
         Text(stringResource(R.string.connected_to, server.name), style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(4.dp))

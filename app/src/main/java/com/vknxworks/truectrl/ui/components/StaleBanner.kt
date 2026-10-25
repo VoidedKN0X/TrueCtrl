@@ -1,5 +1,8 @@
 package com.vknxworks.truectrl.ui.components
 
+import androidx.compose.material3.ButtonDefaults
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,18 +40,19 @@ fun StaleBanner(updatedAt: Long, error: Throwable, host: String, onRetry: () -> 
         reason
     }
     Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.tertiaryContainer,
+        shape = CtrlShapes.Card,
+        color = CtrlColors.Surface,
+        border = CtrlColors.CardStroke,
         modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
     ) {
         Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 2.dp)) {
             Row(verticalAlignment = Alignment.Top) {
-                Icon(Icons.Outlined.History, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onTertiaryContainer)
+                Icon(Icons.Outlined.History, null, Modifier.size(20.dp), tint = CtrlColors.Muted)
                 Spacer(Modifier.width(12.dp))
-                Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.weight(1f).padding(end = 8.dp))
+                Text(text, style = MaterialTheme.typography.bodyMedium, color = CtrlColors.Text, modifier = Modifier.weight(1f).padding(end = 8.dp))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End) {
-                TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                TextButton(onClick = onRetry, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Accent)) { Text(stringResource(R.string.retry)) }
             }
         }
     }

@@ -3,7 +3,7 @@ package com.vknxworks.truectrl.ui.storage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,8 +36,8 @@ fun tempColor(c: Double?, normal: Color): Color = when {
 fun formatTemp(c: Double): String = String.format(Locale.getDefault(), "%.0f °C", c)
 
 @Composable
-fun Dot(color: Color, size: Dp = 10.dp) {
-    Box(Modifier.size(size).clip(CircleShape).background(color))
+fun Dot(color: Color, size: Dp = 8.dp) {
+    Box(Modifier.size(size).clip(CtrlShapes.Dot).background(color))
 }
 
 /** "HDD, 7200 rpm, 4 TiB" style summary. */

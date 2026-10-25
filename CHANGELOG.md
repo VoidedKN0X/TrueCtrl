@@ -4,6 +4,27 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.13.0 (2026-10-25)
+
+### New
+
+- **Create SMB shares**: on the Sharing tab, **New SMB share** below the SMB shares. Pick a dataset (its mount point becomes the path, and its name the share name until you type your own) or type a path under /mnt/, then set the name, an optional description, the purpose (the purposes your TrueNAS offers, such as Default share, Multi-protocol, Time Machine or Private datasets), and whether the share is enabled, read-only, shown in the share list, uses access based share enumeration and allows guests. The name is checked the way TrueNAS checks it (up to 80 characters, no `\ / [ ] : | < > + = ; , * ? " %`, not global, printers or homes) before you can save.
+- **Create NFS shares**: **New NFS share** below the NFS shares, with the path or dataset, description, enabled and read-only, the allowed networks (CIDR, like 192.168.1.0/24) and hosts or IP addresses (one per line, up to 42 of each; both empty allows every client), map root user and group or map all user and group (TrueCtrl stops you from setting both), and the security types (SYS, KRB5, KRB5I, KRB5P; none set uses TrueNAS's default).
+- **Edit shares**: tap an SMB or NFS share to open all its settings and save changes. Settings TrueCtrl doesn't show (such as an SMB share's audit settings or its purpose options like a Time Machine quota) are kept as they are; changing an SMB share's purpose on TrueNAS 25.10 starts that purpose from its defaults.
+- **Delete shares**: **Delete share** at the bottom of a share's page, after a confirmation. Only the share is removed: the dataset and its files stay. Connected SMB clients are disconnected, and NFS clients lose the export.
+- **Service check and start**: a share's page shows whether the SMB or NFS service is running and starts on boot. When it isn't, there's a button to start it and set it to start on boot, and after creating or saving an enabled share TrueCtrl asks whether to do that, so a new share works straight away and after a restart.
+- **Permission hint**: SMB shares explain that who may read and write is set by the dataset's permissions (ACL) in the TrueNAS web UI, not by the share.
+
+### Changed
+
+- **Shares open on tap**: tapping a share opens its page (read-only when your sign-in can't change shares or read-only mode is on); the switch on the row still turns it on and off.
+- **TrueNAS 25.04 and 25.10**: TrueCtrl sends each version's own share fields (25.10 renamed read-only and access based share enumeration and moved guest access into the purpose options; guest access is only offered for the Legacy share purpose there). On 25.04 the purpose list includes **No presets**, and the page notes that other purposes set some options themselves.
+- **Roles**: creating, editing and deleting shares need `SHARING_SMB_WRITE` or `SHARING_NFS_WRITE`; starting the service from a share's page needs `SERVICE_READ` and `SERVICE_WRITE`. Without them the actions are hidden. Read-only mode blocks them all.
+
+### Removed
+
+- An unused placeholder screen left over from early versions (no visible change).
+
 ## v0.12.0 (2026-10-25)
 
 ### New

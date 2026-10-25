@@ -17,6 +17,9 @@ import kotlinx.serialization.Serializable
 /** Snapshots of [dataset], or a dataset picker when null. */
 @Serializable data class SnapshotsRoute(val dataset: String? = null)
 
+/** Creates ([id] -1) or edits an SMB or NFS share; [kind] is "SMB" or "NFS". */
+@Serializable data class ShareEditRoute(val kind: String, val id: Int = -1)
+
 // System
 @Serializable data object AppsRoute
 @Serializable data class AppLogsRoute(val app: String, val container: String, val service: String)

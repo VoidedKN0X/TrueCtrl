@@ -15,6 +15,7 @@ import com.vknxworks.truectrl.data.storage.DatasetRepository
 import com.vknxworks.truectrl.data.storage.StorageRepository
 import com.vknxworks.truectrl.data.server.Sessions
 import com.vknxworks.truectrl.data.settings.SettingsRepository
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -34,7 +35,12 @@ import java.util.concurrent.TimeUnit
 
 /** Manual dependency container; one per process. Created on the main thread in [TrueCtrlApp]. */
 class AppContainer(val context: Context) {
-    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    /**
+     * Work that outlives a screen (settings writes, push messages, connection upkeep). A failure in one
+     * job (a storage or network error nobody expected) ends that job only, never the whole app.
+     * Nothing is logged: errors can carry server addresses.
+     */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, _ -> })
 
     val settings = SettingsRepository(context, appScope)
     val notifySettings = NotifySettingsRepository(context, appScope)

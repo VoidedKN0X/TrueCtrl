@@ -22,25 +22,36 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.util.concurrent.TimeUnit
 
 private const val MAX_IMAGE_BYTES = 6L * 1024 * 1024
 
 /**
  * Downloads one https image and decodes it (PNG, JPEG, WebP), at most 6 MiB and scaled down to
- * about [maxSide] pixels. Null when it can't be loaded. Only used after the user asked for images.
+ * at most [maxSide] pixels on each side. Null when it can't be loaded. Only used after the user asked for images.
  */
-suspend fun loadRemoteBitmap(http: OkHttpClient, url: String, maxSide: Int = 1600): Bitmap? = withContext(Dispatchers.IO) {
+suspend fun loadRemoteBitmap(http: OkHttpClient, url: String, maxSide: Int = 1280): Bitmap? = withContext(Dispatchers.IO) {
     if (!url.startsWith("https://", ignoreCase = true)) return@withContext null
     runCatching {
-        val client = http.newBuilder().followRedirects(true).followSslRedirects(false).build()
+        // Redirects stay on https. The catalog's image host isn't the user's TrueNAS: it isn't told
+        // which app is asking (no TrueCtrl User-Agent), and a stalled download gives up after 30 s.
+        val client = http.newBuilder()
+            .followRedirects(true)
+            .followSslRedirects(false)
+            .apply { interceptors().clear() }
+            .callTimeout(30, TimeUnit.SECONDS)
+            .build()
         val bytes = client.newCall(Request.Builder().url(url).build()).execute().use { r ->
             val body = r.body
             if (!r.isSuccessful || body == null || body.contentLength() > MAX_IMAGE_BYTES) null else readCapped(body.byteStream())
         } ?: return@runCatching null
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
+        // Scaled down until both sides fit in maxSide, so a small file with huge dimensions can't
+        // make a bitmap big enough to run the phone out of memory.
         var sample = 1
-        while (bounds.outWidth / (sample * 2) >= maxSide || bounds.outHeight / (sample * 2) >= maxSide) sample *= 2
+        while (bounds.outWidth / sample > maxSide || bounds.outHeight / sample > maxSide) sample *= 2
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
     }.getOrNull()
 }

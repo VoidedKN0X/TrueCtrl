@@ -209,6 +209,8 @@ fun CatalogAppScreen(name: String, train: String) {
         try {
             detail = c.catalog.details(name, train)
             error = null
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             error = e
         }

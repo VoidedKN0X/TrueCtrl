@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -62,6 +65,7 @@ import com.vknxworks.truectrl.ui.components.PollWhileVisible
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
 import com.vknxworks.truectrl.ui.components.errorMessage
 import com.vknxworks.truectrl.ui.nav.AppLogsRoute
+import com.vknxworks.truectrl.ui.nav.CatalogRoute
 import com.vknxworks.truectrl.ui.nav.LocalNavigator
 import com.vknxworks.truectrl.ui.theme.Health
 import kotlinx.coroutines.launch
@@ -82,9 +86,13 @@ fun AppsScreen() {
     var refreshing by remember { mutableStateOf(false) }
     var sheetFor by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf<Pair<AppDetail, AppVerb>?>(null) }
+    var uninstall by remember { mutableStateOf<AppDetail?>(null) }
     val busy = remember { mutableStateListOf<String>() }
     val snackbar = remember { SnackbarHostState() }
     val canWrite = c.sessions.canWrite("APPS_WRITE")
+    val caps = access.capabilities
+    val canUninstall = canWrite && caps?.has("app.delete") == true
+    val canBrowse = caps?.has("app.available") == true
 
     suspend fun load(): Boolean = try {
         apps = c.system.apps()
@@ -131,7 +139,14 @@ fun AppsScreen() {
             when {
                 list == null && error != null -> EmptyState(Icons.Outlined.Apps, stringResource(R.string.apps_failed), errorMessage(context, error!!, server?.host.orEmpty()))
                 list == null -> EmptyState(Icons.Outlined.Apps, stringResource(R.string.overview_loading), "")
-                list.isEmpty() -> EmptyState(Icons.Outlined.Apps, stringResource(R.string.apps_none), stringResource(R.string.apps_none_body))
+                list.isEmpty() -> EmptyState(
+                    Icons.Outlined.Apps,
+                    stringResource(R.string.apps_none),
+                    stringResource(R.string.apps_none_body),
+                    action = if (canBrowse) ({
+                        com.vknxworks.truectrl.ui.components.CtrlOutlinedButton(onClick = { nav.navigate(CatalogRoute) }) { Text(stringResource(R.string.catalog_browse)) }
+                    }) else null,
+                )
                 else -> LazyColumn(Modifier.fillMaxSize().navigationBarsPadding(), contentPadding = PaddingValues(bottom = 24.dp)) {
                     item {
                         Group(footer = if (!canWrite) stringResource(if (server?.readOnly == true) R.string.read_only_hint else R.string.apps_role_hint) else null) {
@@ -149,6 +164,13 @@ fun AppsScreen() {
                                     onClick = { sheetFor = app.name },
                                     trailing = if (app.name in busy) ({ CircularProgressIndicator(Modifier.padding(2.dp), strokeWidth = 2.dp) }) else null,
                                 )
+                            }
+                        }
+                    }
+                    if (canBrowse) {
+                        item {
+                            Group {
+                                GroupRow(stringResource(R.string.catalog_browse), stringResource(R.string.catalog_sub), Icons.Outlined.Storefront, showChevron = true, onClick = { nav.navigate(CatalogRoute) })
                             }
                         }
                     }
@@ -201,6 +223,19 @@ fun AppsScreen() {
                         })
                     }
                 }
+                if (canUninstall && idle) {
+                    GroupRow(
+                        stringResource(R.string.app_uninstall),
+                        stringResource(R.string.app_uninstall_sub),
+                        Icons.Outlined.Delete,
+                        iconTint = Health.critical,
+                        titleColor = Health.critical,
+                        onClick = {
+                            sheetFor = null
+                            uninstall = app
+                        },
+                    )
+                }
                 app.containers.forEach { ct ->
                     GroupRow(
                         stringResource(R.string.app_logs, ct.service.ifBlank { ct.id.take(12) }),
@@ -212,6 +247,26 @@ fun AppsScreen() {
                             nav.navigate(AppLogsRoute(app.name, ct.id, ct.service))
                         },
                     )
+                }
+            }
+        }
+    }
+
+    uninstall?.let { a ->
+        UninstallDialog(a, onDismiss = { uninstall = null }) { removeVolumes ->
+            uninstall = null
+            busy += a.name
+            scope.launch {
+                try {
+                    c.catalog.uninstall(a.name, removeVolumes)
+                    c.catalog.forget()
+                    load()
+                    c.overview.refresh()
+                    snackbar.showSnackbar(context.getString(R.string.app_uninstalled, a.name))
+                } catch (e: Exception) {
+                    snackbar.showSnackbar(errorMessage(context, e, server?.host.orEmpty()))
+                } finally {
+                    busy -= a.name
                 }
             }
         }
@@ -250,6 +305,62 @@ fun AppsScreen() {
         )
     }
 }
+
+/**
+ * Asks before uninstalling, with "Also delete the app's data (ix-volumes)" off by default. With it
+ * on, the app's name has to be typed, as that data can't be brought back.
+ */
+@Composable
+private fun UninstallDialog(app: AppDetail, onDismiss: () -> Unit, onConfirm: (Boolean) -> Unit) {
+    var removeVolumes by remember { mutableStateOf(false) }
+    var typed by remember { mutableStateOf("") }
+    val ok = !removeVolumes || typed == app.name
+    com.vknxworks.truectrl.ui.components.CtrlDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.app_uninstall_title, app.name)) },
+        text = {
+            Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(if (app.customApp) R.string.app_uninstall_body_custom else R.string.app_uninstall_body))
+                androidx.compose.foundation.layout.Row(
+                    Modifier.fillMaxWidth().switchToggle(removeVolumes) { removeVolumes = it },
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.app_uninstall_volumes), style = MaterialTheme.typography.bodyLarge, color = CtrlColors.Text)
+                        Text(stringResource(R.string.app_uninstall_volumes_sub), style = MaterialTheme.typography.bodySmall)
+                    }
+                    com.vknxworks.truectrl.ui.components.CtrlSwitch(removeVolumes, onCheckedChange = null)
+                }
+                if (removeVolumes) {
+                    Text(stringResource(R.string.confirm_type, app.name), style = MaterialTheme.typography.bodyMedium)
+                    com.vknxworks.truectrl.ui.components.CtrlTextField(
+                        value = typed,
+                        onValueChange = { typed = it },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Ascii,
+                            autoCorrectEnabled = false,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = { onConfirm(removeVolumes) }, enabled = ok) {
+                Text(stringResource(R.string.app_uninstall), color = if (ok) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
+}
+
+/** The row is the switch: one TalkBack stop announced as a switch. */
+private fun Modifier.switchToggle(value: Boolean, onChange: (Boolean) -> Unit): Modifier =
+    this.then(
+        Modifier.toggleable(value = value, role = androidx.compose.ui.semantics.Role.Switch, onValueChange = onChange),
+    )
 
 private fun verbDone(v: AppVerb): Int = when (v) {
     AppVerb.START -> R.string.app_started

@@ -4,6 +4,27 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.0 (2026-10-25)
+
+### New
+
+- **App catalog**: **System › App catalog** (and a **Browse the app catalog** row under your installed apps) lists every app in the trains your TrueNAS uses, most popular first. Search by name, description or tag, and filter by category. Installed apps are marked.
+- **App pages**: tap an app for its description, app version and catalog version, train, categories, maintainers, the versions you can install, its home page and source links (open in your browser) and its read-me.
+- **Icon and screenshots on request**: they're hosted on the internet by the catalog, not on your TrueNAS, so TrueCtrl only downloads them after you tap **Show icon and screenshots** on that app's page (https only, at most 6 MiB per image).
+- **Install apps**: **Install** opens a form built from the app's own questions, the same ones the TrueNAS web UI shows, in their groups and filled in with TrueNAS's defaults for that version. It covers text, passwords (masked, with a show button), numbers with their limits, switches, choices, paths and host paths (with a dataset picker), ixVolume or host path storage, ports, nested settings and lists you can add to and remove from. Settings that only apply to another choice are hidden and not sent, like in the web UI. A field type TrueCtrl doesn't know is shown as text or JSON with its default, so new catalog apps never break the form.
+- **Checks before installing**: the application name (lowercase letters, digits and hyphens, up to 40, not already used; TrueCtrl suggests a free one), required fields, number ranges, text length and allowed characters are checked as you type, and TrueCtrl warns when a port is already used by another app. Pick another version from **Version** if you need one.
+- **Install as a job**: installing starts TrueNAS's install job and opens **Jobs**, where it shows with live progress (and can be stopped). Errors TrueNAS finds in the settings straight away are shown on the form instead.
+- **Uninstall apps**: **Uninstall** in an installed app's sheet removes its containers and images. **Also delete its ix-volumes** (off by default) deletes the data TrueNAS created for the app too; with it on you type the app's name to confirm. Host paths are never touched.
+
+### Changed
+
+- **Apps with no apps**: the empty Apps screen offers **Browse the app catalog**.
+- **Roles**: browsing the catalog needs `CATALOG_READ` (included in `READONLY_ADMIN` and `APPS_READ`); installing and uninstalling need `APPS_WRITE`. Read-only mode blocks installing and uninstalling, and screens hide what your sign-in can't do.
+
+### Security
+
+- **Install forms with passwords** (any field TrueNAS marks as private) are kept out of screenshots, screen recordings and the recent-apps view, whatever **Hide in screenshots** says, and the values you type are never saved on the phone.
+
 ## v0.13.0 (2026-10-25)
 
 ### New

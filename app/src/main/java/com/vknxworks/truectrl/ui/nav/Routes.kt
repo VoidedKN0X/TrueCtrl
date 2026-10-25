@@ -27,6 +27,9 @@ import kotlinx.serialization.Serializable
 @Serializable data object UpdatesRoute
 @Serializable data object NetworkRoute
 @Serializable data object ShellRoute
+@Serializable data object CatalogRoute
+@Serializable data class CatalogAppRoute(val name: String, val train: String)
+@Serializable data class AppInstallRoute(val name: String, val train: String)
 
 // Account and settings, opened from the profile picture
 @Serializable data object YouRoute

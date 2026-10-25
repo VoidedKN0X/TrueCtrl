@@ -20,7 +20,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Protection**: periodic snapshot, replication, cloud sync, rsync and scrub tasks with their schedule, last and next run, and the age of the last good backup. Run tasks now, stop a cloud sync, turn snapshot and scrub tasks on and off
 - **Snapshots**: browse per dataset, take, delete one or many, roll back and clone
 - **Sharing**: create, edit and delete SMB and NFS shares (pick the dataset, name, purpose, description, read-only, show in the share list, guest access, allowed networks and hosts, map root / map all, security), turn them on and off, see who's connected over SMB, and the services behind them (start, stop, restart, start on boot). TrueCtrl shows when the SMB or NFS service isn't running and offers to start it
-- **System**: apps (start, stop, redeploy, upgrade, open their web UI, live container logs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
+- **System**: apps (start, stop, redeploy, upgrade, uninstall with or without their ix-volumes, open their web UI, live container logs), the **app catalog** (search, categories, app pages with version, train, links and optional icon and screenshots, and installing with a form built from the app's own questions: text, numbers, switches, choices, ixVolume or host path storage, ports, lists and more, with anything unusual editable as JSON; the install runs as a job you follow in Jobs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
 - **Notifications**: background checks every 15 to 120 minutes, and TrueNAS alerts pushed within seconds through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server (TrueCtrl can set it up on TrueNAS for you), with the background checks as a fallback
 - **Widgets and a Quick Settings tile** with pool health and usage, the number of active alerts, and whether anything needs attention
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
@@ -95,7 +95,7 @@ TrueCtrl works best with its own TrueNAS user and an API key that can only do wh
 | `CLOUD_SYNC_WRITE` | Running and stopping cloud sync tasks |
 | `SHARING_SMB_WRITE`, `SHARING_NFS_WRITE` | Creating, editing, deleting and turning SMB and NFS shares on and off |
 | `SERVICE_READ` + `SERVICE_WRITE` | Starting, stopping and restarting services and choosing whether they start on boot (`SERVICE_WRITE` doesn't include `SERVICE_READ`, so add both) |
-| `APPS_WRITE` | Starting, stopping, redeploying and upgrading apps |
+| `APPS_WRITE` | Starting, stopping, redeploying, upgrading, installing and uninstalling apps |
 | `SYSTEM_UPDATE_WRITE` | Installing TrueNAS updates |
 | Web shell privilege | The shell (the **Web Shell Access** option on the privilege) |
 | Full Admin only | Rebooting and shutting down. On TrueNAS 25.04 also SMART self-tests, snapshot rollback and clone |
@@ -156,10 +156,11 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 
 ## Privacy
 
-**Telemetry-free.** TrueCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add.
+**Telemetry-free.** TrueCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add (and, only when you ask for them, the images of a catalog app).
 
 - **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket. Push alerts come from TrueNAS through your own ntfy server and the ntfy app, the only push app TrueCtrl works with; TrueCtrl doesn't connect to ntfy itself.
-- **Links:** the Support, Report a bug, Source code and Licence rows in About, and an app's web UI, open in your browser only when you tap them; the app itself doesn't contact GitHub.
+- **Links:** the Support, Report a bug, Source code and Licence rows in About, an app's web UI and the links on a catalog app's page open in your browser only when you tap them; the app itself doesn't contact GitHub.
+- **App catalog images:** a catalog app's icon and screenshots are hosted on the internet by the catalog, not on your TrueNAS. TrueCtrl only downloads them when you tap **Show icon and screenshots** on that app's page.
 - **Notifications** on the lock screen hide server details when you hide sensitive notification content in Android's settings.
 - **No backups:** Android doesn't back up TrueCtrl's data or move it to a new phone.
 

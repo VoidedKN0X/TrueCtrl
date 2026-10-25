@@ -28,6 +28,11 @@ object ReadOnlyGate {
         "pool.dataset.snapshot_count",
         "pool.dataset.attachments",
         "pool.dataset.processes",
+        // The app catalog: apps, categories, an app's details and ports in use. They only read.
+        "app.available",
+        "app.categories",
+        "app.used_ports",
+        "catalog.get_app_details",
         // The SMB share purposes this server offers.
         "sharing.smb.presets",
         // Job progress and results.

@@ -489,10 +489,10 @@ private fun NfsFields(f: NfsForm, enabled: Boolean, onChange: (NfsForm) -> Unit)
         footer = stringResource(if (f.mappingConflict) R.string.share_mapping_conflict else R.string.share_mapping_hint),
     ) {
         listOf(
-            Triple(R.string.share_maproot_user, f.maprootUser) { v: String -> f.copy(maprootUser = v) },
-            Triple(R.string.share_maproot_group, f.maprootGroup) { v: String -> f.copy(maprootGroup = v) },
-            Triple(R.string.share_mapall_user, f.mapallUser) { v: String -> f.copy(mapallUser = v) },
-            Triple(R.string.share_mapall_group, f.mapallGroup) { v: String -> f.copy(mapallGroup = v) },
+            Triple(R.string.share_maproot_user, f.maprootUser, { v: String -> f.copy(maprootUser = v) }),
+            Triple(R.string.share_maproot_group, f.maprootGroup, { v: String -> f.copy(maprootGroup = v) }),
+            Triple(R.string.share_mapall_user, f.mapallUser, { v: String -> f.copy(mapallUser = v) }),
+            Triple(R.string.share_mapall_group, f.mapallGroup, { v: String -> f.copy(mapallGroup = v) }),
         ).forEach { (labelRes, value, update) ->
             FieldBox {
                 CtrlTextField(

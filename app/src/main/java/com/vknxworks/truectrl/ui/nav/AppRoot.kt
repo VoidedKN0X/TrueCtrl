@@ -251,6 +251,15 @@ private fun AppNavHost(navController: NavHostController) {
             val r = it.toRoute<AppLogsRoute>()
             com.vknxworks.truectrl.ui.system.AppLogsScreen(r.app, r.container, r.service)
         }
+        composable<CatalogRoute> { com.vknxworks.truectrl.ui.system.CatalogScreen() }
+        composable<CatalogAppRoute> {
+            val r = it.toRoute<CatalogAppRoute>()
+            com.vknxworks.truectrl.ui.system.CatalogAppScreen(r.name, r.train)
+        }
+        composable<AppInstallRoute> {
+            val r = it.toRoute<AppInstallRoute>()
+            com.vknxworks.truectrl.ui.system.AppInstallScreen(r.name, r.train)
+        }
         composable<JobsRoute> { com.vknxworks.truectrl.ui.system.JobsScreen() }
         composable<UpdatesRoute> { com.vknxworks.truectrl.ui.system.UpdatesScreen() }
         composable<NetworkRoute> { com.vknxworks.truectrl.ui.system.NetworkScreen() }

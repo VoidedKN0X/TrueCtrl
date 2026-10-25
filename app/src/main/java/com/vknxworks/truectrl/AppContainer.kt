@@ -133,6 +133,7 @@ class AppContainer(val context: Context) {
     val protection = ProtectionRepository(context, sessions, appScope)
     val sharing = SharingRepository(context, sessions, appScope)
     val system = SystemRepository(sessions)
+    val catalog = com.vknxworks.truectrl.data.system.CatalogRepository(sessions)
 
     init {
         AppLock.onLocked = { onLocked() }

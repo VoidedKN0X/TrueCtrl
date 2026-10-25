@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Lan
 import androidx.compose.material.icons.outlined.NotificationsActive
@@ -61,6 +62,7 @@ import com.vknxworks.truectrl.ui.components.formatBytes
 import com.vknxworks.truectrl.ui.components.formatUptime
 import com.vknxworks.truectrl.ui.nav.AlertsRoute
 import com.vknxworks.truectrl.ui.nav.AppsRoute
+import com.vknxworks.truectrl.ui.nav.CatalogRoute
 import com.vknxworks.truectrl.ui.nav.JobsRoute
 import com.vknxworks.truectrl.ui.nav.LocalNavigator
 import com.vknxworks.truectrl.ui.nav.NetworkRoute
@@ -152,6 +154,15 @@ fun SystemScreen() {
                                 iconTint = if (crashed > 0) Health.critical else MaterialTheme.colorScheme.primary,
                                 showChevron = true,
                                 onClick = { nav.navigate(AppsRoute) },
+                            )
+                        }
+                        if (caps?.has("app.available") == true) {
+                            GroupRow(
+                                stringResource(R.string.catalog_title),
+                                stringResource(R.string.catalog_sub),
+                                Icons.Outlined.Storefront,
+                                showChevron = true,
+                                onClick = { nav.navigate(CatalogRoute) },
                             )
                         }
                         val activeAlerts = snap.alerts.count { !it.dismissed }

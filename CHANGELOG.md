@@ -4,6 +4,24 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.1 (2026-10-25)
+
+### Fixed
+
+- **No crash when leaving a locked app**: with the app lock set to lock as soon as you leave, pressing Back on the first screen or swiping TrueCtrl away from recent apps could make it crash while it closed, because the lock screen was drawn on a window that was already going away. The lock screen is no longer drawn while the app is closing; TrueCtrl is still locked and opens on the lock screen next time.
+- **No crash from a failed background task**: an unexpected error in work that runs outside a screen (saving a setting, handling a push from ntfy, keeping the connection up) now only stops that one task instead of closing the app.
+- **Leaving a screen while it loads**: leaving an app catalog page, the install form or a share's page while it was still loading could show a "couldn't load" error for a moment, and leaving a share's page while its service was being started could close the screen you'd just gone to. Leaving now simply stops the loading.
+
+### Security
+
+- **Safer catalog images**: icons and screenshots from the app catalog are now scaled down until both sides fit in 1280 pixels (before, a small file with huge dimensions could still use a lot of memory and close the app), images whose size can't be read are skipped, and a download that stalls gives up after 30 seconds.
+- **Less shared with image hosts**: when you tap **Show icon and screenshots**, the catalog's image servers are no longer told that the request comes from TrueCtrl and which version (no TrueCtrl User-Agent). Requests to your TrueNAS are unchanged.
+- **Fewer exported components**: two receivers that AndroidX libraries add for developer and app-store tooling (profile installer and WorkManager diagnostics) are removed, so only the launcher screen, the ntfy push receiver and the Quick Settings tile can be reached by other apps.
+
+### Changed
+
+- Internal cleanup: removed unused texts left over from earlier versions (no visible change).
+
 ## v0.14.0 (2026-10-25)
 
 ### New

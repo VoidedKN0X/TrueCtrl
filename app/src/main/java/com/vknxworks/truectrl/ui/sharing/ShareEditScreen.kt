@@ -133,6 +133,8 @@ fun ShareEditScreen(kind: ShareKind, id: Int?) {
                     if (kind == ShareKind.SMB) smb = SmbForm.from(raw) else nfs = NfsForm.from(raw)
                     loaded = true
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 loadError = e
             }
@@ -328,6 +330,8 @@ fun ShareEditScreen(kind: ShareKind, id: Int?) {
                     try {
                         c.sharing.startAndEnable(svc)
                         finish(context.getString(R.string.service_started, label))
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         finish(errorMessage(context, e, server?.host.orEmpty()))
                     }

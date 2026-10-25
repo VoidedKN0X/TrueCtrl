@@ -123,6 +123,8 @@ fun AppInstallScreen(name: String, train: String) {
             val v = d?.versions?.getOrNull(idx)
             values = AppForm.initialValues(v?.schema, v?.values)
             error = null
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             error = e
         }

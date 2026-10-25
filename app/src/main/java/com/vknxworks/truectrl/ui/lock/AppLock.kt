@@ -316,8 +316,13 @@ fun lockCovering(lockSetting: Boolean, vault: LockVault): Boolean =
  */
 @Composable
 fun AppLockOverlay(lockSetting: Boolean) {
-    val c = LocalContext.current.container
+    val context = LocalContext.current
+    val c = context.container
     val vault = c.vault
+    // Leaving the app (Back on the first screen, swiped from Recents) can lock it while the activity is
+    // already closing: draw nothing new then. The app stays locked and opens on the lock screen next time.
+    val activity = context.findActivity()
+    if (activity != null && (activity.isFinishing || activity.isDestroyed)) return
     when {
         // Updated from the old app lock (the phone's screen lock): confirm once, then choose a PIN.
         lockSetting && !vault.enabled -> {

@@ -16,11 +16,7 @@
     <string name="selected">Selected</string>
 
     <!-- What each tab shows -->
-    <string name="overview_empty_hint">System health and anything that needs attention.</string>
-    <string name="storage_empty_hint">Pools, datasets, zvols and disks with SMART health.</string>
-    <string name="protection_empty_hint">Snapshots, replication, cloud sync, rsync and scrubs.</string>
     <string name="sharing_empty_hint">SMB and NFS shares and the services behind them.</string>
-    <string name="system_empty_hint">Apps, alerts, jobs, updates, network and power.</string>
 
     <!-- You page (opened from the profile picture) -->
     <string name="you_title">You</string>
@@ -41,14 +37,10 @@
     <string name="group_about">About</string>
 
     <!-- Settings -->
-    <string name="group_appearance">Appearance</string>
-    <string name="theme">Theme</string>
     <string name="theme_system">Follow system</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
     <string name="theme_black">Pure black</string>
-    <string name="dynamic_colour">Use wallpaper colours</string>
-    <string name="dynamic_colour_subtitle">Replaces the default colours with ones from your wallpaper</string>
     <!-- Settings: warnings -->
     <string name="group_warnings">Warnings</string>
     <string name="pool_warn_title">Pool usage warning</string>
@@ -178,16 +170,12 @@
     <string name="close">Close</string>
     <string name="percent">%1$d%%</string>
     <string name="per_second">%1$s/s</string>
-    <string name="uptime_value">Up %1$s</string>
-    <string name="used_of">%1$s of %2$s</string>
-    <string name="label_mem">RAM</string>
 
     <!-- Overview -->
     <string name="overview_loading">Loading…</string>
     <string name="overview_not_loaded">Not loaded yet</string>
     <string name="overview_loading_body">Your pools, alerts and system health on %1$s show up here.</string>
     <string name="system_title">System</string>
-    <string name="cpu_model_cores">%1$s, %2$d threads</string>
     <string name="arc_size">ARC %1$s</string>
     <string name="arc_size_hits">ARC %1$s, %2$d%% hits</string>
     <string name="cpu_temp">CPU %1$s °C</string>
@@ -210,7 +198,6 @@
     <string name="overview_memory">Memory</string>
     <string name="overview_storage">Storage</string>
     <string name="overview_of_total">/ %1$s</string>
-    <string name="overview_live">Live</string>
     <string name="overview_pools_healthy">%1$d / %2$d healthy</string>
     <string name="overview_uptime_short">up %1$s</string>
     <string name="pool_usage">%1$s used of %2$s  ·  %3$s free</string>
@@ -1036,7 +1023,6 @@
     <string name="app_lock_subtitle">Ask for an app PIN (and optionally your fingerprint) to open TrueCtrl. Separate from your phone\'s PIN</string>
     <string name="app_lock_footer">While TrueCtrl is locked, your saved API keys and passwords stay encrypted with your PIN and the connection to TrueNAS is closed. Widgets and the Quick Settings tile keep showing the last check.</string>
     <string name="app_lock_footer_background">Background checks for notifications are on, so they can still sign in while TrueCtrl is locked: your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Turn off background checks and push in Notifications to keep them sealed with your PIN too.</string>
-    <string name="lock_title">TrueCtrl is locked</string>
     <string name="lock_title_short">Locked</string>
     <string name="lock_brand">VKNXWorks · Ctrl</string>
     <string name="lock_legacy_body">Unlock with your fingerprint, face or screen lock one last time, then choose an app PIN.</string>

@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -67,7 +68,7 @@ fun CtrlBottomBar(
             .fillMaxWidth()
             .height(64.dp)
             .clip(BarShape)
-            .background(CtrlColors.Surface.copy(alpha = 0.92f))
+            .background(CtrlColors.Bar.copy(alpha = 0.92f))
             .border(1.dp, CtrlColors.ControlBorder, BarShape)
             .padding(horizontal = 8.dp)
             .selectableGroup(),
@@ -82,7 +83,7 @@ fun CtrlBottomBar(
                     .height(48.dp)
                     .widthIn(min = 48.dp)
                     .clip(ItemShape)
-                    .background(if (selected) CtrlColors.Accent else CtrlColors.Surface.copy(alpha = 0f))
+                    .background(if (selected) CtrlColors.Accent else Color.Transparent)
                     .selectable(
                         selected = selected,
                         onClick = {

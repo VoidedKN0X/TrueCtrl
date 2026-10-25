@@ -343,10 +343,10 @@ fun <T> ChoiceSheet(
                     Text(
                         label,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = if (isSel) CtrlColors.Accent else CtrlColors.Text,
+                        color = if (isSel) CtrlColors.AccentText else CtrlColors.Text,
                         modifier = Modifier.weight(1f),
                     )
-                    if (isSel) Icon(Icons.Outlined.Check, stringResource(R.string.selected), Modifier.size(20.dp), tint = CtrlColors.Accent)
+                    if (isSel) Icon(Icons.Outlined.Check, stringResource(R.string.selected), Modifier.size(20.dp), tint = CtrlColors.AccentText)
                 }
             }
         }
@@ -382,7 +382,7 @@ fun CtrlSheet(onDismissRequest: () -> Unit, content: @Composable ColumnScope.() 
         containerColor = CtrlColors.Surface,
         contentColor = CtrlColors.Text,
         tonalElevation = 0.dp,
-        scrimColor = Color.Black.copy(alpha = 0.6f),
+        scrimColor = CtrlColors.Scrim,
         dragHandle = {
             Box(
                 Modifier
@@ -416,7 +416,7 @@ fun EmptyState(
         Box(
             Modifier.size(72.dp).clip(RoundedCornerShape(24.dp)).background(CtrlColors.Surface).border(1.dp, CtrlColors.CardBorder, RoundedCornerShape(24.dp)),
             contentAlignment = Alignment.Center,
-        ) { Icon(icon, null, Modifier.size(30.dp), tint = CtrlColors.Accent) }
+        ) { Icon(icon, null, Modifier.size(30.dp), tint = CtrlColors.AccentText) }
         Spacer(Modifier.height(16.dp))
         Text(title, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
         Spacer(Modifier.height(6.dp))

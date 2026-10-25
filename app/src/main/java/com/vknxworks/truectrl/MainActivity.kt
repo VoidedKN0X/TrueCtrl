@@ -13,6 +13,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.truectrl.ui.nav.AppRoot
@@ -26,13 +28,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Bars follow the phone's dark / light setting; icons switch with it, the bar colour is the background.
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         val c = container
         setContent {
             val settings by c.settings.settings.collectAsStateWithLifecycle()
+            // uiMode changes don't recreate the activity (see the manifest), so update the bars here.
+            val dark = isSystemInDarkTheme()
+            DisposableEffect(dark) {
+                val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+                onDispose { }
+            }
             val stored by c.settings.stored.collectAsState(initial = null)
             // Until the settings are read, trust the synchronous read made at start-up.
             val lockSetting = stored?.appLock ?: c.lockAtStart
@@ -42,7 +52,7 @@ class MainActivity : ComponentActivity() {
             // with the app lock on Recents always shows a blank card (a preview would skip the PIN).
             val secure = settings.hideScreenshots || covered || ScreenPrivacy.forced > 0
             WindowPrivacy(this, secure, hideRecents = settings.hideRecents || lockSetting || c.vault.enabled)
-            TrueCtrlTheme {
+            TrueCtrlTheme(dark) {
                 Box(Modifier.fillMaxSize()) {
                     // The app stays underneath (so nothing you typed is lost), hidden from TalkBack too.
                     Box(if (covered) Modifier.fillMaxSize().clearAndSetSemantics { } else Modifier.fillMaxSize()) { AppRoot() }

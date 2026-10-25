@@ -157,7 +157,7 @@ fun AttentionCard(items: List<AttentionItem>, serverName: String, onOpen: (Atten
                         AttentionRow(item, onOpen)
                     }
                     if (items.size > COLLAPSED_COUNT) {
-                        TextButton(onClick = { expanded = !expanded }, modifier = Modifier.padding(start = 40.dp), colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Accent)) {
+                        TextButton(onClick = { expanded = !expanded }, modifier = Modifier.padding(start = 40.dp), colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.AccentText)) {
                             Text(if (expanded) stringResource(R.string.attention_show_less) else stringResource(R.string.attention_show_all, items.size))
                         }
                     }

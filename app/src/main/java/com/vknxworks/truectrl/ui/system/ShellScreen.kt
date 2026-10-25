@@ -1,6 +1,7 @@
 package com.vknxworks.truectrl.ui.system
 
 import com.vknxworks.truectrl.ui.components.topDivider
+import com.vknxworks.truectrl.ui.theme.AlwaysDark
 import com.vknxworks.truectrl.ui.theme.CtrlColors
 import com.vknxworks.truectrl.ui.theme.CtrlShapes
 import com.vknxworks.truectrl.ui.components.CtrlButton
@@ -145,10 +146,16 @@ private class TrueBridge(
  * [ShellSession]). Needs the web shell privilege on the TrueNAS user and is never offered in
  * read-only mode.
  */
+/** The shell is a terminal: it stays dark in light mode too. */
+@Composable
+fun ShellScreen() {
+    AlwaysDark { ShellContent() }
+}
+
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ShellScreen() {
+private fun ShellContent() {
     val context = LocalContext.current
     val activity = context as? Activity
     val c = context.container

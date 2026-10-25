@@ -70,11 +70,14 @@ object Notifier {
         // On a locked phone only this redacted version shows: no server, pool, disk or app names.
         val redacted = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
+            .setColor(context.getColor(R.color.notification_accent))
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(context.getString(R.string.nt_public_text))
             .build()
         val n = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
+            // Accent for the icon and app name; values-night holds the dark-mode shade.
+            .setColor(context.getColor(R.color.notification_accent))
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setPublicVersion(redacted)
             .setContentTitle(alert.title)

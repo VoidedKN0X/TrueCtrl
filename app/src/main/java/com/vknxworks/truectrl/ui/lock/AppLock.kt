@@ -702,7 +702,7 @@ private fun PinPadScreen(
             Spacer(Modifier.height(28.dp))
             Box(Modifier.height(20.dp).offset { IntOffset(shake.roundToInt(), 0) }, contentAlignment = Alignment.Center) {
                 if (checking) {
-                    CircularProgressIndicator(Modifier.size(20.dp), color = CtrlColors.Accent, strokeWidth = 2.dp)
+                    CircularProgressIndicator(Modifier.size(20.dp), color = CtrlColors.AccentText, strokeWidth = 2.dp)
                 } else {
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                         repeat(maxOf(pin.length, LockVault.PIN_MIN)) { i ->
@@ -732,21 +732,21 @@ private fun PinPadScreen(
                         onFingerprint != null -> Key(
                             keyMod,
                             enabled = enabled,
-                            border = BorderStroke(1.dp, CtrlColors.Accent),
+                            border = BorderStroke(1.dp, CtrlColors.AccentText),
                             filled = false,
                             onClick = onFingerprint,
-                        ) { Icon(Icons.Outlined.Fingerprint, stringResource(R.string.lock_use_fingerprint), Modifier.size(26.dp), tint = CtrlColors.Accent) }
+                        ) { Icon(Icons.Outlined.Fingerprint, stringResource(R.string.lock_use_fingerprint), Modifier.size(26.dp), tint = CtrlColors.AccentText) }
                         else -> Key(
                             keyMod,
                             enabled = enabled && showConfirm,
-                            border = BorderStroke(1.dp, if (enabled && showConfirm) CtrlColors.Accent else CtrlColors.CardBorder),
+                            border = BorderStroke(1.dp, if (enabled && showConfirm) CtrlColors.AccentText else CtrlColors.CardBorder),
                             filled = false,
                             onClick = onConfirm,
                         ) {
                             Text(
                                 confirmLabel,
                                 style = MaterialTheme.typography.titleMedium,
-                                color = if (enabled && showConfirm) CtrlColors.Accent else CtrlColors.Inactive,
+                                color = if (enabled && showConfirm) CtrlColors.AccentText else CtrlColors.Inactive,
                                 maxLines = 1,
                             )
                         }
@@ -767,7 +767,7 @@ private fun PinPadScreen(
             Spacer(Modifier.height(16.dp))
             // With a fingerprint key on the pad, OK for PINs of other lengths moves down here.
             if (onFingerprint != null && showConfirm) {
-                TextButton(onClick = onConfirm, enabled = enabled, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Accent)) { Text(confirmLabel) }
+                TextButton(onClick = onConfirm, enabled = enabled, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.AccentText)) { Text(confirmLabel) }
             }
             bottom()
         }

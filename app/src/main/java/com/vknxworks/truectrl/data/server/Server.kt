@@ -17,7 +17,7 @@ data class Server(
     val id: String,
     /** What the user calls it; defaults to the TrueNAS hostname. */
     val name: String,
-    /** Base address without a path, e.g. https://192.168.1.9. */
+    /** Base address without a path, e.g. https://192.168.1.9 (or http://192.168.1.9 after the HTTP warning). */
     val url: String,
     val auth: AuthMethod,
     /** The TrueNAS user the API key belongs to, or the user that signs in with a password. */
@@ -32,8 +32,16 @@ data class Server(
     val tnVersion: String = "",
     /** The Proxmox VM this TrueNAS runs in, to open it in ProxCtrl (start it again after a shutdown). */
     val proxmoxVmId: Int? = null,
+    /**
+     * The user accepted the "Use an unencrypted connection?" warning for this http:// address.
+     * Without it, nothing is ever sent to a plain HTTP address.
+     */
+    val httpAccepted: Boolean = false,
 ) {
     val host: String get() = url.toHttpUrlOrNull()?.host ?: url
+
+    /** The address is plain http:// (not encrypted). */
+    val isPlainHttp: Boolean get() = ServerAddress.isPlainHttp(url)
 
     /** First letter shown in the profile picture. */
     val initial: String get() = name.ifBlank { host }.take(1)
@@ -52,17 +60,21 @@ data class ServerSecrets(
 
 object ServerAddress {
     /**
-     * Turns what the user typed into a base URL. TrueNAS serves its web UI and API on the standard
-     * HTTPS port, so no port means 443 ("192.168.1.9" → https://192.168.1.9). A typed port is kept.
-     * Paths are dropped. Returns null for anything that isn't a usable https address.
+     * Turns what the user typed into a base URL. Without a scheme it's always HTTPS on the standard
+     * port ("192.168.1.9" → https://192.168.1.9); never a silent fallback to HTTP. Only an address
+     * the user typed with http:// is plain HTTP (port 80 unless one is typed). A typed port is kept.
+     * Paths are dropped. Returns null for anything that isn't a usable http(s) address.
      */
     fun normalize(input: String): HttpUrl? {
         val text = input.trim().trimEnd('/')
         if (text.isEmpty()) return null
-        if (text.startsWith("http://", ignoreCase = true)) return null
-        val withScheme = if (text.startsWith("https://", ignoreCase = true)) text else "https://$text"
+        val withScheme = when {
+            text.startsWith("https://", ignoreCase = true) || text.startsWith("http://", ignoreCase = true) -> text
+            text.contains("://") -> return null
+            else -> "https://$text"
+        }
         val parsed = withScheme.toHttpUrlOrNull() ?: return null
-        return HttpUrl.Builder().scheme("https").host(parsed.host).port(parsed.port).build()
+        return HttpUrl.Builder().scheme(parsed.scheme).host(parsed.host).port(parsed.port).build()
     }
 
     /** The base URL as stored: no trailing slash. */

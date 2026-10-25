@@ -131,8 +131,10 @@ class Connection(
 
     /** Checks the server, opens the socket, signs in and reads what the user may do. */
     private suspend fun open(): RpcSocket {
-        val newest = TnAuth.requireSupported(TnAuth.probe(http, server.url))
-        val s = RpcSocket(http, TnAuth.socketUrl(server.url))
+        // TrueNAS revokes an API key that arrives over plain HTTP: refuse before anything is sent.
+        if (server.isPlainHttp && server.auth == AuthMethod.API_KEY) throw TnError.ApiKeyOverHttp()
+        val newest = TnAuth.requireSupported(TnAuth.probe(http, server.url, allowHttp = server.httpAccepted))
+        val s = RpcSocket(http, TnAuth.socketUrl(server.url, allowHttp = server.httpAccepted))
         try {
             s.open()
             val sec = secrets()
@@ -176,7 +178,13 @@ class Connection(
      * pinned certificate as the API connection and no read timeout.
      */
     fun openWebSocket(path: String, listener: okhttp3.WebSocketListener): okhttp3.WebSocket {
-        val base = server.url.trimEnd('/').replaceFirst(Regex("^https://", RegexOption.IGNORE_CASE), "wss://")
+        val trimmed = server.url.trimEnd('/')
+        val base = when {
+            trimmed.startsWith("https://", ignoreCase = true) -> "wss://" + trimmed.substring("https://".length)
+            // Plain HTTP only for an address the user accepted, like the API connection.
+            trimmed.startsWith("http://", ignoreCase = true) && server.httpAccepted -> "ws://" + trimmed.substring("http://".length)
+            else -> throw TnError.InsecureAddress()
+        }
         val client = http.newBuilder().readTimeout(0, java.util.concurrent.TimeUnit.MILLISECONDS).build()
         return client.newWebSocket(okhttp3.Request.Builder().url(base + path).build(), listener)
     }

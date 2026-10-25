@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TrueNAS API keys only work over HTTPS/WSS, so plain HTTP is switched off for the whole app.
+<!-- HTTPS by default. Plain HTTP is allowed at the platform level so a TrueNAS reached only on the
+     home network or a VPN can use http://, but the app itself only connects over HTTP to a server
+     the user typed with http:// and accepted the "Use an unencrypted connection?" warning for. API
+     keys are never sent over HTTP (TrueNAS revokes them), and the catalog's images stay https only.
      System and user-installed CAs are trusted so servers behind a private CA or Nginx Proxy Manager
      work. A self-signed TrueNAS certificate is never trusted here: the app pins the exact certificate
      the user confirmed by its SHA-256 fingerprint, per server, in code. -->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false">
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />

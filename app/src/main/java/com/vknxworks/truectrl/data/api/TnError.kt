@@ -60,14 +60,25 @@ sealed class TnError(val detail: String? = null, cause: Throwable? = null) : IOE
     /** Read-only mode is on for this server and [method] could change something, so it was never sent. */
     class ReadOnly(val method: String) : TnError(method)
 
-    /** The saved address isn't https://: API keys and passwords are only ever sent over HTTPS/WSS. */
+    /** The address is plain http:// and the user hasn't accepted the HTTP warning for it: nothing is sent. */
     class InsecureAddress : TnError(null)
+
+    /**
+     * An API key would be sent over plain HTTP. TrueNAS revokes an API key that arrives over an
+     * unencrypted connection, so TrueCtrl never sends one there; the user has to sign in with a
+     * password or use https://.
+     */
+    class ApiKeyOverHttp : TnError(null)
+
+    /** The http:// address answered with a redirect to HTTPS (TrueNAS's HTTP → HTTPS redirect is on). Never followed. */
+    class RedirectsToHttps : TnError(null)
 
     /** Errors that retrying on its own can't fix: the user has to change something first. */
     val needsUser: Boolean
         get() = this is UntrustedCertificate || this is PinMismatch || this is NotTrueNas || this is RestOnly ||
             this is Unsupported || this is BadApiKey || this is KeyExpired || this is BadPassword ||
-            this is BadOtp || this is Denied || this is NeedsSignIn || this is InsecureAddress
+            this is BadOtp || this is Denied || this is NeedsSignIn || this is InsecureAddress ||
+            this is ApiKeyOverHttp || this is RedirectsToHttps
 
     companion object {
         /** Sorts a network-level failure from OkHttp. */

@@ -128,6 +128,7 @@ fun YouScreen() {
                         val meta = listOfNotNull(
                             (access.capabilities?.version?.label ?: server.tnVersion).takeIf { it.isNotBlank() }?.let { stringResource(R.string.tn_version, it) },
                             authSummary(server),
+                            if (server.isPlainHttp) stringResource(R.string.server_not_encrypted) else null,
                         ).joinToString("\n")
                         if (meta.isNotBlank()) Text(meta, style = MaterialTheme.typography.bodySmall, color = CtrlColors.Muted)
                     }

@@ -4,6 +4,21 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.2 (2026-10-25)
+
+### Changed
+
+- **Plain HTTP for your own TrueNAS**: you can now type an address with `http://` in front (for example `http://192.168.1.9`) for a TrueNAS you only reach on your home network or over a VPN like Tailscale. Without `http://` or `https://`, TrueCtrl still always connects over HTTPS, and it never switches from HTTPS to HTTP on its own.
+- **Warning before the first HTTP connection**: before anything is sent to an `http://` address, TrueCtrl asks **Use an unencrypted connection?** and explains that your password and everything TrueCtrl shows or changes travel unencrypted, which is fine at home or on a VPN but risky anywhere else. Tap **Use HTTP** to go on. The choice is remembered for that server; changing its address asks again.
+- **Password sign-in only over HTTP**: TrueNAS automatically revokes an API key that's used over an unencrypted connection, so TrueCtrl never sends an API key to an `http://` address. With an `http://` address the setup screen says so and asks you to choose **Password** (two-factor codes work as usual) or use `https://`.
+- **Not encrypted label**: servers on plain HTTP show **Not encrypted (HTTP)** in **Servers** and under the server on your profile page.
+
+### Security
+
+- **Saved API keys stay safe**: if a saved server that signs in with an API key ends up with an `http://` address, TrueCtrl refuses to connect and tells you why, without sending the key, so TrueNAS can't revoke it.
+- **No redirects**: when an `http://` address answers with a redirect to HTTPS (TrueNAS's **Web Interface HTTP -> HTTPS Redirect** is on), TrueCtrl doesn't follow it and tells you to use `https://` instead. Redirects are still never followed.
+- **HTTPS stays as strict as before**: certificate pinning for self-signed certificates, the certificate check before anything secret is sent, and https-only images from the app catalog are unchanged.
+
 ## v0.14.1 (2026-10-25)
 
 ### Fixed

@@ -1,9 +1,6 @@
 package com.vknxworks.truectrl.ui.overview
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,18 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -35,8 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -59,7 +48,6 @@ import com.vknxworks.truectrl.ui.components.LocalBottomClearance
 import com.vknxworks.truectrl.ui.components.PollWhileVisible
 import com.vknxworks.truectrl.ui.components.Sparkline
 import com.vknxworks.truectrl.ui.components.StaleBanner
-import com.vknxworks.truectrl.ui.components.TabTitle
 import com.vknxworks.truectrl.ui.components.UsageBar
 import com.vknxworks.truectrl.ui.components.formatBytes
 import com.vknxworks.truectrl.ui.components.formatUptime
@@ -75,6 +63,24 @@ import com.vknxworks.truectrl.ui.theme.Gutter
 import com.vknxworks.truectrl.ui.theme.Health
 import kotlinx.coroutines.launch
 import java.util.Locale
+import kotlin.math.roundToInt
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
+import com.vknxworks.truectrl.ui.components.CtrlCard
+import com.vknxworks.truectrl.ui.components.CtrlHeroCard
+import com.vknxworks.truectrl.ui.components.CtrlLabel
+import com.vknxworks.truectrl.ui.components.CtrlListRow
+import com.vknxworks.truectrl.ui.components.CtrlMetricCard
+import com.vknxworks.truectrl.ui.components.CtrlSectionHeader
+import com.vknxworks.truectrl.ui.components.CtrlTopBar
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlType
 
 private const val POLL_MS = 30_000L
 
@@ -116,7 +122,7 @@ fun OverviewScreen() {
     }
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        TabTitle(stringResource(R.string.tab_overview))
+        CtrlTopBar(Modifier.padding(start = Gutter, end = Gutter, top = 12.dp, bottom = 4.dp))
         val err = state.error
         if (!access.connected && access.error != null) {
             ConnectionBanner()
@@ -144,15 +150,19 @@ fun OverviewScreen() {
                 )
             } else {
                 LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = LocalBottomClearance.current + 16.dp)) {
-                    item(key = "attention") { AttentionCard(attention, server?.name.orEmpty(), open) }
+                    item(key = "headline") { Headline(snapshot.info ?: access.info, server?.name.orEmpty(), access.connected) }
                     item(key = "system") {
                         SystemCard(
                             info = snapshot.info ?: access.info,
                             realtime = realtime,
+                            pools = snapshot.pools,
                             live = access.connected,
                             memWarn = settings.poolWarnPercent,
+                            poolWarn = settings.poolWarnPercent,
+                            onStorage = { nav.tab(StorageRoute) },
                         )
                     }
+                    item(key = "attention") { AttentionCard(attention, server?.name.orEmpty(), open) }
                     if (snapshot.pools.isNotEmpty()) {
                         item(key = "pools") { PoolsCard(snapshot.pools, settings.poolWarnPercent) { nav.tab(StorageRoute) } }
                     }
@@ -166,201 +176,214 @@ fun OverviewScreen() {
     }
 }
 
+/** Node name as the big headline, with its state above and version and uptime below. */
 @Composable
-private fun Card(onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
-    Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Gutter, vertical = 8.dp)
-            .clip(MaterialTheme.shapes.large)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
-    ) { content() }
+private fun Headline(info: SystemInfo?, serverName: String, live: Boolean) {
+    Column(Modifier.fillMaxWidth().padding(start = Gutter, end = Gutter, top = 14.dp, bottom = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        CtrlLabel(stringResource(if (live) R.string.overview_state_online else R.string.overview_state_offline))
+        Text(
+            info?.hostname?.takeIf { it.isNotBlank() } ?: serverName.ifBlank { stringResource(R.string.system_title) },
+            style = MaterialTheme.typography.displayLarge,
+            color = CtrlColors.Text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (info != null) {
+            // Keeps counting from when it was read, so a cached value still makes sense.
+            val up = info.uptimeSeconds + if (live) (System.currentTimeMillis() - info.readAtMs).coerceAtLeast(0) / 1000 else 0L
+            val meta = listOfNotNull(
+                info.version.takeIf { it.isNotBlank() }?.removePrefix("TrueNAS-"),
+                if (info.uptimeSeconds > 0) stringResource(R.string.overview_uptime_short, formatUptime(up)) else null,
+            ).joinToString(" · ")
+            if (meta.isNotBlank()) Text(meta, style = CtrlType.Mono, color = CtrlColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
 }
 
+/**
+ * The live system block: the CPU hero card with its recent load as bars, memory and storage
+ * metric cards, then the trend lines (memory, network) and ARC / temperature facts.
+ */
 @Composable
-private fun SystemCard(info: SystemInfo?, realtime: Realtime, live: Boolean, memWarn: Int) {
-    val accent = MaterialTheme.colorScheme.primary
-    Card {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+private fun SystemCard(
+    info: SystemInfo?,
+    realtime: Realtime,
+    pools: List<PoolInfo>,
+    live: Boolean,
+    memWarn: Int,
+    poolWarn: Int,
+    onStorage: () -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = Gutter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        val cpuNow = realtime.cpu.lastOrNull { it != null }
+        CtrlHeroCard(Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(12.dp).clip(CircleShape).background(if (live) Health.ok else Health.idle))
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    info?.hostname?.takeIf { it.isNotBlank() } ?: stringResource(R.string.system_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (info != null && info.uptimeSeconds > 0) {
-                    // Keeps counting from when it was read, so a cached value still makes sense.
-                    val up = info.uptimeSeconds + if (live) (System.currentTimeMillis() - info.readAtMs).coerceAtLeast(0) / 1000 else 0L
-                    Text(
-                        stringResource(R.string.uptime_value, formatUptime(up)),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                CtrlLabel(stringResource(R.string.overview_cpu_load), Modifier.weight(1f), color = CtrlColors.OnAccent)
+                if (info != null && info.cores > 0) {
+                    CtrlLabel(pluralStringResource(R.plurals.overview_threads, info.cores, info.cores), color = CtrlColors.OnAccent)
                 }
             }
-            if (info != null) {
-                Text(
-                    listOfNotNull(
-                        info.version.takeIf { it.isNotBlank() }?.let { stringResource(R.string.tn_version, it.removePrefix("TrueNAS-")) },
-                        info.model.takeIf { it.isNotBlank() }?.let { m ->
-                            if (info.cores > 0) stringResource(R.string.cpu_model_cores, m, info.cores) else m
-                        },
-                    ).joinToString("\n"),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            val memTotal = realtime.memTotal.takeIf { it > 0 } ?: info?.physmem ?: 0
-            val memUsed = realtime.memUsed.lastOrNull { it != null }
-            if (memTotal > 0) {
-                val fraction = memUsed?.let { it / memTotal }
-                Meter(
-                    stringResource(R.string.label_mem),
-                    memUsed?.let { stringResource(R.string.used_of, formatBytes(it.toLong()), formatBytes(memTotal)) } ?: formatBytes(memTotal),
-                    fraction,
-                    usageColor(fraction, maxOf(memWarn, 90), accent),
-                )
-            }
-            val facts = listOfNotNull(
-                realtime.arcSize?.let { arc ->
-                    realtime.arcHit?.let { stringResource(R.string.arc_size_hits, formatBytes(arc), it.toInt()) }
-                        ?: stringResource(R.string.arc_size, formatBytes(arc))
+            Text(
+                buildAnnotatedString {
+                    append(cpuNow?.let { it.coerceIn(0.0, 100.0).roundToInt().toString() } ?: "—")
+                    withStyle(SpanStyle(fontSize = 28.sp, letterSpacing = 0.sp)) { append("%") }
                 },
-                realtime.cpuTemp?.let { stringResource(R.string.cpu_temp, String.format(Locale.getDefault(), "%.0f", it)) },
+                style = CtrlType.BigNumber,
+                color = CtrlColors.OnAccent,
             )
-            if (facts.isNotEmpty()) {
-                Text(facts.joinToString("  ·  "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-
             if (realtime.cpu.size >= 2) {
-                Spacer(Modifier.height(2.dp))
-                Sparkline(
-                    stringResource(R.string.sparkline_cpu),
-                    listOf(ChartSeries(stringResource(R.string.series_cpu), realtime.cpu)),
-                    format = { "${it.toInt()}%" },
-                    top = 100.0,
-                )
-                if (memTotal > 0) {
-                    Sparkline(
-                        stringResource(R.string.sparkline_mem),
-                        listOf(ChartSeries(stringResource(R.string.series_used), realtime.memUsed)),
-                        format = { formatBytes(it.toLong()) },
-                        top = memTotal.toDouble(),
-                    )
-                }
-                val rateTemplate = stringResource(R.string.per_second, "%s")
-                Sparkline(
-                    stringResource(R.string.sparkline_net),
-                    listOf(
-                        ChartSeries(stringResource(R.string.series_in), realtime.netIn),
-                        ChartSeries(stringResource(R.string.series_out), realtime.netOut),
-                    ),
-                    format = { rateTemplate.replace("%s", formatBytes(it.toLong())) },
-                )
+                LoadBars(realtime.cpu, Modifier.fillMaxWidth().height(34.dp))
             } else if (live) {
-                Text(stringResource(R.string.live_waiting), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.live_waiting), style = CtrlType.Mono, color = CtrlColors.OnAccent)
             }
+            if (info != null && info.model.isNotBlank()) {
+                Text(info.model, style = CtrlType.Mono, color = CtrlColors.OnAccent.copy(alpha = 0.72f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+
+        val memTotal = realtime.memTotal.takeIf { it > 0 } ?: info?.physmem ?: 0
+        val memUsed = realtime.memUsed.lastOrNull { it != null }
+        val memFraction = if (memTotal > 0) memUsed?.let { it / memTotal } else null
+        val poolSize = pools.sumOf { it.size }
+        val poolUsed = pools.sumOf { it.allocated }
+        val poolFraction = if (poolSize > 0) poolUsed.toDouble() / poolSize else null
+        if (memTotal > 0 || poolSize > 0) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                CtrlMetricCard(
+                    label = stringResource(R.string.overview_memory),
+                    value = memUsed?.let { formatBytes(it.toLong()) } ?: formatBytes(memTotal),
+                    unit = if (memUsed != null && memTotal > 0) stringResource(R.string.overview_of_total, formatBytes(memTotal)) else null,
+                    fraction = memFraction ?: if (memTotal > 0) 0.0 else null,
+                    barColor = usageColor(memFraction, maxOf(memWarn, 90), CtrlColors.Text),
+                    modifier = Modifier.weight(1f),
+                )
+                CtrlMetricCard(
+                    label = stringResource(R.string.overview_storage),
+                    value = if (poolSize > 0) formatBytes(poolUsed) else "—",
+                    unit = if (poolSize > 0) stringResource(R.string.overview_of_total, formatBytes(poolSize)) else null,
+                    fraction = poolFraction ?: if (poolSize > 0) 0.0 else null,
+                    barColor = usageColor(poolFraction, poolWarn, CtrlColors.Text),
+                    modifier = Modifier.weight(1f),
+                    onClick = onStorage,
+                )
+            }
+        }
+
+        val facts = listOfNotNull(
+            realtime.arcSize?.let { arc ->
+                realtime.arcHit?.let { stringResource(R.string.arc_size_hits, formatBytes(arc), it.toInt()) }
+                    ?: stringResource(R.string.arc_size, formatBytes(arc))
+            },
+            realtime.cpuTemp?.let { stringResource(R.string.cpu_temp, String.format(Locale.getDefault(), "%.0f", it)) },
+        )
+        if (realtime.cpu.size >= 2 || facts.isNotEmpty()) {
+            CtrlCard(Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (realtime.cpu.size >= 2) {
+                        Sparkline(
+                            stringResource(R.string.sparkline_cpu),
+                            listOf(ChartSeries(stringResource(R.string.series_cpu), realtime.cpu)),
+                            format = { "${it.toInt()}%" },
+                            top = 100.0,
+                        )
+                        if (memTotal > 0) {
+                            Sparkline(
+                                stringResource(R.string.sparkline_mem),
+                                listOf(ChartSeries(stringResource(R.string.series_used), realtime.memUsed)),
+                                format = { formatBytes(it.toLong()) },
+                                top = memTotal.toDouble(),
+                            )
+                        }
+                        val rateTemplate = stringResource(R.string.per_second, "%s")
+                        Sparkline(
+                            stringResource(R.string.sparkline_net),
+                            listOf(
+                                ChartSeries(stringResource(R.string.series_in), realtime.netIn),
+                                ChartSeries(stringResource(R.string.series_out), realtime.netOut),
+                            ),
+                            format = { rateTemplate.replace("%s", formatBytes(it.toLong())) },
+                        )
+                    }
+                    if (facts.isNotEmpty()) {
+                        Text(facts.joinToString("  ·  "), style = CtrlType.Mono, color = CtrlColors.Muted)
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+/** The CPU history as thin bars on the hero card; the newest few are solid. */
+@Composable
+private fun LoadBars(values: List<Double?>, modifier: Modifier) {
+    val shown = values.takeLast(24)
+    Canvas(modifier) {
+        val n = shown.size
+        if (n == 0) return@Canvas
+        val gap = 4.dp.toPx()
+        val w = ((size.width - gap * (n - 1)) / n).coerceAtLeast(1f)
+        val r = CornerRadius(2.dp.toPx(), 2.dp.toPx())
+        shown.forEachIndexed { i, v ->
+            val f = ((v ?: 0.0) / 100.0).coerceIn(0.0, 1.0).toFloat()
+            val h = (size.height * f).coerceAtLeast(2.dp.toPx())
+            drawRoundRect(
+                color = CtrlColors.OnAccent.copy(alpha = if (i >= n - 4) 1f else 0.55f),
+                topLeft = Offset(i * (w + gap), size.height - h),
+                size = Size(w, h),
+                cornerRadius = r,
+            )
         }
     }
 }
 
 @Composable
 private fun PoolsCard(pools: List<PoolInfo>, warn: Int, onClick: () -> Unit) {
-    Column(Modifier.fillMaxWidth()) {
-        Text(
-            stringResource(R.string.pools_title),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = Gutter + 4.dp, top = 8.dp),
-        )
-        Card(onClick = onClick) {
-            Column(Modifier.padding(vertical = 4.dp)) {
-                pools.forEachIndexed { i, pool ->
-                    if (i > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                    PoolRow(pool, warn)
-                }
-            }
-        }
+    Column(Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp)) {
+        val healthy = pools.count { it.isOnline && it.healthy }
+        CtrlSectionHeader(stringResource(R.string.pools_title), trailing = stringResource(R.string.overview_pools_healthy, healthy, pools.size))
+        pools.forEach { pool -> PoolRow(pool, warn, onClick) }
     }
 }
 
 @Composable
-private fun PoolRow(pool: PoolInfo, warn: Int) {
-    val accent = MaterialTheme.colorScheme.primary
+private fun PoolRow(pool: PoolInfo, warn: Int, onClick: () -> Unit) {
     val statusColor = when {
         !pool.isOnline -> Health.critical
         !pool.healthy -> Health.warn
-        else -> Health.ok
+        else -> CtrlColors.Accent
     }
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(10.dp).clip(CircleShape).background(statusColor))
-            Spacer(Modifier.width(10.dp))
-            Text(pool.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val scan = pool.scan
-            val badge = when {
-                scan?.isRunning == true -> stringResource(
-                    if (scan.isScrub) R.string.pool_scrubbing else R.string.pool_resilvering,
-                    scan.percentage.toInt(),
-                )
-                !pool.isOnline || !pool.healthy -> pool.status
-                else -> null
-            }
-            if (badge != null) {
-                Text(badge, style = MaterialTheme.typography.labelMedium, color = if (pool.isOnline && pool.healthy) MaterialTheme.colorScheme.primary else statusColor)
-                Spacer(Modifier.width(8.dp))
-            }
-            pool.usedFraction?.let { Text(stringResource(R.string.percent, percent(it)), style = MaterialTheme.typography.labelLarge) }
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Spacer(Modifier.height(8.dp))
-        UsageBar(pool.usedFraction, usageColor(pool.usedFraction, warn, accent), height = 6.dp)
-        Spacer(Modifier.height(6.dp))
-        Text(
-            stringResource(R.string.pool_usage, formatBytes(pool.allocated), formatBytes(pool.size), formatBytes(pool.free)),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+    val scan = pool.scan
+    val status = when {
+        scan?.isRunning == true -> stringResource(
+            if (scan.isScrub) R.string.pool_scrubbing else R.string.pool_resilvering,
+            scan.percentage.toInt(),
         )
+        else -> pool.status
+    }
+    CtrlListRow(
+        title = pool.name,
+        leading = pool.usedFraction?.let { stringResource(R.string.percent, percent(it)) } ?: "—",
+        subtitle = stringResource(R.string.pool_usage, formatBytes(pool.allocated), formatBytes(pool.size), formatBytes(pool.free)),
+        status = status,
+        statusColor = statusColor,
+        onClick = onClick,
+    ) {
+        UsageBar(pool.usedFraction, usageColor(pool.usedFraction, warn, CtrlColors.Text), height = 6.dp)
     }
 }
 
 @Composable
 private fun AlertsLine(active: Int, dismissed: Int, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = Gutter + 4.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            listOfNotNull(
+    Column(Modifier.fillMaxWidth().padding(horizontal = Gutter)) {
+        CtrlListRow(
+            title = listOfNotNull(
                 pluralStringResource(R.plurals.alerts_line, active, active),
                 if (dismissed > 0) pluralStringResource(R.plurals.alerts_dismissed_line, dismissed, dismissed) else null,
             ).joinToString("  ·  "),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f),
+            status = if (active > 0) active.toString() else null,
+            statusColor = if (active > 0) Health.warn else CtrlColors.Inactive,
+            onClick = onClick,
         )
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
-private fun Meter(label: String, value: String, fraction: Double?, color: Color) {
-    Column {
-        Row {
-            Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-            Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (fraction != null) {
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.percent, percent(fraction)), style = MaterialTheme.typography.labelLarge)
-            }
-        }
-        Spacer(Modifier.height(6.dp))
-        UsageBar(fraction, color, height = 6.dp)
     }
 }

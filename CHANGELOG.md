@@ -4,6 +4,33 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.11.0 (2026-10-25)
+
+TrueCtrl gets **Ctrl / Signal**, the new look shared by every VKNXWorks Ctrl app: near-black, high contrast, one violet accent. This is a visual update only: every screen, action, setting, notification and the app lock work exactly as before.
+
+### Changed
+
+- **Dark only, new colours**: a near-black background (#08080A) with dark grey cards (#141417) edged by a thin border, off-white text and a single violet accent (#B48CFF) for everything active or selected. Errors are a soft red, warnings stay amber. The status and navigation bars are the same colour as the app, with light icons, edge to edge.
+- **New fonts, bundled in the app**: Space Grotesk for all text and headings, and JetBrains Mono for numbers, readouts, section labels and the wordmark. Both are under the SIL Open Font License 1.1 and their licences ship with the app (`assets/licenses/`). They replace Manrope, which has been removed. Nothing is downloaded at run time.
+- **New top bar**: the main tabs show a **TRUE/CTRL** wordmark (the slash in violet) on the left and your profile picture on the right, then the tab's name as a large headline. The profile picture is now a rounded square with the server's initial and a small violet badge while TrueCtrl is connected. Tapping it still opens **You**, the only way into Settings.
+- **Pushed screens** (pool, dataset, disk, snapshots, apps, jobs, updates, network, alerts, servers, settings, notifications) get a square back button and the title next to it, with no coloured bar behind them.
+- **Overview redesigned** like the other Ctrl apps: the server's hostname as a big headline with its state (online or offline), TrueNAS version and uptime; a violet **CPU load** card with the current load as a big number and the last two minutes as bars; **Memory** and **Storage** cards with used / total and a bar (storage adds up all pools; tap it to open Storage); a card with the CPU, memory and network trend lines plus ARC and CPU temperature. Below that come **Needs attention**, then **Pools** as a plain list (used percentage, name, usage, health status in mono with a square dot, usage bar), and the alerts line.
+- **New bottom bar**: a floating dark bar with rounded corners and a thin border. The selected tab is a violet block with its icon and name; the other tabs show their icon only (TalkBack still reads their names). On tablets and in landscape the side rail uses the same colours.
+- **Switches**: a new rounded-square switch (violet when on, grey when off) everywhere: settings, notifications, read-only mode, snapshot and scrub tasks, shares and services. TalkBack still announces them as switches.
+- **Cards and lists**: every grouped list sits in a dark card with 22dp corners and a thin border, rows are separated by hairlines, and section headings are small upper-case mono labels. Status dots are now small squares.
+- **Buttons, fields, dialogs and sheets**: main buttons are violet with dark text; secondary buttons are dark with a border; text fields are dark with a border that turns violet while you type; dialogs and bottom sheets are dark with 26dp corners and a thin border; tab switches (Pools / Datasets / Disks, Shares / Services, API key / Password) use violet for the selected part. Progress bars are thinner and flat.
+- **Icons**: outlined icons everywhere, at a consistent size.
+- **App lock**: a violet rounded-square lock badge, "VKNXWORKS · CTRL" and **Locked** in large type, square PIN cells (violet when filled), and a keypad of large rounded keys in JetBrains Mono. When fingerprint unlock is on, the fingerprint key sits on the keypad (bottom left, outlined in violet) next to 0 and delete. The PIN, fingerprint, lockout and "Forgot PIN?" work exactly as before.
+- **You page**: a close button and a "YOU" label at the top, a large violet avatar with the server's name, address, TrueNAS version and sign-in, then your servers, read-only mode, what your sign-in may do, Settings and About. **Support TrueCtrl** is now a violet button at the bottom (it still opens GitHub Sponsors in your browser), followed by "GOOGLE-FREE · TELEMETRY-FREE · ARM64" and the version.
+- **Shell and app logs** use the same near-black background, and the terminal cursor is violet.
+- **Charts**: the two chart series are now violet and off-white (always with a key, never told apart by colour alone).
+- **Widgets** use the same dark colours as the app instead of following the wallpaper, and the Quick Settings tile is unchanged.
+
+### Removed
+
+- **Theme** and **Use wallpaper colours** are gone from **Settings > Appearance** (the whole Appearance group is gone): Ctrl / Signal is dark only. Your old choice is kept in storage but no longer changes anything; if you used Light or Follow system, TrueCtrl is now dark.
+- The frosted-glass blur behind the old tab bar (and the haze library it needed) is gone; the new bar is a solid translucent dark surface.
+
 ## v0.10.10 (2026-10-22)
 
 ### Fixed

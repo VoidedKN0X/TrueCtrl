@@ -1,5 +1,7 @@
 package com.vknxworks.truectrl.ui.protection
 
+import com.vknxworks.truectrl.ui.components.CtrlSwitch
+import androidx.compose.material.icons.outlined.Error
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,14 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -162,7 +162,7 @@ fun ProtectionScreen() {
                                         onClick = if (canRunSnap) ({ pending = Pending.RunSnapshot(t) }) else null,
                                         trailing = if (canSnapTask) {
                                             {
-                                                Switch(checked = t.enabled, onCheckedChange = { on ->
+                                                CtrlSwitch(checked = t.enabled, onCheckedChange = { on ->
                                                     act(if (on) R.string.task_enabled_done else R.string.task_disabled_done) { c.protection.setSnapshotTaskEnabled(t.id, on) }
                                                 })
                                             }
@@ -187,7 +187,7 @@ fun ProtectionScreen() {
                                         ).joinToString("\n"),
                                         titleColor = runColor(t.last, stale = t.enabled && success != null && System.currentTimeMillis() - success > maxAgeMs),
                                         onClick = if (canRepl && t.last?.running != true) ({ pending = Pending.RunReplication(t) }) else null,
-                                        trailing = if (t.last?.failed == true) ({ Icon(Icons.Filled.Error, null, tint = Health.critical) }) else null,
+                                        trailing = if (t.last?.failed == true) ({ Icon(Icons.Outlined.Error, null, tint = Health.critical) }) else null,
                                     )
                                 }
                             }
@@ -217,7 +217,7 @@ fun ProtectionScreen() {
                                                 t.last?.running != true && canRun -> ({ pending = Pending.RunTransfer(t) })
                                                 else -> null
                                             },
-                                            trailing = if (t.last?.failed == true) ({ Icon(Icons.Filled.Error, null, tint = Health.critical) }) else null,
+                                            trailing = if (t.last?.failed == true) ({ Icon(Icons.Outlined.Error, null, tint = Health.critical) }) else null,
                                         )
                                     }
                                 }
@@ -235,7 +235,7 @@ fun ProtectionScreen() {
                                         ).joinToString("\n"),
                                         trailing = if (canScrub) {
                                             {
-                                                Switch(checked = s.enabled, onCheckedChange = { on ->
+                                                CtrlSwitch(checked = s.enabled, onCheckedChange = { on ->
                                                     act(if (on) R.string.task_enabled_done else R.string.task_disabled_done) { c.protection.setScrubEnabled(s.id, on) }
                                                 })
                                             }

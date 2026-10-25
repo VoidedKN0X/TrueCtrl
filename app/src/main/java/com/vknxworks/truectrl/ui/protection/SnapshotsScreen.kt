@@ -1,5 +1,14 @@
 package com.vknxworks.truectrl.ui.protection
 
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.components.CtrlSheet
+import com.vknxworks.truectrl.ui.components.CtrlDialog
+import com.vknxworks.truectrl.ui.components.CtrlTextField
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,24 +25,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.FileCopy
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -162,9 +163,9 @@ fun SnapshotsScreen(initialDataset: String?) {
                 pluralStringResource(R.plurals.snapshots_selected, selected.size, selected.size),
                 actions = {
                     IconButton(onClick = { pending = SnapPending.Delete(selected.toList()) }, enabled = !busy) {
-                        Icon(Icons.Filled.Delete, stringResource(R.string.delete))
+                        Icon(Icons.Outlined.Delete, stringResource(R.string.delete))
                     }
-                    IconButton(onClick = { selected = emptySet() }) { Icon(Icons.Filled.Close, stringResource(R.string.cancel)) }
+                    IconButton(onClick = { selected = emptySet() }) { Icon(Icons.Outlined.Close, stringResource(R.string.cancel)) }
                 },
             )
         } else {
@@ -173,7 +174,7 @@ fun SnapshotsScreen(initialDataset: String?) {
                 actions = {
                     if (d != null && canCreate) {
                         IconButton(onClick = { pending = SnapPending.Create }, enabled = !busy) {
-                            Icon(Icons.Filled.Add, stringResource(R.string.snapshot_create))
+                            Icon(Icons.Outlined.Add, stringResource(R.string.snapshot_create))
                         }
                     }
                 },
@@ -249,13 +250,14 @@ fun SnapshotsScreen(initialDataset: String?) {
                         }
                         item(key = "list") {
                             Surface(
-                                shape = MaterialTheme.shapes.large,
-                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                shape = CtrlShapes.Card,
+                                color = CtrlColors.Surface,
+                                border = CtrlColors.CardStroke,
                                 modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter),
                             ) {
                                 Column(Modifier.padding(vertical = 4.dp)) {
                                     list.forEachIndexed { i, s ->
-                                        if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                                        if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = CtrlColors.CardBorder)
                                         val isSel = s.id in selected
                                         Row(
                                             Modifier
@@ -288,8 +290,8 @@ fun SnapshotsScreen(initialDataset: String?) {
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 )
                                             }
-                                            if (s.holds) Icon(Icons.Filled.Lock, stringResource(R.string.snapshot_held), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            else if (selected.isEmpty()) Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            if (s.holds) Icon(Icons.Outlined.Lock, stringResource(R.string.snapshot_held), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            else if (selected.isEmpty()) Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -305,7 +307,7 @@ fun SnapshotsScreen(initialDataset: String?) {
     sheetFor?.let { s ->
         val list = snaps.orEmpty()
         val newer = list.count { (it.createdMs ?: 0) > (s.createdMs ?: 0) }
-        ModalBottomSheet(onDismissRequest = { sheetFor = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        CtrlSheet(onDismissRequest = { sheetFor = null }) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
                 Text(s.name, style = MaterialTheme.typography.titleMedium, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(horizontal = 24.dp))
                 Text(
@@ -422,13 +424,13 @@ private fun CreateSnapshotDialog(dataset: String, onDismiss: () -> Unit, onCreat
     var name by rememberSaveable { mutableStateOf("manual-" + SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.ROOT).format(Date())) }
     var recursive by rememberSaveable { mutableStateOf(false) }
     val valid = SNAP_NAME.matches(name)
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.snapshot_create_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.snapshot_create_body, dataset))
-                OutlinedTextField(
+                CtrlTextField(
                     value = name,
                     onValueChange = { name = it.trim() },
                     label = { Text(stringResource(R.string.snapshot_name)) },
@@ -453,13 +455,13 @@ private fun CreateSnapshotDialog(dataset: String, onDismiss: () -> Unit, onCreat
 private fun CloneDialog(snap: SnapshotInfo, onDismiss: () -> Unit, onClone: (String) -> Unit) {
     var target by rememberSaveable { mutableStateOf(snap.dataset + "-clone") }
     val valid = DATASET_PATH.matches(target) && target.substringBefore('/') == snap.dataset.substringBefore('/')
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.clone_title, snap.name)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.clone_body))
-                OutlinedTextField(
+                CtrlTextField(
                     value = target,
                     onValueChange = { target = it.trim() },
                     label = { Text(stringResource(R.string.clone_target)) },

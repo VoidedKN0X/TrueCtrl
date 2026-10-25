@@ -27,7 +27,7 @@
     <string name="you_not_connected">Not connected</string>
     <string name="you_not_connected_body">Add your TrueNAS server to get started.</string>
     <string name="settings">Settings</string>
-    <string name="settings_subtitle">Appearance, notifications, warnings and app lock</string>
+    <string name="settings_subtitle">Notifications, warnings and app lock</string>
     <string name="support_title">Support TrueCtrl</string>
     <string name="support_subtitle">TrueCtrl is free and open source. Sponsor development on GitHub</string>
     <string name="bugs_title">Report a bug</string>
@@ -36,6 +36,7 @@
     <string name="source_subtitle">github.com/VoidedKN0X/TrueCtrl</string>
     <string name="licence_title">Licence</string>
     <string name="licence_subtitle">GNU General Public License v3.0</string>
+    <string name="you_footer_badges">Google-free · Telemetry-free · ARM64</string>
     <string name="about_footer">%1$s %2$s · %3$s</string>
     <string name="group_about">About</string>
 
@@ -203,6 +204,19 @@
     <string name="series_in">In</string>
     <string name="series_out">Out</string>
     <string name="pools_title">Pools</string>
+    <string name="overview_state_online">System · online</string>
+    <string name="overview_state_offline">System · offline</string>
+    <string name="overview_cpu_load">CPU load</string>
+    <plurals name="overview_threads">
+        <item quantity="one">%1$d thread</item>
+        <item quantity="other">%1$d threads</item>
+    </plurals>
+    <string name="overview_memory">Memory</string>
+    <string name="overview_storage">Storage</string>
+    <string name="overview_of_total">/ %1$s</string>
+    <string name="overview_live">Live</string>
+    <string name="overview_pools_healthy">%1$d / %2$d healthy</string>
+    <string name="overview_uptime_short">up %1$s</string>
     <string name="pool_usage">%1$s used of %2$s  ·  %3$s free</string>
     <string name="pool_scrubbing">Scrub %1$d%%</string>
     <string name="pool_resilvering">Resilver %1$d%%</string>
@@ -894,6 +908,8 @@
     <string name="app_lock_footer">While TrueCtrl is locked, your saved API keys and passwords stay encrypted with your PIN and the connection to TrueNAS is closed. Widgets and the Quick Settings tile keep showing the last check.</string>
     <string name="app_lock_footer_background">Background checks for notifications are on, so they can still sign in while TrueCtrl is locked: your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Turn off background checks and push in Notifications to keep them sealed with your PIN too.</string>
     <string name="lock_title">TrueCtrl is locked</string>
+    <string name="lock_title_short">Locked</string>
+    <string name="lock_brand">VKNXWorks · Ctrl</string>
     <string name="lock_legacy_body">Unlock with your fingerprint, face or screen lock one last time, then choose an app PIN.</string>
     <string name="lock_legacy_prompt_subtitle">Confirm it\'s you to choose an app PIN</string>
     <string name="lock_unlock">Unlock</string>

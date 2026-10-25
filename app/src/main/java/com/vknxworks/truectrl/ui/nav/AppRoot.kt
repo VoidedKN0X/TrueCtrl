@@ -16,13 +16,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.FolderShared
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.FolderShared
@@ -32,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,8 +61,10 @@ import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.ui.settings.ServersScreen
 import com.vknxworks.truectrl.ui.setup.SetupScreen
+import com.vknxworks.truectrl.ui.components.CtrlBottomBar
 import com.vknxworks.truectrl.ui.components.LocalBottomClearance
-import com.vknxworks.truectrl.ui.components.LocalHazeState
+import com.vknxworks.truectrl.ui.components.TabItem
+import com.vknxworks.truectrl.ui.theme.CtrlColors
 import com.vknxworks.truectrl.ui.components.rememberNotificationAccess
 import com.vknxworks.truectrl.ui.lock.lockCovering
 import com.vknxworks.truectrl.ui.overview.AlertsScreen
@@ -78,8 +77,6 @@ import com.vknxworks.truectrl.ui.storage.DiskScreen
 import com.vknxworks.truectrl.ui.storage.PoolScreen
 import com.vknxworks.truectrl.ui.storage.StorageScreen
 import com.vknxworks.truectrl.ui.system.SystemScreen
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 
 @Composable
 fun AppRoot() {
@@ -104,11 +101,11 @@ private data class TopDest(
 
 /** The five tabs. Overview is the only summary screen; account and settings open from the profile picture. */
 private val topDestinations = listOf(
-    TopDest(OverviewRoute, R.string.tab_overview, Icons.Outlined.Dashboard, Icons.Filled.Dashboard),
-    TopDest(StorageRoute, R.string.tab_storage, Icons.Outlined.Storage, Icons.Filled.Storage),
-    TopDest(ProtectionRoute, R.string.tab_protection, Icons.Outlined.Shield, Icons.Filled.Shield),
-    TopDest(SharingRoute, R.string.tab_sharing, Icons.Outlined.FolderShared, Icons.Filled.FolderShared),
-    TopDest(SystemRoute, R.string.tab_system, Icons.Outlined.Dns, Icons.Filled.Dns),
+    TopDest(OverviewRoute, R.string.tab_overview, Icons.Outlined.Dashboard, Icons.Outlined.Dashboard),
+    TopDest(StorageRoute, R.string.tab_storage, Icons.Outlined.Storage, Icons.Outlined.Storage),
+    TopDest(ProtectionRoute, R.string.tab_protection, Icons.Outlined.Shield, Icons.Outlined.Shield),
+    TopDest(SharingRoute, R.string.tab_sharing, Icons.Outlined.FolderShared, Icons.Outlined.FolderShared),
+    TopDest(SystemRoute, R.string.tab_system, Icons.Outlined.Dns, Icons.Outlined.Dns),
 )
 
 @Composable
@@ -146,7 +143,7 @@ private fun MainScaffold() {
                 // Tablets, unfolded foldables and landscape: a side rail.
                 Row(Modifier.fillMaxSize()) {
                     NavigationRail(
-                        containerColor = MaterialTheme.colorScheme.background,
+                        containerColor = CtrlColors.Background,
                         modifier = Modifier.fillMaxHeight().statusBarsPadding(),
                     ) {
                         Spacer(Modifier.weight(1f))
@@ -155,8 +152,15 @@ private fun MainScaffold() {
                             NavigationRailItem(
                                 selected = selected,
                                 onClick = { selectTab(i) },
-                                icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = tab.label) },
+                                icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = tab.label, modifier = Modifier.size(22.dp)) },
                                 label = { Text(tab.label) },
+                                colors = NavigationRailItemDefaults.colors(
+                                    selectedIconColor = CtrlColors.OnAccent,
+                                    selectedTextColor = CtrlColors.Text,
+                                    indicatorColor = CtrlColors.Accent,
+                                    unselectedIconColor = CtrlColors.Muted,
+                                    unselectedTextColor = CtrlColors.Muted,
+                                ),
                             )
                         }
                         Spacer(Modifier.weight(1f))
@@ -188,16 +192,14 @@ private fun PhoneLayout(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
 ) {
-    val hazeState = rememberHazeState()
     val density = LocalDensity.current
     var overlayHeight by remember { mutableStateOf(0.dp) }
 
     CompositionLocalProvider(
-        LocalHazeState provides hazeState,
         LocalBottomClearance provides if (showTabs) overlayHeight else 0.dp,
     ) {
         Box(Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxSize().hazeSource(hazeState)) {
+            Box(Modifier.fillMaxSize()) {
                 AppNavHost(navController)
             }
             Box(
@@ -206,7 +208,7 @@ private fun PhoneLayout(
                     .fillMaxWidth()
                     .onSizeChanged { overlayHeight = with(density) { it.height.toDp() } }
                     .navigationBarsPadding()
-                    .padding(bottom = 12.dp),
+                    .padding(start = 20.dp, end = 20.dp, bottom = 28.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 AnimatedVisibility(
@@ -214,7 +216,7 @@ private fun PhoneLayout(
                     enter = fadeIn() + slideInVertically { it / 2 },
                     exit = fadeOut() + slideOutVertically { it / 2 },
                 ) {
-                    GlassTabBar(items = tabs, selectedIndex = selectedIndex, onSelect = onSelect)
+                    CtrlBottomBar(items = tabs, selectedIndex = selectedIndex, onSelect = onSelect)
                 }
             }
         }

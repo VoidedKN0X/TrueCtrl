@@ -1,5 +1,10 @@
 package com.vknxworks.truectrl.ui.storage
 
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.components.ctrlSegmentColors
+import com.vknxworks.truectrl.ui.components.ctrlSegmentShape
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Storage
@@ -23,7 +27,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -106,7 +109,7 @@ fun StorageScreen() {
         TabTitle(stringResource(R.string.tab_storage))
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = Gutter)) {
             listOf(R.string.storage_pools, R.string.storage_datasets, R.string.storage_disks).forEachIndexed { i, label ->
-                SegmentedButton(selected = section == i, onClick = { section = i }, shape = SegmentedButtonDefaults.itemShape(i, 3)) {
+                SegmentedButton(selected = section == i, onClick = { section = i }, shape = ctrlSegmentShape(i, 3), colors = ctrlSegmentColors()) {
                     Text(stringResource(label))
                 }
             }
@@ -152,8 +155,9 @@ fun StorageScreen() {
                     byPool.forEach { (pool, list) ->
                         item(key = "ds-pool-$pool") {
                             Surface(
-                                shape = MaterialTheme.shapes.large,
-                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                shape = CtrlShapes.Card,
+                                color = CtrlColors.Surface,
+                                border = CtrlColors.CardStroke,
                                 modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
                             ) {
                                 Column(Modifier.padding(vertical = 4.dp)) {
@@ -189,13 +193,14 @@ fun StorageScreen() {
                 else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = bottom) {
                     item(key = "disks") {
                         Surface(
-                            shape = MaterialTheme.shapes.large,
-                            color = MaterialTheme.colorScheme.surfaceContainer,
+                            shape = CtrlShapes.Card,
+                            color = CtrlColors.Surface,
+                            border = CtrlColors.CardStroke,
                             modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
                         ) {
                             Column(Modifier.padding(vertical = 4.dp)) {
                                 snapshot.disks.forEachIndexed { i, d ->
-                                    if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                                    if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = CtrlColors.CardBorder)
                                     DiskRow(d, snapshot.temps[d.name]) { nav.navigate(DiskRoute(d.name)) }
                                 }
                             }
@@ -212,9 +217,10 @@ private fun PoolCard(pool: PoolDetail, warn: Int, onClick: () -> Unit) {
     val info = pool.info
     val accent = MaterialTheme.colorScheme.primary
     Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp).clip(MaterialTheme.shapes.large).clickable(onClick = onClick),
+        shape = CtrlShapes.Card,
+        color = CtrlColors.Surface,
+        border = CtrlColors.CardStroke,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp).clip(CtrlShapes.Card).clickable(onClick = onClick),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -226,7 +232,7 @@ private fun PoolCard(pool: PoolDetail, warn: Int, onClick: () -> Unit) {
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             UsageBar(info.usedFraction, usageColor(info.usedFraction, warn, accent), height = 6.dp)
             Text(
@@ -277,6 +283,6 @@ private fun DiskRow(d: DiskInfo, temp: Double?, onClick: () -> Unit) {
             Spacer(Modifier.width(8.dp))
             Text(formatTemp(temp), style = MaterialTheme.typography.labelLarge, color = tempColor(temp, MaterialTheme.colorScheme.onSurface))
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

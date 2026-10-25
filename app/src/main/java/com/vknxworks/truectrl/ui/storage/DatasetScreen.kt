@@ -1,5 +1,7 @@
 package com.vknxworks.truectrl.ui.storage
 
+import com.vknxworks.truectrl.ui.components.CtrlDialog
+import com.vknxworks.truectrl.ui.components.CtrlTextField
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,13 +24,11 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -328,13 +328,13 @@ private fun EditDialog(d: DatasetInfo, onDismiss: () -> Unit, onSave: (Long?, St
     var comments by rememberSaveable { mutableStateOf(d.comments) }
     val gib = quota.replace(',', '.').toDoubleOrNull()
     val quotaOk = quota.isBlank() || (gib != null && (gib == 0.0 || gib >= 1.0))
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.dataset_edit)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (!d.isZvol) {
-                    OutlinedTextField(
+                    CtrlTextField(
                         value = quota,
                         onValueChange = { quota = it.trim() },
                         label = { Text(stringResource(R.string.dataset_quota_gib)) },
@@ -345,7 +345,7 @@ private fun EditDialog(d: DatasetInfo, onDismiss: () -> Unit, onSave: (Long?, St
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                OutlinedTextField(
+                CtrlTextField(
                     value = comments,
                     onValueChange = { comments = it },
                     label = { Text(stringResource(R.string.dataset_comments)) },
@@ -378,13 +378,13 @@ private fun CreateDialog(parent: DatasetInfo, existing: Set<String>, onDismiss: 
     var preset by rememberSaveable { mutableStateOf(DatasetPreset.GENERIC) }
     var comments by rememberSaveable { mutableStateOf("") }
     val valid = NAME.matches(name) && name !in existing
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.dataset_add_child)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.dataset_create_in, parent.id), style = MaterialTheme.typography.bodyMedium)
-                OutlinedTextField(
+                CtrlTextField(
                     value = name,
                     onValueChange = { name = it.trim() },
                     label = { Text(stringResource(R.string.dataset_name)) },
@@ -401,7 +401,7 @@ private fun CreateDialog(parent: DatasetInfo, existing: Set<String>, onDismiss: 
                     }
                 }
                 Text(presetHint(preset), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                OutlinedTextField(
+                CtrlTextField(
                     value = comments,
                     onValueChange = { comments = it },
                     label = { Text(stringResource(R.string.dataset_comments)) },
@@ -446,7 +446,7 @@ private fun UnlockDialog(d: DatasetInfo, onDismiss: () -> Unit, onUnlock: (CharA
     // Not rememberSaveable: a passphrase must never go into saved instance state.
     var pass by remember { mutableStateOf("") }
     var show by remember { mutableStateOf(false) }
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = {
             pass = ""
             onDismiss()
@@ -457,7 +457,7 @@ private fun UnlockDialog(d: DatasetInfo, onDismiss: () -> Unit, onUnlock: (CharA
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.dataset_unlock_body))
-                OutlinedTextField(
+                CtrlTextField(
                     value = pass,
                     onValueChange = { pass = it },
                     label = { Text(stringResource(R.string.dataset_passphrase)) },

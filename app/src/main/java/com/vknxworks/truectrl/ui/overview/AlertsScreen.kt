@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl.ui.overview
 
+import com.vknxworks.truectrl.ui.components.CtrlDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,7 +18,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.NotificationsNone
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -106,7 +106,7 @@ fun AlertsScreen() {
     }
 
     open?.let { alert ->
-        AlertDialog(
+        CtrlDialog(
             onDismissRequest = { open = null },
             icon = { SeverityIcon(alert.severity) },
             title = { Text(stringResource(severityLabel(alert.severity))) },

@@ -1,6 +1,6 @@
 # TrueCtrl
 
-Android app for monitoring and managing a TrueNAS server (25.04 and newer). Part of the VKNXWorks Ctrl series: same look, structure and libraries as ProxCtrl, NaviCtrl and the other Ctrl apps (Kotlin, Compose, Material 3, manual `AppContainer` DI, OkHttp + kotlinx.serialization, haze glass tab bar). No Firebase or Google Play Services: it must build for F-Droid.
+Android app for monitoring and managing a TrueNAS server (25.04 and newer). Part of the VKNXWorks Ctrl series: same look, structure and libraries as ProxCtrl, NaviCtrl and the other Ctrl apps (Kotlin, Compose, Material 3, manual `AppContainer` DI, OkHttp + kotlinx.serialization, the Ctrl / Signal theme and components in `ui/theme` and `ui/components`). No Firebase or Google Play Services: it must build for F-Droid.
 
 ## Working on this repo
 

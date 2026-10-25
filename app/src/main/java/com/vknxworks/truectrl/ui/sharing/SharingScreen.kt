@@ -1,5 +1,8 @@
 package com.vknxworks.truectrl.ui.sharing
 
+import com.vknxworks.truectrl.ui.components.ctrlSegmentColors
+import com.vknxworks.truectrl.ui.components.ctrlSegmentShape
+import com.vknxworks.truectrl.ui.components.CtrlSwitch
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,11 +17,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FolderShared
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -116,7 +117,7 @@ fun SharingScreen() {
             TabTitle(stringResource(R.string.tab_sharing))
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = Gutter)) {
                 listOf(R.string.sharing_shares, R.string.sharing_services).forEachIndexed { i, label ->
-                    SegmentedButton(selected = section == i, onClick = { section = i }, shape = SegmentedButtonDefaults.itemShape(i, 2)) {
+                    SegmentedButton(selected = section == i, onClick = { section = i }, shape = ctrlSegmentShape(i, 2), colors = ctrlSegmentColors()) {
                         Text(stringResource(label))
                     }
                 }
@@ -202,7 +203,7 @@ fun SharingScreen() {
                                             onClick = if (canControl) ({ menuFor = s }) else null,
                                             trailing = if (canServiceUpdate) {
                                                 {
-                                                    Switch(checked = s.enable, onCheckedChange = { on ->
+                                                    CtrlSwitch(checked = s.enable, onCheckedChange = { on ->
                                                         act(context.getString(if (on) R.string.service_boot_on_done else R.string.service_boot_off_done, serviceLabel(s.service))) {
                                                             c.sharing.setServiceEnabled(s, on)
                                                         }
@@ -299,7 +300,7 @@ private fun ShareRow(s: ShareInfo, canEdit: Boolean, onToggle: (Boolean) -> Unit
             !s.enabled -> MaterialTheme.colorScheme.onSurfaceVariant
             else -> MaterialTheme.colorScheme.onSurface
         },
-        trailing = if (canEdit) ({ Switch(checked = s.enabled, onCheckedChange = onToggle) }) else null,
+        trailing = if (canEdit) ({ CtrlSwitch(checked = s.enabled, onCheckedChange = onToggle) }) else null,
     )
 }
 

@@ -1,5 +1,16 @@
 package com.vknxworks.truectrl.ui.system
 
+import com.vknxworks.truectrl.ui.components.topDivider
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
+import com.vknxworks.truectrl.ui.components.CtrlButton
+import com.vknxworks.truectrl.ui.components.CtrlOutlinedButton
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.ContentPaste
+import androidx.compose.material.icons.outlined.Keyboard
+import androidx.compose.material.icons.outlined.ScreenRotation
+import androidx.compose.material.icons.outlined.TextDecrease
+import androidx.compose.material.icons.outlined.TextIncrease
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipboardManager
@@ -40,19 +51,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ContentPaste
-import androidx.compose.material.icons.filled.Keyboard
-import androidx.compose.material.icons.filled.ScreenRotation
-import androidx.compose.material.icons.filled.TextDecrease
-import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -376,9 +379,9 @@ fun ShellScreen() {
     }
 
     val white = androidx.compose.ui.graphics.Color.White
-    Column(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color(0xFF0D0F12)).imePadding()) {
+    Column(Modifier.fillMaxSize().background(CtrlColors.Background).imePadding()) {
         Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = nav::back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = white) }
+            IconButton(onClick = nav::back) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = white) }
             Text(
                 stringResource(R.string.shell_title_on, server?.name.orEmpty()),
                 style = MaterialTheme.typography.titleMedium,
@@ -388,15 +391,15 @@ fun ShellScreen() {
                 modifier = Modifier.weight(1f),
             )
             IconButton(onClick = { fontSize = (fontSize - 1).coerceAtLeast(8); js("pcFontSize($fontSize)") }) {
-                Icon(Icons.Filled.TextDecrease, stringResource(R.string.console_font_smaller), tint = white)
+                Icon(Icons.Outlined.TextDecrease, stringResource(R.string.console_font_smaller), tint = white)
             }
             IconButton(onClick = { fontSize = (fontSize + 1).coerceAtMost(28); js("pcFontSize($fontSize)") }) {
-                Icon(Icons.Filled.TextIncrease, stringResource(R.string.console_font_bigger), tint = white)
+                Icon(Icons.Outlined.TextIncrease, stringResource(R.string.console_font_bigger), tint = white)
             }
             IconButton(onClick = {
                 landscape = !landscape
                 activity?.requestedOrientation = if (landscape) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-            }) { Icon(Icons.Filled.ScreenRotation, stringResource(R.string.console_rotate), tint = white) }
+            }) { Icon(Icons.Outlined.ScreenRotation, stringResource(R.string.console_rotate), tint = white) }
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
             Box(
@@ -427,14 +430,15 @@ fun ShellScreen() {
             when (state) {
                 ShellState.CONNECTING -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                 ShellState.CLOSED, ShellState.FAILED -> Surface(
-                    shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = CtrlShapes.Card,
+                    color = CtrlColors.Surface,
+                    border = CtrlColors.CardStroke,
                     modifier = Modifier.align(Alignment.Center).padding(24.dp),
                 ) {
                     Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(error ?: stringResource(R.string.console_closed), style = MaterialTheme.typography.bodyMedium)
                         Spacer(Modifier.padding(top = 12.dp))
-                        FilledTonalButton(onClick = ::reconnect) { Text(stringResource(R.string.console_reconnect)) }
+                        CtrlButton(onClick = ::reconnect) { Text(stringResource(R.string.console_reconnect)) }
                     }
                 }
                 ShellState.CONNECTED -> Unit
@@ -473,14 +477,14 @@ private fun ExtraKeys(
     onKeyboard: () -> Unit,
     onPaste: () -> Unit,
 ) {
-    Surface(color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
+    Surface(color = CtrlColors.Surface, modifier = Modifier.fillMaxWidth().topDivider(CtrlColors.ControlBorder)) {
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = 6.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onKeyboard) {
-                Icon(Icons.Filled.Keyboard, stringResource(R.string.console_keyboard), tint = if (keyboardShown) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.Outlined.Keyboard, stringResource(R.string.console_keyboard), tint = if (keyboardShown) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
             }
             KeyButton(stringResource(R.string.key_esc)) { onKey("\u001b") }
             KeyButton(stringResource(R.string.key_tab)) { onKey("\t") }
@@ -495,7 +499,7 @@ private fun ExtraKeys(
                 R.string.key_pgdn to "\u001b[6~",
                 R.string.key_del to "\u001b[3~",
             ).forEach { (l, s) -> KeyButton(stringResource(l)) { onKey(s) } }
-            IconButton(onClick = onPaste) { Icon(Icons.Filled.ContentPaste, stringResource(R.string.console_paste)) }
+            IconButton(onClick = onPaste) { Icon(Icons.Outlined.ContentPaste, stringResource(R.string.console_paste)) }
             Spacer(Modifier.width(4.dp))
         }
     }
@@ -503,7 +507,7 @@ private fun ExtraKeys(
 
 @Composable
 private fun KeyButton(label: String, onClick: () -> Unit) {
-    OutlinedButton(
+    CtrlOutlinedButton(
         onClick = onClick,
         modifier = Modifier.heightIn(min = 40.dp),
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),

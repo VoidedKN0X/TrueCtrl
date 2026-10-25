@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.vknxworks.truectrl.ui.theme.Health
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
 
 /**
  * Colour for a usage level: normal below [warnAt], warning from there, critical from 95 % (or 10
@@ -37,8 +37,9 @@ fun usageColor(fraction: Double?, warnAt: Int, normal: Color): Color {
 /** A thin rounded usage bar. Null [fraction] draws an empty track (unknown). */
 @Composable
 fun UsageBar(fraction: Double?, color: Color, modifier: Modifier = Modifier, height: Dp = 4.dp) {
-    val track = MaterialTheme.colorScheme.surfaceContainerHighest
+    val track = CtrlColors.Track
     Canvas(modifier.fillMaxWidth().height(height)) {
+        // 6dp bars get 3dp corners; thinner ones stay proportional.
         val r = CornerRadius(size.height / 2, size.height / 2)
         drawRoundRect(track, Offset.Zero, size, r)
         val f = (fraction ?: 0.0).coerceIn(0.0, 1.0).toFloat()
@@ -46,14 +47,14 @@ fun UsageBar(fraction: Double?, color: Color, modifier: Modifier = Modifier, hei
     }
 }
 
-/** A status as a coloured dot. */
+/** A status as a coloured square dot (8dp, 2dp corners). */
 @Composable
-fun StatusDot(status: String, modifier: Modifier = Modifier, size: Dp = 10.dp) {
+fun StatusDot(status: String, modifier: Modifier = Modifier, size: Dp = 8.dp) {
     val color = when (status) {
         "running", "online" -> Health.ok
         "paused", "suspended" -> Health.warn
         "stopped", "offline" -> Health.idle
         else -> Health.critical
     }
-    Box(modifier.size(size).clip(CircleShape).background(color))
+    Box(modifier.size(size).clip(CtrlShapes.Dot).background(color))
 }

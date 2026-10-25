@@ -10,7 +10,7 @@
     fontFamily: 'monospace',
     scrollback: 5000,
     allowProposedApi: true,
-    theme: { background: '#0d0f12', foreground: '#eceef2', cursor: '#7ab8ff', selectionBackground: '#1d3a5c' },
+    theme: { background: '#08080a', foreground: '#f4f4f2', cursor: '#b48cff', selectionBackground: '#3d2f5c' },
   });
   const fit = new FitAddon.FitAddon();
   term.loadAddon(fit);

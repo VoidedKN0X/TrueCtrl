@@ -1,5 +1,7 @@
 package com.vknxworks.truectrl.ui.system
 
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.components.CtrlSheet
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -26,7 +28,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -159,7 +160,7 @@ fun AppsScreen() {
 
     val app = apps?.firstOrNull { it.name == sheetFor }
     if (app != null) {
-        ModalBottomSheet(onDismissRequest = { sheetFor = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        CtrlSheet(onDismissRequest = { sheetFor = null }) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
                 Text(app.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp))
                 Text(
@@ -307,11 +308,11 @@ fun AppLogsScreen(app: String, container: String, service: String) {
             }
         })
         if (!access.connected && access.error != null) ConnectionBanner()
-        Box(Modifier.fillMaxSize().background(Color(0xFF0D0F12))) {
+        Box(Modifier.fillMaxSize().background(CtrlColors.Background)) {
             if (lines.isEmpty()) {
                 Text(
                     stringResource(R.string.logs_waiting),
-                    color = Color(0xFF9AA1AD),
+                    color = CtrlColors.Muted,
                     modifier = Modifier.padding(16.dp),
                 )
             }
@@ -320,7 +321,7 @@ fun AppLogsScreen(app: String, container: String, service: String) {
                     items(lines.size) { i ->
                         Text(
                             lines[i],
-                            color = Color(0xFFECEEF2),
+                            color = CtrlColors.Text,
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
                             lineHeight = 14.sp,

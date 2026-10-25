@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,7 +35,7 @@ fun ConfirmDialog(
 ) {
     var typed by remember { mutableStateOf("") }
     val ok = typeToConfirm == null || typed == typeToConfirm
-    AlertDialog(
+    CtrlDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
@@ -45,7 +43,7 @@ fun ConfirmDialog(
                 Text(body)
                 if (typeToConfirm != null) {
                     Text(stringResource(R.string.confirm_type, typeToConfirm), style = MaterialTheme.typography.bodyMedium)
-                    OutlinedTextField(
+                    CtrlTextField(
                         value = typed,
                         onValueChange = { typed = it },
                         singleLine = true,

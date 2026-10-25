@@ -1,5 +1,8 @@
 package com.vknxworks.truectrl.ui.storage
 
+import com.vknxworks.truectrl.ui.theme.CtrlColors
+import com.vknxworks.truectrl.ui.theme.CtrlShapes
+import com.vknxworks.truectrl.ui.components.CtrlOutlinedButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -235,8 +237,9 @@ private fun DiskFacts(
     onPool: (String) -> Unit,
 ) {
     Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = CtrlShapes.Card,
+        color = CtrlColors.Surface,
+        border = CtrlColors.CardStroke,
         modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
     ) {
         Column(Modifier.padding(vertical = 4.dp)) {
@@ -315,8 +318,8 @@ private fun SmartSection(
             }
             if (canTest) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { onTest("SHORT") }) { Text(stringResource(R.string.smart_short)) }
-                    OutlinedButton(onClick = { onTest("LONG") }) { Text(stringResource(R.string.smart_long)) }
+                    CtrlOutlinedButton(onClick = { onTest("SHORT") }) { Text(stringResource(R.string.smart_short)) }
+                    CtrlOutlinedButton(onClick = { onTest("LONG") }) { Text(stringResource(R.string.smart_long)) }
                 }
             }
             if (attributes == null) {

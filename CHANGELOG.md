@@ -6,20 +6,7 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 
 ## v0.14.2 (2026-10-25)
 
-### Changed
-
-- **Plain HTTP for your own TrueNAS**: you can now type an address with `http://` in front (for example `http://192.168.1.9`) for a TrueNAS you only reach on your home network or over a VPN like Tailscale. Without `http://` or `https://`, TrueCtrl still always connects over HTTPS, and it never switches from HTTPS to HTTP on its own.
-- **Warning before the first HTTP connection**: before anything is sent to an `http://` address, TrueCtrl asks **Use an unencrypted connection?** and explains that your password and everything TrueCtrl shows or changes travel unencrypted, which is fine at home or on a VPN but risky anywhere else. Tap **Use HTTP** to go on. The choice is remembered for that server; changing its address asks again.
-- **Password sign-in only over HTTP**: TrueNAS automatically revokes an API key that's used over an unencrypted connection, so TrueCtrl never sends an API key to an `http://` address. With an `http://` address the setup screen says so and asks you to choose **Password** (two-factor codes work as usual) or use `https://`.
-- **Not encrypted label**: servers on plain HTTP show **Not encrypted (HTTP)** in **Servers** and under the server on your profile page.
-
-### Security
-
-- **Saved API keys stay safe**: if a saved server that signs in with an API key ends up with an `http://` address, TrueCtrl refuses to connect and tells you why, without sending the key, so TrueNAS can't revoke it.
-- **No redirects**: when an `http://` address answers with a redirect to HTTPS (TrueNAS's **Web Interface HTTP -> HTTPS Redirect** is on), TrueCtrl doesn't follow it and tells you to use `https://` instead. Redirects are still never followed.
-- **HTTPS stays as strict as before**: certificate pinning for self-signed certificates, the certificate check before anything secret is sent, and https-only images from the app catalog are unchanged.
-
-## v0.14.1 (2026-10-25)
+Crash fixes when leaving a locked app, safer catalog images, and plain HTTP for your own TrueNAS with password sign-in. (These changes were prepared as 0.14.1 and 0.14.2; 0.14.1 was never released on its own.)
 
 ### Fixed
 
@@ -27,15 +14,22 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 - **No crash from a failed background task**: an unexpected error in work that runs outside a screen (saving a setting, handling a push from ntfy, keeping the connection up) now only stops that one task instead of closing the app.
 - **Leaving a screen while it loads**: leaving an app catalog page, the install form or a share's page while it was still loading could show a "couldn't load" error for a moment, and leaving a share's page while its service was being started could close the screen you'd just gone to. Leaving now simply stops the loading.
 
+### Changed
+
+- Internal cleanup: removed unused texts left over from earlier versions (no visible change).
+- **Plain HTTP for your own TrueNAS**: you can now type an address with `http://` in front (for example `http://192.168.1.9`) for a TrueNAS you only reach on your home network or over a VPN like Tailscale. Without `http://` or `https://`, TrueCtrl still always connects over HTTPS, and it never switches from HTTPS to HTTP on its own.
+- **Warning before the first HTTP connection**: before anything is sent to an `http://` address, TrueCtrl asks **Use an unencrypted connection?** and explains that your password and everything TrueCtrl shows or changes travel unencrypted, which is fine at home or on a VPN but risky anywhere else. Tap **Use HTTP** to go on. The choice is remembered for that server; changing its address asks again.
+- **Password sign-in only over HTTP**: TrueNAS automatically revokes an API key that's used over an unencrypted connection, so TrueCtrl never sends an API key to an `http://` address. With an `http://` address the setup screen says so and asks you to choose **Password** (two-factor codes work as usual) or use `https://`.
+- **Not encrypted label**: servers on plain HTTP show **Not encrypted (HTTP)** in **Servers** and under the server on your profile page.
+
 ### Security
 
 - **Safer catalog images**: icons and screenshots from the app catalog are now scaled down until both sides fit in 1280 pixels (before, a small file with huge dimensions could still use a lot of memory and close the app), images whose size can't be read are skipped, and a download that stalls gives up after 30 seconds.
 - **Less shared with image hosts**: when you tap **Show icon and screenshots**, the catalog's image servers are no longer told that the request comes from TrueCtrl and which version (no TrueCtrl User-Agent). Requests to your TrueNAS are unchanged.
 - **Fewer exported components**: two receivers that AndroidX libraries add for developer and app-store tooling (profile installer and WorkManager diagnostics) are removed, so only the launcher screen, the ntfy push receiver and the Quick Settings tile can be reached by other apps.
-
-### Changed
-
-- Internal cleanup: removed unused texts left over from earlier versions (no visible change).
+- **Saved API keys stay safe**: if a saved server that signs in with an API key ends up with an `http://` address, TrueCtrl refuses to connect and tells you why, without sending the key, so TrueNAS can't revoke it.
+- **No redirects**: when an `http://` address answers with a redirect to HTTPS (TrueNAS's **Web Interface HTTP -> HTTPS Redirect** is on), TrueCtrl doesn't follow it and tells you to use `https://` instead. Redirects are still never followed.
+- **HTTPS stays as strict as before**: certificate pinning for self-signed certificates, the certificate check before anything secret is sent, and https-only images from the app catalog are unchanged.
 
 ## v0.14.0 (2026-10-25)
 

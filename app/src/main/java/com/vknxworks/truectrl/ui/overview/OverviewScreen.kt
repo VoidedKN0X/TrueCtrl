@@ -318,6 +318,7 @@ private fun SystemCard(
 @Composable
 private fun LoadBars(values: List<Double?>, modifier: Modifier) {
     val shown = values.takeLast(24)
+    val ink = CtrlColors.OnAccent
     Canvas(modifier) {
         val n = shown.size
         if (n == 0) return@Canvas
@@ -328,7 +329,7 @@ private fun LoadBars(values: List<Double?>, modifier: Modifier) {
             val f = ((v ?: 0.0) / 100.0).coerceIn(0.0, 1.0).toFloat()
             val h = (size.height * f).coerceAtLeast(2.dp.toPx())
             drawRoundRect(
-                color = CtrlColors.OnAccent.copy(alpha = if (i >= n - 4) 1f else 0.55f),
+                color = ink.copy(alpha = if (i >= n - 4) 1f else 0.55f),
                 topLeft = Offset(i * (w + gap), size.height - h),
                 size = Size(w, h),
                 cornerRadius = r,
@@ -351,7 +352,7 @@ private fun PoolRow(pool: PoolInfo, warn: Int, onClick: () -> Unit) {
     val statusColor = when {
         !pool.isOnline -> Health.critical
         !pool.healthy -> Health.warn
-        else -> CtrlColors.Accent
+        else -> CtrlColors.AccentText
     }
     val scan = pool.scan
     val status = when {

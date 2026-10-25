@@ -15,14 +15,25 @@ import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.data.widget.HealthStore
 import com.vknxworks.truectrl.data.widget.HealthSummary
 import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import com.vknxworks.truectrl.ui.theme.CtrlColors
 
-/** Health colours as on the Overview (see ui.theme.Health). */
+/**
+ * Health colours as on the Overview (see ui.theme.Health), from the Signal palettes: a light and a
+ * night value, so the launcher switches them with the phone's dark / light setting.
+ */
+internal class DayNight(val day: Int, val night: Int)
+
 internal object WidgetColors {
-    const val OK = 0xFFB48CFF.toInt()
-    const val WARN = 0xFFF2C94C.toInt()
-    const val CRITICAL = 0xFFFF6B6B.toInt()
-    const val IDLE = 0xFF8C8C94.toInt()
+    private fun pair(light: Color, dark: Color) = DayNight(light.toArgb(), dark.toArgb())
+    val OK = pair(CtrlColors.Light.AccentText, CtrlColors.Dark.AccentText)
+    val WARN = pair(CtrlColors.Light.Warn, CtrlColors.Dark.Warn)
+    val CRITICAL = pair(CtrlColors.Light.Error, CtrlColors.Dark.Error)
+    val IDLE = pair(CtrlColors.Light.Inactive, CtrlColors.Dark.Inactive)
 }
+
+internal fun RemoteViews.setColor(viewId: Int, method: String, c: DayNight) = setColorInt(viewId, method, c.day, c.night)
 
 /** The summary for the server the app has selected, or the most recent one. */
 internal fun currentSummary(context: Context): HealthSummary? {
@@ -50,7 +61,7 @@ internal fun statusLine(context: Context, s: HealthSummary): String {
     return context.getString(R.string.widget_unreachable, age)
 }
 
-internal fun healthColor(s: HealthSummary): Int = when {
+internal fun healthColor(s: HealthSummary): DayNight = when {
     s.unreachable -> WidgetColors.IDLE
     s.critical > 0 -> WidgetColors.CRITICAL
     s.warning > 0 -> WidgetColors.WARN
@@ -76,12 +87,12 @@ class PoolsWidget : AppWidgetProvider() {
             if (s == null) {
                 views.setTextViewText(R.id.server_name, context.getString(R.string.app_name))
                 views.setTextViewText(R.id.status, context.getString(R.string.widget_no_data))
-                views.setInt(R.id.health_icon, "setColorFilter", WidgetColors.IDLE)
+                views.setColor(R.id.health_icon, "setColorFilter", WidgetColors.IDLE)
                 ROWS.forEach { views.setViewVisibility(it[0], View.GONE) }
             } else {
                 views.setTextViewText(R.id.server_name, s.serverName)
                 views.setTextViewText(R.id.status, statusLine(context, s))
-                views.setInt(R.id.health_icon, "setColorFilter", healthColor(s))
+                views.setColor(R.id.health_icon, "setColorFilter", healthColor(s))
                 ROWS.forEachIndexed { i, (row, name, pct, bar) ->
                     val pool = s.pools.getOrNull(i)
                     if (pool == null) {
@@ -101,7 +112,7 @@ class PoolsWidget : AppWidgetProvider() {
                         else -> null
                     }
                     if (color != null) {
-                        views.setColorStateList(bar, "setProgressTintList", ColorStateList.valueOf(color))
+                        views.setColorStateList(bar, "setProgressTintList", ColorStateList.valueOf(color.day), ColorStateList.valueOf(color.night))
                     } else {
                         views.setColorStateList(bar, "setProgressTintList", context.getColorStateList(R.color.widget_accent))
                     }
@@ -127,8 +138,9 @@ class AlertsWidget : AppWidgetProvider() {
                 views.setTextViewText(R.id.alert_server, context.getString(R.string.app_name))
             } else {
                 views.setTextViewText(R.id.alert_count, if (s.unreachable) "?" else s.alerts.toString())
-                views.setTextColor(
+                views.setColor(
                     R.id.alert_count,
+                    "setTextColor",
                     when {
                         s.unreachable -> WidgetColors.IDLE
                         s.alertsCritical > 0 -> WidgetColors.CRITICAL

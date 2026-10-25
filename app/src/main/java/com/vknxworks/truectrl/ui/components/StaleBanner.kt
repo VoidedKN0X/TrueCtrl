@@ -52,7 +52,7 @@ fun StaleBanner(updatedAt: Long, error: Throwable, host: String, onRetry: () -> 
                 Text(text, style = MaterialTheme.typography.bodyMedium, color = CtrlColors.Text, modifier = Modifier.weight(1f).padding(end = 8.dp))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End) {
-                TextButton(onClick = onRetry, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.Accent)) { Text(stringResource(R.string.retry)) }
+                TextButton(onClick = onRetry, colors = ButtonDefaults.textButtonColors(contentColor = CtrlColors.AccentText)) { Text(stringResource(R.string.retry)) }
             }
         }
     }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import com.vknxworks.truectrl.ui.theme.CtrlShapes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -18,6 +19,8 @@ import com.vknxworks.truectrl.ui.theme.Health
 import java.util.Locale
 
 /** ZFS states: ONLINE is fine, DEGRADED needs a look, anything else is critical. */
+@Composable
+@ReadOnlyComposable
 fun zfsColor(status: String): Color = when (status.uppercase()) {
     "ONLINE" -> Health.ok
     "DEGRADED" -> Health.warn
@@ -26,6 +29,8 @@ fun zfsColor(status: String): Color = when (status.uppercase()) {
 }
 
 /** Disk temperatures: warm from 50 °C, critical from 60 °C (TrueNAS's own default thresholds are similar). */
+@Composable
+@ReadOnlyComposable
 fun tempColor(c: Double?, normal: Color): Color = when {
     c == null -> normal
     c >= 60 -> Health.critical

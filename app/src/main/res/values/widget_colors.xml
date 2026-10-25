@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Ctrl / Signal: dark only, same colours as the app. -->
-    <color name="widget_bg">#FF141417</color>
-    <color name="widget_text">#FFF4F4F2</color>
-    <color name="widget_text_dim">#FFA3A3AB</color>
+    <!-- Ctrl / Signal Light; values-night has Signal Dark. -->
+    <color name="widget_bg">#FFFFFFFF</color>
+    <color name="widget_text">#FF0B0B0D</color>
+    <color name="widget_text_dim">#FF5C5C64</color>
     <color name="widget_accent">#FFB48CFF</color>
-    <color name="widget_track">#FF26262C</color>
+    <color name="widget_track">#FFE2E2DC</color>
 </resources>

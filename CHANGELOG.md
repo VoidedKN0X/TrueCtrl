@@ -4,6 +4,28 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.12.0 (2026-10-25)
+
+### New
+
+- **Light mode that follows the device theme**: TrueCtrl now switches between dark and light by itself, following your phone's dark theme setting (and its schedule, if you use one). It changes straight away when the phone does, without restarting the app or losing what's on screen. There is no in-app theme choice and still no wallpaper colours: the phone's setting decides.
+- **Signal Light**: an off-white background (#F5F5F1) with white cards edged by a thin warm-grey border, near-black text and grey secondary text. Hero cards, main buttons, the selected tab, switches that are on and the filled PIN cells keep the same violet fill (#B48CFF) with dark content as in dark mode.
+- **Readable accent text in light mode**: violet text and icons on light backgrounds (the slash in TRUE/CTRL, healthy statuses like ONLINE, links and text buttons, check marks, the focused text field border, the fingerprint key on the lock screen, the first chart line) use a deeper violet (#6A3BDB), because the bright violet is too pale on white. In dark mode they stay #B48CFF.
+
+### Changed
+
+- **Status and navigation bars** match the background in both modes: dark icons on the light background, light icons in dark mode. They switch along with the theme.
+- **Every screen works in both modes**: Overview (headline, CPU card, memory and storage cards, trend lines, attention list, pools), Storage, Protection, Sharing, System, every detail screen, You, Settings, Notifications, server setup and editing, dialogs, bottom sheets, banners and the app lock.
+- **Light-mode details**: switches that are off are light grey with a grey knob; progress and usage bars run on a light grey track with a near-black fill (violet for the main figure); errors are a deeper red (#D93636) and warnings a darker amber so they read on white; the floating bottom bar is white at 92 % with a grey border; lock screen keys are white with a thin border and empty PIN cells have a grey outline.
+- **Charts** draw their first line in the readable accent shade for the current mode and their second line in the text colour, so both lines stay visible on light and dark cards.
+- **Widgets** (pools and alerts) now follow the phone's dark / light setting too: white with dark text in light mode, dark grey with light text in dark mode, with health colours to match. They switch by themselves when the phone does.
+- **Notifications** show TrueCtrl's violet as their accent colour (the deeper shade in light mode).
+- **The app's start-up background** matches the theme, so there's no dark flash when you open it in light mode.
+
+### Not changed
+
+- **The shell stays dark in both modes**, like a terminal: it's full screen with its own dark background and keyboard bar.
+
 ## v0.11.0 (2026-10-25)
 
 TrueCtrl gets **Ctrl / Signal**, the new look shared by every VKNXWorks Ctrl app: near-black, high contrast, one violet accent. This is a visual update only: every screen, action, setting, notification and the app lock work exactly as before.

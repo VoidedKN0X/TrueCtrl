@@ -36,7 +36,7 @@ Coming soon.
 
 - Android 13 or newer, on a 64-bit ARM phone (nearly every phone from the last several years)
 - TrueNAS 25.04 or newer (Community Edition). TrueCtrl only uses the JSON-RPC WebSocket API; the old REST API isn't used, so older versions aren't supported (see [supported versions](#supported-truenas-versions))
-- HTTPS on your TrueNAS (TrueNAS only accepts API keys over a secure connection). A self-signed certificate is fine: TrueCtrl shows its fingerprint the first time and pins it
+- HTTPS on your TrueNAS is recommended. A self-signed certificate is fine: TrueCtrl shows its fingerprint the first time and pins it. Plain HTTP works only for your own server, after a warning, and only with a password sign-in: TrueNAS revokes an API key that's used over an unencrypted connection, so TrueCtrl never sends one over HTTP
 - **Google-free and de-Googled:** no Google Play services, Firebase or other Google services, and the app never contacts Google. It works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps).
 - Optional: the [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) app, for instant push alerts
 
@@ -58,7 +58,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 ## Getting started
 
 1. [Give TrueCtrl its own user and API key](#give-truectrl-its-own-user-and-api-key) on your TrueNAS.
-2. Open TrueCtrl and enter your TrueNAS **Address**, like `192.168.1.9` or `https://nas.example.com`. TrueCtrl only connects over HTTPS.
+2. Open TrueCtrl and enter your TrueNAS **Address**, like `192.168.1.9` or `https://nas.example.com`. Without `http://` or `https://`, TrueCtrl connects over HTTPS. Type `http://` in front only for a TrueNAS on your home network or VPN: TrueCtrl warns you first, and you'll have to sign in with a password.
 3. Choose **API key** and enter the username and key, or choose **Password** to sign in with your TrueNAS login. Two-factor codes work too, but you'll need a new code each time TrueCtrl reconnects, so an API key is easier.
 4. Tap **Connect**. If your TrueNAS uses the self-signed certificate it created on install, compare the fingerprint TrueCtrl shows with your server's, then tap **Trust**.
 5. TrueCtrl shows what your sign-in is allowed to do. Tap **Continue**.
@@ -158,7 +158,7 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 
 **Telemetry-free.** TrueCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add (and, only when you ask for them, the images of a catalog app).
 
-- **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket. Push alerts come from TrueNAS through your own ntfy server and the ntfy app, the only push app TrueCtrl works with; TrueCtrl doesn't connect to ntfy itself.
+- **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket by default; plain HTTP only for your own server after a warning (never with an API key). Push alerts come from TrueNAS through your own ntfy server and the ntfy app, the only push app TrueCtrl works with; TrueCtrl doesn't connect to ntfy itself.
 - **Links:** the Support, Report a bug, Source code and Licence rows in About, an app's web UI and the links on a catalog app's page open in your browser only when you tap them; the app itself doesn't contact GitHub.
 - **App catalog images:** a catalog app's icon and screenshots are hosted on the internet by the catalog, not on your TrueNAS. TrueCtrl only downloads them when you tap **Show icon and screenshots** on that app's page.
 - **Notifications** on the lock screen hide server details when you hide sensitive notification content in Android's settings.

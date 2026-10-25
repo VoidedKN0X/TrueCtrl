@@ -71,7 +71,11 @@ fun ServersScreen() {
                         listOfNotNull(
                             authSummary(server),
                             server.tnVersion.takeIf { it.isNotBlank() }?.let { stringResource(R.string.tn_version, it) },
-                            stringResource(if (server.certPin.isNotBlank()) R.string.cert_pinned else R.string.cert_system),
+                            when {
+                                server.isPlainHttp -> stringResource(R.string.server_not_encrypted)
+                                server.certPin.isNotBlank() -> stringResource(R.string.cert_pinned)
+                                else -> stringResource(R.string.cert_system)
+                            },
                         ).joinToString("  ·  "),
                         icon = Icons.Outlined.Storage,
                         trailing = if (isActive) {

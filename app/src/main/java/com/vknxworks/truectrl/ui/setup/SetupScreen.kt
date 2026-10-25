@@ -28,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import com.vknxworks.truectrl.ui.components.CtrlDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -114,6 +116,10 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     var connected by remember { mutableStateOf<Connected?>(null) }
     var readOnly by remember { mutableStateOf(existing?.readOnly ?: false) }
 
+    // The http:// address the user accepted the "Use an unencrypted connection?" warning for (per server).
+    var httpAcceptedFor by remember { mutableStateOf(existing?.takeIf { it.httpAccepted && it.isPlainHttp }?.url) }
+    var httpPrompt by remember { mutableStateOf(false) }
+
     // A certificate the user trusted in this session, or the one already pinned for this server.
     var pinnedHost by remember { mutableStateOf(existing?.host) }
     var pin by remember { mutableStateOf(existing?.certPin.orEmpty()) }
@@ -124,13 +130,16 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     SecureWindow()
 
     val resolved: HttpUrl? = ServerAddress.normalize(address)
+    val plainHttp = resolved != null && !resolved.isHttps
+    // TrueNAS revokes an API key that's used over plain HTTP, so an API key is never sent there.
+    val keyOverHttp = plainHttp && method == AuthMethod.API_KEY
     val addressError = when {
         address.isBlank() -> null
-        ServerAddress.isPlainHttp(address) -> stringResource(R.string.address_http)
         resolved == null -> stringResource(R.string.address_invalid)
+        keyOverHttp -> stringResource(R.string.address_http_api_key)
         else -> null
     }
-    val canConnect = !busy && resolved != null && username.isNotBlank() && when (method) {
+    val canConnect = !busy && resolved != null && !keyOverHttp && username.isNotBlank() && when (method) {
         AuthMethod.API_KEY -> apiKey.isNotBlank() || keptKey
         AuthMethod.PASSWORD -> password.isNotEmpty()
     }
@@ -151,7 +160,9 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                 url = ServerAddress.base(url),
                 auth = method,
                 username = username.trim(),
-                certPin = pinFor(url),
+                // There's no certificate on plain HTTP; it's only reached here once the warning was accepted.
+                certPin = if (url.isHttps) pinFor(url) else "",
+                httpAccepted = !url.isHttps,
                 usesOtp = usesOtp,
                 tnVersion = caps.version?.label.orEmpty(),
             )
@@ -171,13 +182,24 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     fun connect() {
         val url = resolved ?: return
         val base = ServerAddress.base(url)
+        val httpOk = !url.isHttps && httpAcceptedFor == base
+        // Never an API key over HTTP (TrueNAS would revoke it), and nothing at all to an http:// address
+        // until the user has accepted the warning for it.
+        if (!url.isHttps && method == AuthMethod.API_KEY) {
+            error = context.getString(R.string.error_api_key_over_http, url.host)
+            return
+        }
+        if (!url.isHttps && !httpOk) {
+            httpPrompt = true
+            return
+        }
         busy = true
         error = null
         scope.launch {
             val http = httpFor(c.http, url.host, pinFor(url))
             // 1. Reachable, a supported TrueNAS, and a trusted certificate? Nothing secret is sent yet.
             val newest = try {
-                TnAuth.requireSupported(TnAuth.probe(http, base))
+                TnAuth.requireSupported(TnAuth.probe(http, base, allowHttp = httpOk))
             } catch (e: TnError.UntrustedCertificate) {
                 askToTrust(context, url, changed = false, onCert = { certPrompt = it }, onFail = { error = it })
                 busy = false
@@ -192,7 +214,7 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                 return@launch
             }
             // 2. Open the WebSocket and sign in.
-            val socket = RpcSocket(http, TnAuth.socketUrl(base))
+            val socket = RpcSocket(http, TnAuth.socketUrl(base, allowHttp = httpOk))
             try {
                 socket.open()
                 val result = when (method) {
@@ -289,6 +311,10 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                         supportingText = {
                             when {
                                 addressError != null -> Text(addressError)
+                                resolved != null && plainHttp -> Text(
+                                    stringResource(R.string.address_resolves, ServerAddress.base(resolved)) + "\n" +
+                                        stringResource(R.string.address_http_warning),
+                                )
                                 resolved != null -> Text(stringResource(R.string.address_resolves, ServerAddress.base(resolved)))
                             }
                         },
@@ -405,6 +431,24 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
                 connect()
             },
             onCancel = { certPrompt = null },
+        )
+    }
+    if (httpPrompt) {
+        val target = resolved
+        CtrlDialog(
+            onDismissRequest = { httpPrompt = false },
+            title = { Text(stringResource(R.string.http_title)) },
+            text = { Text(stringResource(R.string.http_body, target?.let { ServerAddress.base(it) }.orEmpty())) },
+            confirmButton = {
+                TextButton(onClick = {
+                    httpPrompt = false
+                    if (target != null && !target.isHttps) {
+                        httpAcceptedFor = ServerAddress.base(target)
+                        connect()
+                    }
+                }) { Text(stringResource(R.string.http_confirm)) }
+            },
+            dismissButton = { TextButton(onClick = { httpPrompt = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
     if (otpSocket != null) {

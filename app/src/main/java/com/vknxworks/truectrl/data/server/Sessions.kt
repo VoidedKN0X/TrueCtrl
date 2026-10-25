@@ -59,7 +59,7 @@ class Sessions(
     /** Reuses the connection while nothing it depends on changed; otherwise closes it and makes a new one. */
     @Synchronized
     private fun connectionFor(server: Server, rev: Int): Connection {
-        val key = listOf(server.id, server.url, server.auth.name, server.username, server.certPin, server.usesOtp.toString(), rev.toString())
+        val key = listOf(server.id, server.url, server.httpAccepted.toString(), server.auth.name, server.username, server.certPin, server.usesOtp.toString(), rev.toString())
             .joinToString("|")
         cached?.let { (k, c) -> if (k == key) return c }
         cached?.second?.stop()

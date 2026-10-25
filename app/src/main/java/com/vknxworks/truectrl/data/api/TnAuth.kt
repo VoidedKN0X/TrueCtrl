@@ -34,8 +34,9 @@ object TnAuth {
      * needs no login. It shows the address is a TrueNAS with the JSON-RPC API, and whether its
      * certificate is trusted, before anything secret is sent.
      */
-    suspend fun probe(http: OkHttpClient, baseUrl: String): List<String> = withContext(Dispatchers.IO) {
-        val url = httpsBase(baseUrl).newBuilder().encodedPath("/api/versions").build()
+    suspend fun probe(http: OkHttpClient, baseUrl: String, allowHttp: Boolean): List<String> = withContext(Dispatchers.IO) {
+        val base = checkedBase(baseUrl, allowHttp)
+        val url = base.newBuilder().encodedPath("/api/versions").build()
         val request = Request.Builder().url(url).get().build()
         try {
             http.newCall(request).execute().use { response ->
@@ -53,6 +54,10 @@ object TnAuth {
                     // paths to the web UI (/ui/). Redirects are never followed.
                     code in 300..399 -> {
                         val location = response.header("Location").orEmpty()
+                        // TrueNAS with "Web Interface HTTP -> HTTPS Redirect" on answers every
+                        // plain HTTP request with a redirect to https://. Not followed: the user
+                        // switches the address to https:// themselves.
+                        if (!base.isHttps && location.startsWith("https://", ignoreCase = true)) throw TnError.RedirectsToHttps()
                         if (location.contains("/ui")) throw TnError.RestOnly()
                         throw TnError.NotTrueNas("HTTP $code → ${location.ifBlank { "?" }}")
                     }
@@ -87,23 +92,33 @@ object TnAuth {
     }
 
     /**
-     * The WebSocket address for [baseUrl]: always the server's current API version, and always
-     * wss://. TrueNAS revokes an API key that arrives over plain HTTP, so there is no ws:// fallback:
-     * a base address that isn't https:// is refused with [TnError.InsecureAddress].
+     * The WebSocket address for [baseUrl]: always the server's current API version. wss:// for an
+     * https:// address; ws:// only for an http:// address the user accepted ([allowHttp]), never as
+     * a fallback. An http:// address that wasn't accepted is refused with [TnError.InsecureAddress].
      */
-    fun socketUrl(baseUrl: String): String {
-        val https = httpsBase(baseUrl).newBuilder().encodedPath("/api/current").build().toString()
-        return "wss://" + https.removePrefix("https://")
+    fun socketUrl(baseUrl: String, allowHttp: Boolean): String {
+        val base = checkedBase(baseUrl, allowHttp)
+        val url = base.newBuilder().encodedPath("/api/current").build().toString()
+        return if (base.isHttps) "wss://" + url.removePrefix("https://") else "ws://" + url.removePrefix("http://")
     }
 
-    /** [baseUrl] parsed, only when it's https:// (the scheme ServerAddress always saves). */
-    private fun httpsBase(baseUrl: String): HttpUrl =
-        baseUrl.toHttpUrlOrNull()?.takeIf { it.isHttps } ?: throw TnError.InsecureAddress()
+    /** [baseUrl] parsed: https://, or http:// only when the user accepted plain HTTP for it. */
+    private fun checkedBase(baseUrl: String, allowHttp: Boolean): HttpUrl {
+        val url = baseUrl.toHttpUrlOrNull() ?: throw TnError.InsecureAddress()
+        if (!url.isHttps && !allowHttp) throw TnError.InsecureAddress()
+        return url
+    }
 
     private const val MAX_PROBE_BYTES = 64L * 1024
 
-    suspend fun loginApiKey(socket: RpcSocket, username: String, apiKey: String): LoginResult =
-        interpret(
+    /**
+     * Signs in with an API key, only on an encrypted socket: TrueNAS revokes an API key used over
+     * an insecure transport (auth.login_ex API_KEY_PLAIN, "Attempt to use over an insecure
+     * transport"), so on ws:// the key is never sent and [TnError.ApiKeyOverHttp] is thrown.
+     */
+    suspend fun loginApiKey(socket: RpcSocket, username: String, apiKey: String): LoginResult {
+        if (!socket.isSecure) throw TnError.ApiKeyOverHttp()
+        return interpret(
             socket.call(
                 "auth.login_ex",
                 listOf(buildJsonObject {
@@ -114,6 +129,7 @@ object TnAuth {
             ),
             apiKey = true,
         )
+    }
 
     suspend fun loginPassword(socket: RpcSocket, username: String, password: String): LoginResult =
         interpret(

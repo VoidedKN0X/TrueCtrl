@@ -48,7 +48,7 @@
 
     <!-- Server setup -->
     <string name="setup_title">Add your TrueNAS server</string>
-    <string name="setup_intro">TrueCtrl talks to the TrueNAS API over a secure WebSocket. An API key for a user that can only do what you need is the safest way in.</string>
+    <string name="setup_intro">TrueCtrl talks to the TrueNAS API over a secure WebSocket (HTTPS). An API key for a user that can only do what you need is the safest way in.</string>
     <string name="edit_server_title">Server and sign-in</string>
     <string name="field_name">Name (optional)</string>
     <string name="field_name_hint">Defaults to your TrueNAS hostname</string>
@@ -56,7 +56,12 @@
     <string name="field_address_hint">192.168.1.9 or https://nas.example.com</string>
     <string name="address_resolves">Connects to %1$s</string>
     <string name="address_invalid">Enter the address of your TrueNAS, like 192.168.1.9 or https://nas.example.com</string>
-    <string name="address_http">TrueNAS only accepts API keys over HTTPS. Use https:// or leave the scheme out.</string>
+    <string name="address_http_api_key">API keys can\'t be used over HTTP: TrueNAS revokes an API key as soon as it\'s used over an unencrypted connection. Choose Password, or use https:// (or leave the scheme out).</string>
+    <string name="address_http_warning">Not encrypted (HTTP). Your password and everything TrueCtrl shows are sent in the clear. Fine on your home network or a VPN, risky anywhere else.</string>
+    <string name="http_title">Use an unencrypted connection?</string>
+    <string name="http_body">%1$s is a plain HTTP address. Your TrueNAS password, one-time codes and everything TrueCtrl reads or changes are then sent unencrypted, and anyone on the network can read them. That\'s fine on your home network or over a VPN like Tailscale, but risky anywhere else. API keys are never sent over HTTP, because TrueNAS revokes a key that\'s used without encryption.</string>
+    <string name="http_confirm">Use HTTP</string>
+    <string name="server_not_encrypted">Not encrypted (HTTP)</string>
     <string name="auth_method">Sign in with</string>
     <string name="auth_api_key">API key</string>
     <string name="auth_password">Password</string>
@@ -110,7 +115,9 @@
     <string name="error_with_detail">%1$s\n\n%2$s</string>
     <string name="error_generic">Something went wrong.</string>
     <string name="error_read_only">Read-only mode is on for this server, so TrueCtrl didn\'t send this change. Turn read-only mode off in Servers to make changes.</string>
-    <string name="error_insecure_address">The saved address of %1$s doesn\'t use HTTPS. TrueCtrl only sends API keys and passwords over a secure connection. Edit the server and enter its address again.</string>
+    <string name="error_insecure_address">The saved address of %1$s is plain HTTP and the unencrypted connection hasn\'t been accepted for it, so TrueCtrl didn\'t send anything. Edit the server and connect again to accept it, or use https://.</string>
+    <string name="error_api_key_over_http">TrueCtrl didn\'t connect to %1$s: its address is plain HTTP, and TrueNAS revokes an API key as soon as it\'s used over an unencrypted connection. Your key wasn\'t sent. Edit the server and use https://, or sign in with a password instead.</string>
+    <string name="error_redirects_to_https">%1$s only answers over HTTPS (its HTTP to HTTPS redirect is on). Edit the server and use https:// instead.</string>
 
     <!-- Connection result and access -->
     <string name="connected_to">Connected to %1$s</string>

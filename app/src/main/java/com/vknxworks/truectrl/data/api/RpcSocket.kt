@@ -41,6 +41,9 @@ data class RpcEvent(
  * Nothing is logged: requests carry API keys and passwords.
  */
 class RpcSocket(private val http: OkHttpClient, private val url: String) {
+    /** The connection is encrypted (wss://). API keys are only ever sent on a secure socket. */
+    val isSecure: Boolean get() = url.startsWith("wss://", ignoreCase = true)
+
     private val nextId = AtomicLong(1)
     private val pending = ConcurrentHashMap<String, Pending>()
     private val opened = CompletableDeferred<Unit>()

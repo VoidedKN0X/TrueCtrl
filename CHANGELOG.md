@@ -4,6 +4,12 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.3 (2026-11-02)
+
+### Fixed
+
+- **Bottom sheets no longer show a stray grey box or outline.** The thin border around bottom sheets was drawn in the wrong place: a grey rectangle cut across the open sheet (often right through its first row) and a loose rounded outline showed near the top of the screen. Sheets are now a plain card-coloured panel with rounded top corners and no outline; the dimmed background already sets them apart. This affects every bottom sheet in the app: option pickers in Settings (lock timeout, pool warning level, backup age), the snapshot actions sheet, the app actions sheet on the Apps screen, and the dataset picker when you add or edit a share. Dialogs keep their thin border, which was always drawn correctly.
+
 ## v0.14.2 (2026-10-25)
 
 Crash fixes when leaving a locked app, safer catalog images, and plain HTTP for your own TrueNAS with password sign-in. (These changes were prepared as 0.14.1 and 0.14.2; 0.14.1 was never released on its own.)

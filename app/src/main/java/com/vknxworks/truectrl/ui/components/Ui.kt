@@ -373,7 +373,10 @@ fun PillButton(
     }
 }
 
-/** Bottom sheet: surface fill, 26dp top corners and a hairline border. */
+/**
+ * Bottom sheet: surface fill and 26dp top corners, no outline (the scrim separates it). A border
+ * modifier on ModalBottomSheet is applied before its offset and draws in the wrong place.
+ */
 @Composable
 fun CtrlSheet(onDismissRequest: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
     ModalBottomSheet(
@@ -392,7 +395,6 @@ fun CtrlSheet(onDismissRequest: () -> Unit, content: @Composable ColumnScope.() 
                     .background(CtrlColors.ControlBorder),
             )
         },
-        modifier = Modifier.border(1.dp, CtrlColors.CardBorder, CtrlShapes.Sheet),
         content = content,
     )
 }

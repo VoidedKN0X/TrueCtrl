@@ -71,6 +71,7 @@ class Sessions(
             // The live setting, not this copy: read-only mode changes without replacing the connection.
             readOnly = { store.servers.value.firstOrNull { it.id == server.id }?.readOnly ?: true },
             onVersion = { v -> if (v != server.tnVersion) store.update(server.id) { it.copy(tnVersion = v) } },
+            allowed = { !locked },
         )
         cached = key to connection
         if (foreground && !locked) connection.start()

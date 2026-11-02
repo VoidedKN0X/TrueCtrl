@@ -28,10 +28,6 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Works offline**: the last known state stays on screen, marked as out of date, when TrueNAS can't be reached
 - **Safe by design**: read-only mode that blocks every change at the connection level, confirmations for anything disruptive (typing the dataset path or hostname for the most dangerous ones), certificate pinning, an optional [app lock](#app-lock) with its own PIN and fingerprint unlock that keeps your saved sign-ins encrypted while locked, **Hide in screenshots** and **Hide in recent apps** switches, screenshots always blocked wherever you type keys, passwords, passphrases or use the shell, API keys and passwords encrypted with the Android Keystore, and dataset passphrases that are never saved
 
-## Screenshots
-
-Coming soon.
-
 ## Requirements
 
 - Android 13 or newer, on a 64-bit ARM phone (nearly every phone from the last several years)
@@ -42,7 +38,7 @@ Coming soon.
 
 ## Install
 
-1. Download the latest `.apk` file from the [Releases page](https://github.com/VoidedKN0X/TrueCtrl/releases/latest).
+1. Open the [latest release](https://github.com/VoidedKN0X/TrueCtrl/releases/latest) on your phone, scroll down to **Assets** and tap the file that ends in `.apk` (for example `TrueCtrl-v0.14.4.apk`). The **Source code** (zip) and (tar.gz) files there are not the app.
 2. Open it on your phone. Android may ask you to allow installing apps from your browser or file manager.
 3. Updates install over the old version. Your settings and login are kept.
 
@@ -54,6 +50,31 @@ Coming soon.
 <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/VoidedKN0X/TrueCtrl"><img src=".github/assets/badge_obtainium.png" alt="Get it on Obtainium" height="80"></a> <a href="https://voidedkn0x.github.io/CtrlF-Droid/"><img src=".github/assets/badge_ctrlf-droid.png" alt="Get it from our F-Droid repo" height="80"></a>
 
 If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X/TrueCtrl` in Obtainium by hand.
+
+## Is it safe to install?
+
+- **Open source:** all of TrueCtrl's code is in this repo, under the GPL-3.0 licence. You can read every line.
+- **Built by GitHub, not on a personal computer:** every release on the [Releases page](https://github.com/VoidedKN0X/TrueCtrl/releases) is built by GitHub Actions from the code in this repo, using [the build workflow](.github/workflows/build.yml).
+- **Always signed with the same key:** every release is signed with the same release key. Android refuses to install an update signed with a different key over the app you have, and the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) only accepts APKs signed with this key. Its SHA-256 certificate fingerprint is:
+
+  ```
+  C5:F8:E3:30:94:A8:C5:C0:CA:61:13:FB:65:7E:F2:6A:DD:09:5C:56:ED:24:BF:48:36:F7:98:B0:8F:8A:BF:90
+  ```
+
+  Advanced users can compare it with [AppVerifier](https://github.com/soupslurpr/AppVerifier).
+
+**Permissions** TrueCtrl asks for:
+
+| Permission | What it's for |
+| --- | --- |
+| Internet (`INTERNET`) | Talking to your own TrueNAS servers (and, only when you tap **Show icon and screenshots**, a catalog app's images) |
+| Network state (`ACCESS_NETWORK_STATE`) | Running background checks only when the phone is online |
+| Notifications (`POST_NOTIFICATIONS`) | Showing alerts from background checks and push. Android asks you first, and you can say no |
+| Biometrics (`USE_BIOMETRIC`) | Unlocking the optional app lock with your fingerprint |
+
+Android's WorkManager library, which runs the background checks, adds a few standard permissions of its own (keeping the phone awake for a moment during a check, and scheduling checks again after a restart).
+
+TrueCtrl doesn't ask for your location, contacts, files, camera or microphone. See [Privacy](#privacy) for what it connects to.
 
 ## Getting started
 
@@ -112,7 +133,7 @@ TrueNAS has no ntfy alert type, but its **Slack** alert type posts a small JSON 
 
 1. Install [ntfy from F-Droid](https://f-droid.org/packages/io.heckel.ntfy/) on your phone and point it at your ntfy server. If ntfy isn't installed, TrueCtrl's notification settings show an **Install ntfy** button.
 2. In TrueCtrl, open **Settings › Notifications › Push from TrueNAS**, turn on **Receive TrueNAS alerts instantly**, and wait for the push address from ntfy to appear.
-3. Tap **Set up on TrueNAS**. TrueCtrl adds a "TrueCtrl" alert service (type Slack, pointed at the push address, at your chosen alert level). This needs the `ALERT_WRITE` role; without it, the page shows the steps to add the service in the TrueNAS web UI yourself.
+3. Tap **Set up on** followed by your server's name. TrueCtrl adds a "TrueCtrl" alert service (type Slack, pointed at the push address, at your chosen alert level). This needs the `ALERT_WRITE` role; without it, the page shows the steps to add the service in the TrueNAS web UI yourself.
 4. Tap **Send a test alert** to check the whole path.
 
 ## Widgets and Quick Settings
@@ -164,6 +185,10 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 - **Notifications** on the lock screen hide server details when you hide sensitive notification content in Android's settings.
 - **No backups:** Android doesn't back up TrueCtrl's data or move it to a new phone.
 
+## How TrueCtrl is made
+
+TrueCtrl is a one-person project by VoidedKN0X (VKNXWorks). Much of the code is written with the help of AI (Claude, by Anthropic). I decide what the app does, review the changes and use the app myself. Every change is listed in the [changelog](CHANGELOG.md), and you can read every line of code here.
+
 ## Build from source
 
 You need [Android Studio](https://developer.android.com/studio), or JDK 17 and the Android SDK.
@@ -184,7 +209,9 @@ Or open the folder in Android Studio and press **Run** with your phone connected
 
 ## Support the project
 
-TrueCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/TrueCtrl/issues) helps too.
+TrueCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/TrueCtrl/issues/new/choose) helps too: pick **Bug report** or **Feature request** and fill in the form.
+
+Found a security problem? Please don't open a public issue; see [SECURITY.md](SECURITY.md).
 
 In the app, the **About** section at the bottom of the **You** page (tap your profile picture) has **Support TrueCtrl** and **Report a bug** rows that open these pages.
 
@@ -208,11 +235,16 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 | [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) | Scan and browse documents on Paperless-ngx |
 | [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) | Bambu Lab printers through Bambuddy, and Spoolman spools |
 | [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) | Manage your Proxmox VE server |
+| [RideCtrl](https://github.com/VoidedKN0X/RideCtrl) | Offline maintenance, fuel and mod log for your vehicles |
 | [SeerrCtrl](https://github.com/VoidedKN0X/SeerrCtrl) | Request movies and shows on Seerr / Jellyseerr |
+| [SynapseCtrl](https://github.com/VoidedKN0X/SynapseCtrl) | Administer your Matrix Synapse server |
 | **TrueCtrl** (this app) | Monitor and manage your TrueNAS server |
+| [WrtCtrl](https://github.com/VoidedKN0X/WrtCtrl) | Manage your OpenWrt router |
 
 ## License
 
 TrueCtrl is licensed under the [GNU General Public License v3.0](LICENSE). © VKNXWorks
+
+TrueCtrl is an independent app and isn't made by or affiliated with iXsystems or the TrueNAS project.
 
 The [Space Grotesk](https://github.com/floriankarsten/space-grotesk) and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) fonts are licensed under the SIL Open Font License 1.1; see `app/src/main/assets/licenses/`. The shell uses [xterm.js](https://xtermjs.org) (MIT licence, see `app/src/main/assets/xterm/LICENSE`).

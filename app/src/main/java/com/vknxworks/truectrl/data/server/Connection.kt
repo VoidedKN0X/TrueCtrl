@@ -69,6 +69,8 @@ class Connection(
     private val readOnly: () -> Boolean,
     /** Called with the exact TrueNAS version after each sign-in, so it can be remembered. */
     private val onVersion: (String) -> Unit = {},
+    /** False while the app lock is locked: nothing connects or is sent until it's unlocked. */
+    private val allowed: () -> Boolean = { true },
 ) {
     private val http = httpFor(baseHttp, server.host, server.certPin)
 
@@ -87,6 +89,7 @@ class Connection(
     /** Opens the connection (if it isn't already) and keeps it open. */
     @Synchronized
     fun start() {
+        if (!allowed()) return
         if (job?.isActive == true) return
         job = scope.launch { run() }
     }
@@ -191,6 +194,8 @@ class Connection(
 
     suspend fun call(method: String, params: List<JsonElement> = emptyList(), waitMs: Long = 15_000): JsonElement {
         if (readOnly() && !ReadOnlyGate.allows(method)) throw TnError.ReadOnly(method)
+        // Locked: refused before anything is sent, so nothing left on screen can act on the server.
+        if (!allowed()) throw TnError.Unreachable(null)
         val s = socket?.takeIf { it.isOpen } ?: run {
             start()
             try {

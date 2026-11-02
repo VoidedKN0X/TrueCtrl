@@ -1,0 +1,63 @@
+name: Bug report
+description: Something in TrueCtrl doesn't work as it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Before you post, please remove server addresses, hostnames, usernames, passwords, API keys and other personal details from your text and screenshots.
+        Found a security problem? Please don't post it here: [report it privately](https://github.com/VoidedKN0X/TrueCtrl/security/advisories/new).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+  - type: input
+    id: app-version
+    attributes:
+      label: TrueCtrl version
+      placeholder: "Profile picture > bottom of the page, e.g. 0.14.4"
+    validations:
+      required: true
+  - type: input
+    id: android
+    attributes:
+      label: Android version and phone
+      placeholder: "Android 15, Pixel 8"
+    validations:
+      required: true
+  - type: input
+    id: server-version
+    attributes:
+      label: TrueNAS version
+      placeholder: "e.g. 25.10.1"
+  - type: dropdown
+    id: source
+    attributes:
+      label: Installed from
+      options:
+        - GitHub Releases
+        - Obtainium
+        - CtrlF-Droid
+        - Built it myself
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or logs
+      description: Drag images here. Please remove anything private first.

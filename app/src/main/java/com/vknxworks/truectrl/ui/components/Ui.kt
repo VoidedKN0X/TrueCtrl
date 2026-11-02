@@ -379,6 +379,8 @@ fun PillButton(
  */
 @Composable
 fun CtrlSheet(onDismissRequest: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+    // Its own window, drawn above the lock screen: hidden while the app is locked.
+    if (LocalUnderLock.current) return
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         shape = CtrlShapes.Sheet,

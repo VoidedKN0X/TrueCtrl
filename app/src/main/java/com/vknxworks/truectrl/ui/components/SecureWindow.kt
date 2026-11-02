@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 
@@ -23,6 +24,13 @@ object ScreenPrivacy {
     internal fun acquire() { forced++ }
     internal fun release() { forced = (forced - 1).coerceAtLeast(0) }
 }
+
+/**
+ * True while the app lock (or a PIN screen) covers the app. Provided by MainActivity around the app
+ * only, not around the lock screen. Dialogs, bottom sheets and the shell open their own windows or
+ * views that would be drawn above the lock screen, so they read this and stay hidden while it's true.
+ */
+val LocalUnderLock = compositionLocalOf { false }
 
 /**
  * Keeps the window out of screenshots, screen recordings, casting and the recent-apps preview

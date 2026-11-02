@@ -101,6 +101,7 @@ import androidx.webkit.WebViewAssetLoader
 import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.data.system.ShellSession
+import com.vknxworks.truectrl.ui.components.LocalUnderLock
 import com.vknxworks.truectrl.ui.components.SecureWindow
 import com.vknxworks.truectrl.ui.components.errorMessage
 import com.vknxworks.truectrl.ui.nav.LocalNavigator
@@ -199,6 +200,16 @@ private fun ShellContent() {
             controller?.show(WindowInsetsCompat.Type.systemBars())
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             sessionRef.getAndSet(null)?.close()
+        }
+    }
+
+    // The app locked while the shell is open: close the shell's own socket (the API connection is
+    // closed by the lock), so nothing can be typed into it until it's unlocked and reconnected.
+    val underLock = LocalUnderLock.current
+    LaunchedEffect(underLock) {
+        if (underLock) {
+            sessionRef.getAndSet(null)?.close()
+            state = ShellState.CLOSED
         }
     }
 
@@ -381,8 +392,9 @@ private fun ShellContent() {
         }
     }
 
-    LaunchedEffect(state, webView) {
-        webView?.visibility = if (state == ShellState.CONNECTED) View.VISIBLE else View.INVISIBLE
+    // The WebView is laid over the whole window, above the lock screen: hidden while locked.
+    LaunchedEffect(state, webView, underLock) {
+        webView?.visibility = if (state == ShellState.CONNECTED && !underLock) View.VISIBLE else View.INVISIBLE
     }
 
     val white = androidx.compose.ui.graphics.Color.White

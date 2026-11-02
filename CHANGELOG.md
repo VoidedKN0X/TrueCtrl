@@ -4,6 +4,21 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.4 (2026-11-02)
+
+A security fix for the app lock, and a clearer, more beginner-friendly project page.
+
+### Security
+
+- **Nothing shows above the lock screen any more**: when TrueCtrl locked while a dialog, a bottom sheet or the shell was open (for example a confirmation, an app's actions sheet or the TrueNAS shell), that window could stay visible and usable on top of the lock screen. Dialogs and sheets are now hidden while TrueCtrl is locked and come back, still open, after you unlock. The shell closes its connection when TrueCtrl locks; tap **Reconnect** after unlocking.
+- **No server calls while locked**: TrueCtrl now refuses to connect to TrueNAS or send anything to it while the app lock is locked, on top of closing the connection when it locks. Background checks for notifications work as before.
+
+### Project
+
+- New **SECURITY.md** explaining how to report a security problem privately, which versions get fixes, and how releases are signed.
+- New **issue forms** for bug reports and feature requests, with a reminder to remove server addresses, passwords and API keys before posting. Security problems go to a private report instead.
+- README: clearer install steps (which file to tap on the Releases page), a new **Is it safe to install?** section with the signing certificate fingerprint and a permissions table, a **How TrueCtrl is made** section, the full Ctrl series list, a note that TrueCtrl isn't affiliated with iXsystems or the TrueNAS project, and the "Coming soon" screenshots section removed.
+
 ## v0.14.3 (2026-11-02)
 
 ### Fixed

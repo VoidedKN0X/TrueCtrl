@@ -21,6 +21,8 @@ import com.vknxworks.truectrl.ui.nav.AppRoot
 import com.vknxworks.truectrl.ui.theme.TrueCtrlTheme
 import android.view.WindowManager
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import com.vknxworks.truectrl.ui.components.LocalUnderLock
 import com.vknxworks.truectrl.ui.components.ScreenPrivacy
 import com.vknxworks.truectrl.ui.components.WindowPrivacy
 
@@ -55,7 +57,10 @@ class MainActivity : ComponentActivity() {
             TrueCtrlTheme(dark) {
                 Box(Modifier.fillMaxSize()) {
                     // The app stays underneath (so nothing you typed is lost), hidden from TalkBack too.
-                    Box(if (covered) Modifier.fillMaxSize().clearAndSetSemantics { } else Modifier.fillMaxSize()) { AppRoot() }
+                    // Dialogs, sheets and the shell under the lock stay hidden (they'd be drawn above it otherwise).
+                    Box(if (covered) Modifier.fillMaxSize().clearAndSetSemantics { } else Modifier.fillMaxSize()) {
+                        CompositionLocalProvider(LocalUnderLock provides covered) { AppRoot() }
+                    }
                     AppLockOverlay(lockSetting)
                 }
             }

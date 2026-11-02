@@ -407,6 +407,9 @@ fun CtrlDialog(
     text: (@Composable () -> Unit)? = null,
     properties: DialogProperties = DialogProperties(),
 ) {
+    // A dialog is its own window, drawn above the lock screen: hidden while the app is locked, and
+    // shown again (still open) after unlocking.
+    if (LocalUnderLock.current) return
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = confirmButton,

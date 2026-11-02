@@ -10,7 +10,7 @@ A security fix for the app lock, and a clearer, more beginner-friendly project p
 
 ### Security
 
-- **Nothing shows above the lock screen any more**: when TrueCtrl locked while a dialog, a bottom sheet or the shell was open (for example a confirmation, an app's actions sheet or the TrueNAS shell), that window could stay visible and usable on top of the lock screen. Dialogs and sheets are now hidden while TrueCtrl is locked and come back, still open, after you unlock. The shell closes its connection when TrueCtrl locks; tap **Reconnect** after unlocking.
+- **Nothing shows above the lock screen any more**: when TrueCtrl locked while a dialog, a bottom sheet or the shell was open (for example a confirmation, an app's actions sheet or the TrueNAS shell), that window could stay visible and usable on top of the lock screen. Dialogs and sheets are now hidden while TrueCtrl is locked and come back, still open, after you unlock. The shell closes its connection when TrueCtrl locks; tap **Connect again** after unlocking.
 - **No server calls while locked**: TrueCtrl now refuses to connect to TrueNAS or send anything to it while the app lock is locked, on top of closing the connection when it locks. Background checks for notifications work as before.
 
 ### Project

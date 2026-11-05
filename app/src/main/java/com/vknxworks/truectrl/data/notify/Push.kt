@@ -1,12 +1,10 @@
 package com.vknxworks.truectrl.data.notify
 
 import android.app.BroadcastOptions
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.data.api.TnJson
@@ -195,23 +193,12 @@ object Push {
     }
 
     /**
-     * Sends [intent] to [distributor] with TrueCtrl's identity: shared with the broadcast from
-     * Android 14, through a pending intent before that.
+     * Sends [intent] to [distributor] with TrueCtrl's identity shared with the broadcast.
      */
     private fun sendToDistributor(context: Context, distributor: String, intent: Intent) {
         intent.setPackage(distributor)
-        if (Build.VERSION.SDK_INT >= 34) {
-            val options = BroadcastOptions.makeBasic().setShareIdentityEnabled(true)
-            context.sendBroadcast(intent, null, options.toBundle())
-        } else {
-            val pi = PendingIntent.getBroadcast(
-                context,
-                0,
-                Intent("org.unifiedpush.dummy_app").setPackage(context.packageName),
-                PendingIntent.FLAG_IMMUTABLE,
-            )
-            context.sendBroadcast(intent.putExtra("pi", pi))
-        }
+        val options = BroadcastOptions.makeBasic().setShareIdentityEnabled(true)
+        context.sendBroadcast(intent, null, options.toBundle())
     }
 
     internal fun onEndpoint(context: Context, url: String) {
@@ -332,17 +319,15 @@ object Push {
 
 /**
  * Receives ntfy's answers and TrueNAS's alerts. Exported (ntfy is another app), so every broadcast must
- * carry TrueCtrl's secret token or it's ignored: the token is what keeps other apps out. From Android 14 a
+ * carry TrueCtrl's secret token or it's ignored: the token is what keeps other apps out. A
  * broadcast from a sender that identifies itself as an app other than ntfy is dropped too, but a sender can
  * stay anonymous, so that check only adds to the token.
  */
 class PushReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (Build.VERSION.SDK_INT >= 34) {
-            // Only rejects senders that identify as another app; anonymous ones get through to the token check.
-            val from = sentFromPackage
-            if (from != null && from != Push.NTFY) return
-        }
+        // Only rejects senders that identify as another app; anonymous ones get through to the token check.
+        val from = sentFromPackage
+        if (from != null && from != Push.NTFY) return
         val token = intent.getStringExtra(Push.EXTRA_TOKEN) ?: return
         if (token != Push.token(context)) return
         val app = context.applicationContext

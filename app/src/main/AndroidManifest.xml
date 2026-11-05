@@ -49,7 +49,7 @@
 
         <!-- Push addresses and TrueNAS alerts from the ntfy app. Exported (ntfy is another app): every
              broadcast must carry TrueCtrl's secret token (checked in PushReceiver); the token is the real
-             protection, the Android 14+ sender check only drops senders that name another app. -->
+             protection, the sender check only drops senders that name another app. -->
         <receiver
             android:name=".data.notify.PushReceiver"
             android:exported="true"

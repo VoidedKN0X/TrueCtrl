@@ -38,7 +38,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 ## Install
 
-1. Open the [latest release](https://github.com/VoidedKN0X/TrueCtrl/releases/latest) on your phone, scroll down to **Assets** and tap the file that ends in `.apk` (for example `TrueCtrl-v0.14.4.apk`). The **Source code** (zip) and (tar.gz) files there are not the app.
+1. Open the [latest release](https://github.com/VoidedKN0X/TrueCtrl/releases/latest) on your phone, scroll down to **Assets** and tap the file that ends in `.apk` (for example `TrueCtrl-v0.14.5.apk`). The **Source code** (zip) and (tar.gz) files there are not the app.
 2. Open it on your phone. Android may ask you to allow installing apps from your browser or file manager.
 3. Updates install over the old version. Your settings and login are kept.
 
@@ -71,10 +71,11 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 | Network state (`ACCESS_NETWORK_STATE`) | Running background checks only when the phone is online |
 | Notifications (`POST_NOTIFICATIONS`) | Showing alerts from background checks and push. Android asks you first, and you can say no |
 | Biometrics (`USE_BIOMETRIC`) | Unlocking the optional app lock with your fingerprint |
+| Run at startup (`RECEIVE_BOOT_COMPLETED`) | Scheduling the background checks again after the phone restarts. Added by Android's scheduler for background work (WorkManager) |
+| Keep awake (`WAKE_LOCK`) | Letting a background check finish while the screen is off. Added by WorkManager |
+| `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | An internal permission only TrueCtrl itself holds (added by AndroidX), so other apps can't send to its private receivers |
 
-Android's WorkManager library, which runs the background checks, adds a few standard permissions of its own (keeping the phone awake for a moment during a check, and scheduling checks again after a restart).
-
-TrueCtrl doesn't ask for your location, contacts, files, camera or microphone. See [Privacy](#privacy) for what it connects to.
+That's the full list. TrueCtrl doesn't ask for your location, contacts, files, camera or microphone, and doesn't run a foreground service. See [Privacy](#privacy) for what it connects to.
 
 ## Getting started
 
@@ -183,6 +184,9 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 - **Links:** the Support, Report a bug, Source code and Licence rows in About, an app's web UI and the links on a catalog app's page open in your browser only when you tap them; the app itself doesn't contact GitHub.
 - **App catalog images:** a catalog app's icon and screenshots are hosted on the internet by the catalog, not on your TrueNAS. TrueCtrl only downloads them when you tap **Show icon and screenshots** on that app's page.
 - **Notifications** on the lock screen hide server details when you hide sensitive notification content in Android's settings.
+- **The shell** runs in a locked-down web view that only loads the terminal bundled with the app (xterm.js); it can't open web pages, and what you type goes only to your TrueNAS.
+- **Install ntfy** (in notification settings, when ntfy is missing) opens ntfy's page on f-droid.org in your browser.
+- **Google-free:** no Google Play services, Firebase or other Google code, and nothing is sent to Google. The web view's Safe Browsing lookups and usage metrics are switched off.
 - **No backups:** Android doesn't back up TrueCtrl's data or move it to a new phone.
 
 ## How TrueCtrl is made
@@ -217,28 +221,36 @@ In the app, the **About** section at the bottom of the **You** page (tap your pr
 
 ## The Ctrl series
 
-Native Android apps for self-hosted services and everyday tools, all with the same Material You design.
+Native Android apps for self-hosted services and everyday tools, all with the same design.
 
 | App | What it's for |
 | --- | --- |
 | [AdCtrl](https://github.com/VoidedKN0X/AdCtrl) | Control your AdGuard Home DNS server |
 | [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) | Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app |
 | [BeamCtrl](https://github.com/VoidedKN0X/BeamCtrl) | TV remote for phones with an IR blaster |
+| [CallCtrl](https://github.com/VoidedKN0X/CallCtrl) | Phone app: dialer, call history and in-call screen |
 | [ChatCtrl](https://github.com/VoidedKN0X/ChatCtrl) | Matrix chat client for matrix.org and self-hosted Synapse |
+| [ClockCtrl](https://github.com/VoidedKN0X/ClockCtrl) | Alarms, timers, stopwatch and world clock |
+| [ContactCtrl](https://github.com/VoidedKN0X/ContactCtrl) | Contacts: browse, edit, import and export |
 | [CraftyCtrl](https://github.com/VoidedKN0X/CraftyCtrl) | Manage Minecraft servers on Crafty Controller |
+| [DateCtrl](https://github.com/VoidedKN0X/DateCtrl) | Calendar for the calendars on your phone and your accounts |
 | [FilesCtrl](https://github.com/VoidedKN0X/FilesCtrl) | File manager with NFS, SMB, SFTP, FTP and WebDAV |
 | [FrigateCtrl](https://github.com/VoidedKN0X/FrigateCtrl) | Watch and review your Frigate NVR cameras |
 | [ImmichCtrl](https://github.com/VoidedKN0X/ImmichCtrl) | Photos and backup for your Immich server |
 | [JellyCtrl](https://github.com/VoidedKN0X/JellyCtrl) | Movies, shows, music and Live TV from Jellyfin |
+| [LijnCtrl](https://github.com/VoidedKN0X/LijnCtrl) | Live De Lijn bus and tram departures |
+| [MailCtrl](https://github.com/VoidedKN0X/MailCtrl) | Email for Gmail and Proton Mail |
 | [MemoCtrl](https://github.com/VoidedKN0X/MemoCtrl) | Notes on your Memos server |
 | [NaviCtrl](https://github.com/VoidedKN0X/NaviCtrl) | Music player for Navidrome servers |
 | [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) | Scan and browse documents on Paperless-ngx |
 | [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) | Bambu Lab printers through Bambuddy, and Spoolman spools |
 | [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) | Manage your Proxmox VE server |
+| [RecorderCtrl](https://github.com/VoidedKN0X/RecorderCtrl) | Private, offline voice recorder |
 | [RideCtrl](https://github.com/VoidedKN0X/RideCtrl) | Offline maintenance, fuel and mod log for your vehicles |
 | [SeerrCtrl](https://github.com/VoidedKN0X/SeerrCtrl) | Request movies and shows on Seerr / Jellyseerr |
 | [SumCtrl](https://github.com/VoidedKN0X/SumCtrl) | Offline calculator, unit converter and work tools |
 | [SynapseCtrl](https://github.com/VoidedKN0X/SynapseCtrl) | Administer your Matrix Synapse server |
+| [TextCtrl](https://github.com/VoidedKN0X/TextCtrl) | Private SMS and MMS messaging |
 | **TrueCtrl** (this app) | Monitor and manage your TrueNAS server |
 | [WrtCtrl](https://github.com/VoidedKN0X/WrtCtrl) | Manage your OpenWrt router |
 

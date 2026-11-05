@@ -122,6 +122,29 @@ class AppContainer(val context: Context) {
     fun onLocked() {
         vault.close()
         sessions.setLocked(true)
+        // The widgets and the tile now only say that TrueCtrl is locked.
+        HealthStore.refreshViews(context)
+    }
+
+    /**
+     * The lock timeout ran out while TrueCtrl was away: lock now. For the widgets and the tile, which work
+     * without TrueCtrl on screen. Main thread only.
+     */
+    fun lockIfExpired() = AppLock.lockIfExpired(lockEnabled, settings.settings.value.lockTimeout.millis)
+
+    /**
+     * The widgets and the tile must not show server data: the app lock is locked, or its timeout ran out
+     * while TrueCtrl was away (locked for real on the main thread right after). Safe from any thread.
+     */
+    fun lockedForWidgets(): Boolean {
+        val enabled = lockEnabled
+        if (!enabled) return false
+        if (!AppLock.unlocked) return true
+        if (AppLock.expired(enabled, settings.settings.value.lockTimeout.millis)) {
+            android.os.Handler(android.os.Looper.getMainLooper()).post { runCatching { lockIfExpired() } }
+            return true
+        }
+        return false
     }
 
     fun onUnlocked() {
@@ -129,6 +152,8 @@ class AppContainer(val context: Context) {
         // Background checks may have been turned on or off since the secrets were last sealed.
         appScope.launch { runCatching { serverStore.applySealing() } }
         sessions.setLocked(false)
+        // The widgets and the tile show the server again.
+        HealthStore.refreshViews(context)
     }
     val overview = OverviewRepository(context, sessions, appScope) { server, snapshot ->
         val s = settings.settings.value

@@ -4,6 +4,18 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.6 (2026-11-05)
+
+### Security
+
+- **Widgets and the Quick Settings tile no longer show your server while TrueCtrl is locked.** With the app lock on, the TrueNAS pools and alerts widgets and the TrueNAS tile used to keep showing the server name, pool health and usage, and the number of alerts on the home screen and in Quick Settings, even while TrueCtrl itself asked for the PIN. Now, while the app lock is locked, they only say that TrueCtrl is locked. That also applies as soon as your *Lock again* time has run out while you were away, even before you open TrueCtrl again. They show the last check again the moment you unlock, and tapping them still opens TrueCtrl.
+- Background checks and notifications work exactly as before while TrueCtrl is locked.
+
+### Project
+
+- **Build checks:** every build now verifies that the APK is signed with TrueCtrl's own release key, so a build signed with any other key can never be published as an update.
+- **README:** the App lock section now says that widgets and the tile only say "TrueCtrl is locked" while the app is locked.
+
 ## v0.14.5 (2026-11-05)
 
 A privacy and security check-up: one permission fewer and a stricter build.

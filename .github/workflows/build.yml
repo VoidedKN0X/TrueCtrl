@@ -111,6 +111,21 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/release.jks"
 
+      - name: Check release signature
+        run: |
+          # The APK must be signed with TrueCtrl's release key (alias "true"), or phones won't accept updates.
+          expected="c5f8e33094a8c5c0ca6113fb657ef26add095c56ed24bf4836f798b08f8abf90"
+          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          for f in app/build/outputs/apk/release/*.apk; do
+            "$apksigner" verify --print-certs "$f" | tee signer.txt
+            actual=$(grep -m1 -oP 'certificate SHA-256 digest: \K[0-9a-f]+' signer.txt)
+            if [ "$actual" != "$expected" ]; then
+              echo "::error title=Wrong signing key::$f is signed with $actual, expected the TrueCtrl release key $expected"
+              exit 1
+            fi
+          done
+          echo "::notice title=Signed::APK signed with the TrueCtrl release key"
+
       - name: Report build errors
         if: failure()
         run: |

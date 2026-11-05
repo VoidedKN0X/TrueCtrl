@@ -41,6 +41,13 @@ internal fun currentSummary(context: Context): HealthSummary? {
     return HealthStore.read(context, activeId)
 }
 
+/**
+ * The app lock is locked (or its timeout ran out while TrueCtrl was away): the widgets and the tile only
+ * say "TrueCtrl is locked". Background checks and notifications carry on as before. If the lock state
+ * can't be read, they stay locked rather than show the server.
+ */
+internal fun appLocked(context: Context): Boolean = runCatching { context.container.lockedForWidgets() }.getOrDefault(true)
+
 internal fun openApp(context: Context): PendingIntent = PendingIntent.getActivity(
     context,
     0,
@@ -81,10 +88,16 @@ class PoolsWidget : AppWidgetProvider() {
         )
 
         fun draw(context: Context, manager: AppWidgetManager, ids: IntArray) {
-            val s = currentSummary(context)
+            val locked = appLocked(context)
+            val s = if (locked) null else currentSummary(context)
             val views = RemoteViews(context.packageName, R.layout.widget_pools)
             views.setOnClickPendingIntent(android.R.id.background, openApp(context))
-            if (s == null) {
+            if (locked) {
+                views.setTextViewText(R.id.server_name, context.getString(R.string.app_name))
+                views.setTextViewText(R.id.status, context.getString(R.string.widget_locked))
+                views.setColor(R.id.health_icon, "setColorFilter", WidgetColors.IDLE)
+                ROWS.forEach { views.setViewVisibility(it[0], View.GONE) }
+            } else if (s == null) {
                 views.setTextViewText(R.id.server_name, context.getString(R.string.app_name))
                 views.setTextViewText(R.id.status, context.getString(R.string.widget_no_data))
                 views.setColor(R.id.health_icon, "setColorFilter", WidgetColors.IDLE)
@@ -129,10 +142,16 @@ class AlertsWidget : AppWidgetProvider() {
 
     companion object {
         fun draw(context: Context, manager: AppWidgetManager, ids: IntArray) {
-            val s = currentSummary(context)
+            val locked = appLocked(context)
+            val s = if (locked) null else currentSummary(context)
             val views = RemoteViews(context.packageName, R.layout.widget_alerts)
             views.setOnClickPendingIntent(android.R.id.background, openApp(context))
-            if (s == null) {
+            if (locked) {
+                views.setTextViewText(R.id.alert_count, "–")
+                views.setColor(R.id.alert_count, "setTextColor", WidgetColors.IDLE)
+                views.setTextViewText(R.id.alert_label, context.getString(R.string.widget_locked_short))
+                views.setTextViewText(R.id.alert_server, context.getString(R.string.app_name))
+            } else if (s == null) {
                 views.setTextViewText(R.id.alert_count, "–")
                 views.setTextViewText(R.id.alert_label, context.getString(R.string.widget_no_data_short))
                 views.setTextViewText(R.id.alert_server, context.getString(R.string.app_name))

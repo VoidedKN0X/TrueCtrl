@@ -14,8 +14,13 @@ class HealthTile : TileService() {
     override fun onStartListening() {
         super.onStartListening()
         val tile = qsTile ?: return
-        val s = currentSummary(this)
-        if (s == null) {
+        val locked = appLocked(this)
+        val s = if (locked) null else currentSummary(this)
+        if (locked) {
+            tile.label = getString(R.string.app_name)
+            tile.subtitle = getString(R.string.widget_locked_short)
+            tile.state = Tile.STATE_INACTIVE
+        } else if (s == null) {
             tile.label = getString(R.string.app_name)
             tile.subtitle = getString(R.string.widget_no_data_short)
             tile.state = Tile.STATE_INACTIVE

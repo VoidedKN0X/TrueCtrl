@@ -156,7 +156,8 @@ Turn it on under **Settings › Privacy and security › App lock** (tap your pr
 - **Lock again:** as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Opening an app's web UI, ProxCtrl, ntfy, a link in your browser or Android's settings from TrueCtrl doesn't count as leaving, unless you stay away for more than 5 minutes.
 - **Change app PIN** asks for your current PIN first, and turning the app lock off asks for the PIN too.
 - **Forgot your PIN?** It can't be recovered, because it encrypts your sign-ins. The lock screen offers to remove every server with its API key or password, and the cached data kept on this phone; nothing changes on your TrueNAS.
-- **Background checks while locked:** with background checks or push on (Settings > Notifications), they keep running while TrueCtrl is locked, so your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Settings says so under the app lock. Turn background checks and push off to keep them sealed with your PIN too. The widgets and the Quick Settings tile keep showing the last check.
+- **Background checks while locked:** with background checks or push on (Settings > Notifications), they keep running while TrueCtrl is locked, so your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Settings says so under the app lock. Turn background checks and push off to keep them sealed with your PIN too. Background checks and notifications work the same either way.
+- **Widgets and the Quick Settings tile** only say that TrueCtrl is locked while the app lock is locked (also once the *Lock again* time has run out while you were away), instead of showing your pools, alerts or server name. They show the last check again as soon as you unlock.
 
 Two more switches in the same section work with or without the app lock, and are both off until you turn them on:
 

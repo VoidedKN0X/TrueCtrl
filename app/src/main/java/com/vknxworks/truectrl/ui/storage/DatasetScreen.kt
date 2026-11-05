@@ -457,7 +457,8 @@ private fun UnlockDialog(d: DatasetInfo, onDismiss: () -> Unit, onUnlock: (CharA
         title = { Text(stringResource(R.string.dataset_unlock_title, d.id)) },
         text = {
             // Inside the dialog, so its own window is shielded too.
-            ShieldScreen()
+            // Not marked sensitive for accessibility: password managers fill these fields through it.
+            ShieldScreen(sensitive = false)
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.dataset_unlock_body))
                 CtrlTextField(

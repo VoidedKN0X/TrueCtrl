@@ -4,6 +4,12 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.8 (2026-11-05)
+
+### Fixed
+
+- **Password managers can fill your sign-in and secret fields again.** Since 0.14.7 the server sign-in (API key, password, one-time password), the dataset passphrase and secret fields in app install forms had been hidden from every accessibility service that isn't a screen reader, which also kept password managers that fill through accessibility from filling them. Only the lock and PIN screens are hidden from those apps now. Other apps' floating windows stay hidden over all of these screens, as in 0.14.7.
+
 ## v0.14.7 (2026-11-05)
 
 A security update. Nothing changes in how TrueCtrl works.

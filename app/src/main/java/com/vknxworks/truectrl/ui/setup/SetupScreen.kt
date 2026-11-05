@@ -128,9 +128,10 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     // A socket left open for the one-time password step is closed when leaving the screen.
     DisposableEffect(Unit) { onDispose { otpSocket?.close() } }
     // API keys, passwords and one-time passwords are typed here: no screenshots, recordings or casting,
-    // no floating windows over it, and hidden from apps that misuse accessibility.
+    // no floating windows over it.
     SecureWindow()
-    ShieldScreen()
+    // Not marked sensitive for accessibility: password managers fill these fields through it.
+    ShieldScreen(sensitive = false)
 
     val resolved: HttpUrl? = ServerAddress.normalize(address)
     val plainHttp = resolved != null && !resolved.isHttps

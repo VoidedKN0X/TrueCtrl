@@ -142,7 +142,8 @@ fun AppInstallScreen(name: String, train: String) {
     val secret = remember(version) { AppForm.anyPrivate(questions) }
     if (secret) {
         SecureWindow()
-        ShieldScreen()
+        // Not marked sensitive for accessibility: password managers fill these fields through it.
+        ShieldScreen(sensitive = false)
     }
 
     val nameOk = AppForm.appNameValid(appName) && appName !in taken

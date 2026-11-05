@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl.ui.lock
 
+import com.vknxworks.truectrl.ui.components.ShieldScreen
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -392,6 +393,7 @@ private fun Modifier.blockTouches(): Modifier =
 
 @Composable
 private fun LegacyLockedScreen() {
+    ShieldScreen()
     val context = LocalContext.current
     val activity = context.findActivity()
     var error by remember { mutableStateOf<String?>(null) }
@@ -698,6 +700,8 @@ private fun PinPadScreen(
     bottom: @Composable () -> Unit,
     onFingerprint: (() -> Unit)? = null,
 ) {
+    // No floating windows over the PIN pad, and hidden from apps that misuse accessibility.
+    ShieldScreen()
     val haptics = LocalHapticFeedback.current
     Surface(Modifier.fillMaxSize().blockTouches(), color = CtrlColors.Background) {
         // Fills the screen (keypad at the bottom) and scrolls when it doesn't fit, e.g. in landscape.

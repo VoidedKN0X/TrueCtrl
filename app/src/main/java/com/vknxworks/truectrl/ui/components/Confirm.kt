@@ -33,6 +33,8 @@ fun ConfirmDialog(
     onDismiss: () -> Unit,
     typeToConfirm: String? = null,
 ) {
+    // No other app's floating window can cover the question or trick a tap onto the confirm button.
+    ShieldScreen(sensitive = false)
     var typed by remember { mutableStateOf("") }
     val ok = typeToConfirm == null || typed == typeToConfirm
     CtrlDialog(

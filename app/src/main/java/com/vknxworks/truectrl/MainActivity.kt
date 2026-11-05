@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl
 
+import com.vknxworks.truectrl.ui.components.OverlayShield
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -54,6 +55,8 @@ class MainActivity : ComponentActivity() {
             // with the app lock on Recents always shows a blank card (a preview would skip the PIN).
             val secure = settings.hideScreenshots || covered || ScreenPrivacy.forced > 0
             WindowPrivacy(this, secure, hideRecents = settings.hideRecents || lockSetting || c.vault.enabled)
+            // No other app's floating window over the lock, PIN, key and confirm screens.
+            OverlayShield(this, covered || ScreenPrivacy.shielded > 0)
             TrueCtrlTheme(dark) {
                 Box(Modifier.fillMaxSize()) {
                     // The app stays underneath (so nothing you typed is lost), hidden from TalkBack too.

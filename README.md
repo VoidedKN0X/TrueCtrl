@@ -62,6 +62,8 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
   ```
 
   Advanced users can compare it with [AppVerifier](https://github.com/soupslurpr/AppVerifier).
+- **Checksum:** each release's notes list the APK's SHA-256. Compare it with `sha256sum TrueCtrl-v*.apk`.
+- **Built by this repo:** every release APK has a signed build provenance attestation. With the [GitHub CLI](https://cli.github.com), `gh attestation verify TrueCtrl-v0.14.7.apk -R VoidedKN0X/TrueCtrl` proves it was built by this repo's workflow from the tagged commit.
 
 **Permissions** TrueCtrl asks for:
 
@@ -71,6 +73,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 | Network state (`ACCESS_NETWORK_STATE`) | Running background checks only when the phone is online |
 | Notifications (`POST_NOTIFICATIONS`) | Showing alerts from background checks and push. Android asks you first, and you can say no |
 | Biometrics (`USE_BIOMETRIC`) | Unlocking the optional app lock with your fingerprint |
+| Hide other apps' floating windows (`HIDE_OVERLAY_WINDOWS`) | Hide other apps' floating windows over the PIN screen: while the lock, PIN, a password or key, or a confirmation shows, no chat head or overlay can sit on top of it. Granted at install, no prompt; overlays work as usual everywhere else |
 | Run at startup (`RECEIVE_BOOT_COMPLETED`) | Scheduling the background checks again after the phone restarts. Added by Android's scheduler for background work (WorkManager) |
 | Keep awake (`WAKE_LOCK`) | Letting a background check finish while the screen is off. Added by WorkManager |
 | `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | An internal permission only TrueCtrl itself holds (added by AndroidX), so other apps can't send to its private receivers |
@@ -211,6 +214,8 @@ You need [Android Studio](https://developer.android.com/studio), or JDK 17 and t
 3. The APK is in `app/build/outputs/apk/debug/`. Copy it to your phone and install it.
 
 Or open the folder in Android Studio and press **Run** with your phone connected.
+
+**Dependency verification:** Gradle checks every library and plugin it downloads against the SHA-256 checksums in `gradle/verification-metadata.xml` and refuses anything that doesn't match. When you add or update a dependency or plugin, run the **Dependency verification metadata** workflow (Actions tab, *Run workflow*), copy the file from its log (between the BEGIN/END markers, gzipped and base64-encoded), check the diff and commit it in the same push.
 
 ## Support the project
 

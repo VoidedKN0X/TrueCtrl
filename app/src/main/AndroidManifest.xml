@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Hides other apps' floating windows while the PIN, a key or password, or a confirm screen shows.
+         Granted at install, no prompt. -->
+    <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
     <!-- WorkManager adds this for long-running foreground work, which TrueCtrl never starts. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
 
@@ -20,6 +23,7 @@
     </queries>
 
     <application
+        android:intentMatchingFlags="enforceIntentFilter"
         android:name=".TrueCtrlApp"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -93,6 +97,12 @@
             android:label="@string/widget_pools_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <!-- The rest of what Android's widget host sends, so strict intent matching lets it through. -->
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" />
+                <action android:name="android.appwidget.action.APPWIDGET_RESTORED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -105,6 +115,12 @@
             android:label="@string/widget_alerts_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <!-- The rest of what Android's widget host sends, so strict intent matching lets it through. -->
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" />
+                <action android:name="android.appwidget.action.APPWIDGET_RESTORED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

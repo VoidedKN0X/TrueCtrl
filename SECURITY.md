@@ -34,3 +34,5 @@ C5:F8:E3:30:94:A8:C5:C0:CA:61:13:FB:65:7E:F2:6A:DD:09:5C:56:ED:24:BF:48:36:F7:98
 ```
 
 The [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) only accepts APKs signed with this key.
+
+Each release's notes list the APK's SHA-256, and each release APK has a signed build provenance attestation: `gh attestation verify <apk> -R VoidedKN0X/TrueCtrl` proves it was built by this repo's workflow from the tagged commit. Every library and plugin the build downloads is checked against the checksums in `gradle/verification-metadata.xml`.

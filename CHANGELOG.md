@@ -4,6 +4,21 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.7 (2026-11-05)
+
+A security update. Nothing changes in how TrueCtrl works.
+
+### Security
+
+- **No other app's floating window over the PIN, key and confirmation screens.** While the lock screen, PIN entry or change, "Forgot PIN?", the server sign-in (API key, password, one-time password), the dataset passphrase, an app install form with secret fields or a confirmation (like deleting a dataset) is showing, Android hides other apps' floating windows (chat heads, screen filters, overlays), so none can cover the screen or trick you into tapping the wrong button. They come back as soon as that screen closes and work as usual everywhere else, including in the shell. This uses Android's "hide other apps' floating windows" permission, which is granted at install without a prompt.
+- **PIN, key and passphrase screens are hidden from apps that misuse accessibility** (Android 14 and newer). Real accessibility tools such as TalkBack still read them; other apps with accessibility access can't see the PIN pad, the API key, password or one-time password fields, or a dataset passphrase.
+- **Stricter intent matching** (Android 16 and newer). Other apps can only start TrueCtrl through the actions it declares. The launcher, the widgets, the Quick Settings tile and push from ntfy work as before.
+
+### Project
+
+- **Verified dependencies:** every library and plugin the build downloads is now checked against SHA-256 checksums in the repo, and the build stops if anything doesn't match.
+- **Provable releases:** from this release on, the release notes list the APK's SHA-256, and each APK has a signed build provenance attestation from GitHub. The README's "Is it safe to install?" section shows how to check both.
+
 ## Project updates (2026-11-05)
 
 Changes to how the app is built and released. Nothing changes in the app.

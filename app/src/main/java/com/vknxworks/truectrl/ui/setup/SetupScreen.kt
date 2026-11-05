@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl.ui.setup
 
+import com.vknxworks.truectrl.ui.components.ShieldScreen
 import com.vknxworks.truectrl.ui.components.ctrlSegmentColors
 import com.vknxworks.truectrl.ui.components.ctrlSegmentShape
 import com.vknxworks.truectrl.ui.components.CtrlTextField
@@ -126,8 +127,10 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
 
     // A socket left open for the one-time password step is closed when leaving the screen.
     DisposableEffect(Unit) { onDispose { otpSocket?.close() } }
-    // API keys, passwords and one-time passwords are typed here: no screenshots, recordings or casting.
+    // API keys, passwords and one-time passwords are typed here: no screenshots, recordings or casting,
+    // no floating windows over it, and hidden from apps that misuse accessibility.
     SecureWindow()
+    ShieldScreen()
 
     val resolved: HttpUrl? = ServerAddress.normalize(address)
     val plainHttp = resolved != null && !resolved.isHttps

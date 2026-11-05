@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl.ui.storage
 
+import com.vknxworks.truectrl.ui.components.ShieldScreen
 import com.vknxworks.truectrl.ui.components.CtrlDialog
 import com.vknxworks.truectrl.ui.components.CtrlTextField
 import androidx.compose.foundation.horizontalScroll
@@ -455,6 +456,8 @@ private fun UnlockDialog(d: DatasetInfo, onDismiss: () -> Unit, onUnlock: (CharA
         properties = DialogProperties(securePolicy = SecureFlagPolicy.SecureOn),
         title = { Text(stringResource(R.string.dataset_unlock_title, d.id)) },
         text = {
+            // Inside the dialog, so its own window is shielded too.
+            ShieldScreen()
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.dataset_unlock_body))
                 CtrlTextField(

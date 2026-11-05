@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl.ui.system
 
+import com.vknxworks.truectrl.ui.components.ShieldScreen
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -139,7 +140,10 @@ fun AppInstallScreen(name: String, train: String) {
     val groups = remember(version) { AppForm.groups(version?.schema) }
     val questions = remember(version) { AppQuestion.parseList(version?.schema?.get("questions")) }
     val secret = remember(version) { AppForm.anyPrivate(questions) }
-    if (secret) SecureWindow()
+    if (secret) {
+        SecureWindow()
+        ShieldScreen()
+    }
 
     val nameOk = AppForm.appNameValid(appName) && appName !in taken
     val v = values

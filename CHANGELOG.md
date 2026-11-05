@@ -4,6 +4,20 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.14.5 (2026-11-05)
+
+A privacy and security check-up: one permission fewer and a stricter build.
+
+### Privacy
+
+- **One permission fewer:** TrueCtrl no longer asks for "run foreground service". A background library added it for long-running work that TrueCtrl never starts, so it was never used. Your list of permissions in Android's app info is now one shorter.
+- **Release builds no longer write debug and info messages to the phone's log**, including any from the libraries TrueCtrl uses. TrueCtrl's own code never logged anything.
+
+### Project
+
+- **Stricter builds:** every build now checks that the Gradle wrapper is the official one, and checks that no Google library (Play services, Firebase, ML Kit) has slipped in through a dependency.
+- **README:** a full permissions table with what each permission is for, a note that the shell uses a locked-down web view that only loads the terminal built into the app, the ntfy link under Privacy, and the Ctrl series list with all 28 apps.
+
 ## Project updates (2026-11-03)
 
 ### Project

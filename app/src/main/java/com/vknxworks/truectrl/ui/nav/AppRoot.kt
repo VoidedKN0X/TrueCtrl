@@ -247,6 +247,7 @@ private fun AppNavHost(navController: NavHostController) {
         }
 
         composable<AppsRoute> { com.vknxworks.truectrl.ui.system.AppsScreen() }
+        composable<AppUpdatesRoute> { com.vknxworks.truectrl.ui.system.AppUpdatesScreen() }
         composable<AppLogsRoute> {
             val r = it.toRoute<AppLogsRoute>()
             com.vknxworks.truectrl.ui.system.AppLogsScreen(r.app, r.container, r.service)

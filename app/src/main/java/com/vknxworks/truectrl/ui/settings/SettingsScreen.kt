@@ -61,7 +61,7 @@ fun SettingsScreen() {
                 GroupRow(
                     stringResource(R.string.notifications),
                     stringResource(
-                        if ((notify.polling || notify.push) && !notificationAccess.canPost) R.string.notifications_subtitle_blocked else R.string.notifications_subtitle,
+                        if (notify.needsBackgroundSignIn && !notificationAccess.canPost) R.string.notifications_subtitle_blocked else R.string.notifications_subtitle,
                     ),
                     icon = Icons.Outlined.Notifications,
                     showChevron = true,
@@ -70,7 +70,7 @@ fun SettingsScreen() {
             }
             val notify by c.notifySettings.settings.collectAsStateWithLifecycle()
             val lockOn = c.vault.enabled
-            val backgroundChecks = notify.polling || notify.push
+            val backgroundChecks = notify.needsBackgroundSignIn
             Group(
                 stringResource(R.string.group_security),
                 footer = stringResource(if (lockOn && backgroundChecks) R.string.app_lock_footer_background else R.string.app_lock_footer),

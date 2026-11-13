@@ -22,9 +22,11 @@ class TrueCtrlApp : Application() {
             // Keep the background check and push registration in line with the settings.
             val first = c.notifySettings.current()
             NotifyWorker.schedule(this@TrueCtrlApp, first)
+            com.vknxworks.truectrl.data.notify.DiskHealthWorker.schedule(this@TrueCtrlApp, first)
             Push.load(this@TrueCtrlApp, first.push)
             c.notifySettings.settings.drop(1).distinctUntilChanged().collect { s ->
                 NotifyWorker.schedule(this@TrueCtrlApp, s)
+                com.vknxworks.truectrl.data.notify.DiskHealthWorker.schedule(this@TrueCtrlApp, s)
                 if (!s.push && Push.status.value !is PushStatus.Off) Push.unregister(this@TrueCtrlApp)
             }
         }

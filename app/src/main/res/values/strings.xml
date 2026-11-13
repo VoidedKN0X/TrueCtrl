@@ -1106,4 +1106,97 @@
     <string name="widget_locked">TrueCtrl is locked</string>
     <string name="widget_locked_short">Locked</string>
     <string name="error_cert_unreadable">Couldn\'t read the certificate %1$s presents, so it can\'t be checked. Try again, or check the address.</string>
+
+    <!-- Update all apps -->
+    <string name="apps_update_all">Update all apps</string>
+    <string name="apps_update_none">All apps are up to date</string>
+    <string name="apps_update_none_body">None of your installed apps has a newer version in the catalog right now.</string>
+    <string name="apps_update_intro">These apps have a newer version. Untick any you want to leave as they are. TrueCtrl updates them one after another and shows each update\'s progress; you can leave this screen meanwhile.</string>
+    <string name="apps_update_other_running">An update run is already going on another server. Wait until it\'s done.</string>
+    <string name="apps_update_versions">%1$s → %2$s</string>
+    <string name="apps_update_selected">Update %1$d</string>
+    <string name="apps_update_all_button">Update all (%1$d)</string>
+    <plurals name="apps_update_confirm_title">
+        <item quantity="one">Update %1$d app?</item>
+        <item quantity="other">Update %1$d apps?</item>
+    </plurals>
+    <string name="apps_update_confirm_body">%1$s will be updated to the latest version and restarted, one after another. An app is briefly unavailable while it restarts, and an update can\'t always be undone (TrueNAS keeps a snapshot of the app\'s data only if it\'s set to).</string>
+    <string name="apps_update_confirm">Update</string>
+    <string name="apps_update_running">Updating apps: %1$d of %2$d done</string>
+    <string name="apps_update_stopping">Stopping after the current app: %1$d of %2$d done</string>
+    <string name="apps_update_finished">Finished: %1$d updated, %2$d failed, %3$d skipped</string>
+    <string name="apps_update_queued">Waiting</string>
+    <string name="apps_update_updating">Updating…</string>
+    <string name="apps_update_done">Updated to %1$s</string>
+    <string name="apps_update_failed">The update failed</string>
+    <string name="apps_update_skipped">Skipped</string>
+    <string name="apps_update_stop">Stop after this app</string>
+    <string name="apps_update_close">Done</string>
+
+    <!-- App logs: search and copy -->
+    <string name="logs_search">Search the log</string>
+    <string name="logs_search_close">Close search</string>
+    <string name="logs_search_hint">Show lines containing…</string>
+    <string name="logs_copy_all">Copy the log</string>
+    <string name="logs_copy_matching">Copy the matching lines</string>
+    <string name="logs_no_match">No line contains \"%1$s\"</string>
+    <plurals name="logs_copied">
+        <item quantity="one">Copied %1$d line</item>
+        <item quantity="other">Copied %1$d lines</item>
+    </plurals>
+    <plurals name="logs_matches">
+        <item quantity="one">%1$d of %2$d lines</item>
+        <item quantity="other">%1$d of %2$d lines</item>
+    </plurals>
+    <plurals name="logs_dropped">
+        <item quantity="one">%1$d older line was dropped: TrueCtrl keeps the last %2$d.</item>
+        <item quantity="other">%1$d older lines were dropped: TrueCtrl keeps the last %2$d.</item>
+    </plurals>
+
+    <!-- Disk health -->
+    <string name="group_disk_health">Disk health</string>
+    <string name="dh_footer">A separate check of your pools, the disks in them (state and read, write and checksum errors), SMART self-test results (TrueNAS 25.04) and TrueNAS\'s disk alerts (SMART, disk temperature, pool status). Each new problem is notified once, including problems already there when you turn it on, and its notification goes away when it\'s fixed. It reads only; nothing changes on your server.</string>
+    <string name="dh_switch">Check disk health</string>
+    <string name="dh_switch_sub">In the background, on every saved server</string>
+    <string name="dh_interval">Check every</string>
+    <plurals name="dh_interval_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <string name="dh_last_ok">Last check %1$s: all disks fine</string>
+    <plurals name="dh_last_problems">
+        <item quantity="one">Last check %1$s: %2$d problem</item>
+        <item quantity="other">Last check %1$s: %2$d problems</item>
+    </plurals>
+    <string name="dh_check_now">Check disks now</string>
+    <string name="dh_ntfy_switch">Also post to ntfy</string>
+    <string name="dh_ntfy_switch_sub">Send new disk warnings to a topic on your own ntfy server too, for your other devices</string>
+    <string name="dh_ntfy_group">ntfy topic for disk warnings</string>
+    <string name="dh_ntfy_footer">TrueCtrl posts each check\'s new warnings to this topic (server name, pool and disk names, and what\'s wrong) and contacts nothing else. Redirects are never followed. The access token is optional, stored encrypted, and only sent over HTTPS. If the server has a self-signed certificate, you\'re asked to trust its fingerprint once.</string>
+    <string name="dh_ntfy_server">ntfy server</string>
+    <string name="dh_ntfy_topic">Topic</string>
+    <string name="dh_ntfy_token">Access token (optional)</string>
+    <string name="dh_ntfy_bad_server">That isn\'t a valid server address. Use the ntfy server\'s address only, like https://ntfy.example.com.</string>
+    <string name="dh_ntfy_bad_topic">Topics can only use letters, numbers, - and _, up to 64 characters.</string>
+    <string name="dh_ntfy_token_http">An access token is only sent over HTTPS. Use https://, or leave the token empty.</string>
+    <string name="dh_ntfy_http_note">Plain HTTP: the warnings cross the network unencrypted. Only use it on your own network or VPN.</string>
+    <string name="dh_ntfy_cert_pinned">Trusted certificate</string>
+    <string name="dh_ntfy_cert_forget">Forget</string>
+    <string name="dh_ntfy_save_test">Save and send a test</string>
+    <string name="dh_ntfy_save_test_sub">Saves the server, topic and token, and posts a test message</string>
+    <string name="dh_ntfy_missing">Enter the ntfy server and the topic first.</string>
+    <string name="dh_ntfy_fix">Fix the server, topic or token first.</string>
+    <string name="dh_ntfy_sent">Test message sent</string>
+    <string name="dh_ntfy_denied">The ntfy server refused (HTTP %1$d). Check the access token and who may publish to this topic.</string>
+    <string name="dh_ntfy_http_error">The ntfy server answered with an error (HTTP %1$d). Check the address.</string>
+    <string name="dh_ntfy_test_title">TrueCtrl test</string>
+    <string name="dh_ntfy_test_body">Disk-health warnings from TrueCtrl will arrive in this topic.</string>
+    <string name="dh_ntfy_title">Disk health on %1$s</string>
+    <string name="dh_title_critical">Disk problem</string>
+    <string name="dh_title_warning">Disk warning</string>
+    <string name="dh_pool_status">Pool %1$s is %2$s</string>
+    <string name="dh_disk_state">Disk %1$s in pool %2$s is %3$s</string>
+    <string name="dh_disk_errors">Disk %1$s in pool %2$s has errors: %3$d read, %4$d write, %5$d checksum</string>
+    <string name="dh_smart_failed">Disk %1$s failed its latest SMART self-test: %2$s</string>
+    <string name="ev_sent_by_disk_health">Handled by the Disk health check while it\'s on.</string>
 </resources>

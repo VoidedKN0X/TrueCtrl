@@ -39,6 +39,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
+import android.widget.Toast
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import com.vknxworks.truectrl.data.system.LogBuffer
+import com.vknxworks.truectrl.ui.components.copySensitive
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -65,6 +75,8 @@ import com.vknxworks.truectrl.ui.components.PollWhileVisible
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
 import com.vknxworks.truectrl.ui.components.errorMessage
 import com.vknxworks.truectrl.ui.nav.AppLogsRoute
+import com.vknxworks.truectrl.ui.nav.AppUpdatesRoute
+import androidx.compose.ui.res.pluralStringResource
 import com.vknxworks.truectrl.ui.nav.CatalogRoute
 import com.vknxworks.truectrl.ui.nav.LocalNavigator
 import com.vknxworks.truectrl.ui.theme.Health
@@ -93,6 +105,7 @@ fun AppsScreen() {
     val caps = access.capabilities
     val canUninstall = canWrite && caps?.has("app.delete") == true
     val canBrowse = caps?.has("app.available") == true
+    val updateRun by c.appUpdates.run.collectAsStateWithLifecycle()
 
     suspend fun load(): Boolean = try {
         apps = c.system.apps()
@@ -148,6 +161,26 @@ fun AppsScreen() {
                     }) else null,
                 )
                 else -> LazyColumn(Modifier.fillMaxSize().navigationBarsPadding(), contentPadding = PaddingValues(bottom = 24.dp)) {
+                    val upgradable = list.count { it.upgradeAvailable }
+                    val updateRun = updateRun
+                    if ((upgradable > 0 && caps?.has("app.upgrade") == true) || updateRun?.running == true) {
+                        item {
+                            Group {
+                                GroupRow(
+                                    stringResource(R.string.apps_update_all),
+                                    if (updateRun?.running == true) {
+                                        stringResource(R.string.apps_update_running, updateRun.done + updateRun.failed, updateRun.items.size)
+                                    } else {
+                                        pluralStringResource(R.plurals.apps_upgrades, upgradable, upgradable)
+                                    },
+                                    Icons.Outlined.Upgrade,
+                                    showChevron = updateRun?.running != true,
+                                    onClick = { nav.navigate(AppUpdatesRoute) },
+                                    trailing = if (updateRun?.running == true) ({ CircularProgressIndicator(Modifier.padding(2.dp), strokeWidth = 2.dp) }) else null,
+                                )
+                            }
+                        }
+                    }
                     item {
                         Group(footer = if (!canWrite) stringResource(if (server?.readOnly == true) R.string.read_only_hint else R.string.apps_role_hint) else null) {
                             list.forEach { app ->
@@ -387,30 +420,54 @@ private fun stateColor(state: String): Color = when (state) {
     else -> MaterialTheme.colorScheme.onSurface
 }
 
-private const val MAX_LOG_LINES = 2_000
-
-/** Live logs of one app container, following new lines as they arrive. */
+/**
+ * Live logs of one app container, following new lines as they arrive (TrueNAS's
+ * app.container_log_follow event, starting with the last 500 lines). At most
+ * [LogBuffer.DEFAULT_CAPACITY] lines are kept: the oldest go first. Search shows only the lines that
+ * contain the text, highlighted; Copy copies what's shown.
+ */
 @Composable
 fun AppLogsScreen(app: String, container: String, service: String) {
-    val c = LocalContext.current.container
+    val context = LocalContext.current
+    val c = context.container
     val access by c.sessions.access.collectAsStateWithLifecycle()
-    val lines = remember { mutableStateListOf<String>() }
+    val buffer = remember { LogBuffer() }
+    // Bumped on every change to the buffer, so the list recomposes.
+    var version by remember { mutableIntStateOf(0) }
     var follow by remember { mutableStateOf(true) }
+    var searching by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
     LaunchedEffect(app, container, access.generation) {
-        lines.clear()
-        c.system.containerLogs(app, container).collect { line ->
-            lines += line
-            if (lines.size > MAX_LOG_LINES) lines.removeRange(0, lines.size - MAX_LOG_LINES)
+        buffer.clear()
+        version++
+        c.system.containerLogs(app, container).collect { data ->
+            buffer.add(data)
+            version++
         }
     }
-    LaunchedEffect(lines.size, follow) {
-        if (follow && lines.isNotEmpty()) listState.scrollToItem(lines.lastIndex)
+    val shown = remember(version, query) { buffer.matching(query) }
+    LaunchedEffect(shown.size, follow) {
+        if (follow && shown.isNotEmpty()) listState.scrollToItem(shown.lastIndex)
     }
 
     Column(Modifier.fillMaxSize()) {
         ScreenTopBar("$app · ${service.ifBlank { container.take(12) }}", actions = {
+            IconButton(onClick = {
+                searching = !searching
+                if (!searching) query = ""
+            }) {
+                Icon(if (searching) Icons.Outlined.SearchOff else Icons.Outlined.Search, stringResource(if (searching) R.string.logs_search_close else R.string.logs_search))
+            }
+            IconButton(onClick = {
+                if (shown.isEmpty()) return@IconButton
+                // Logs can hold tokens or addresses: kept out of clipboard previews.
+                copySensitive(context, "TrueCtrl", buffer.text(shown))
+                Toast.makeText(context, context.resources.getQuantityString(R.plurals.logs_copied, shown.size, shown.size), Toast.LENGTH_SHORT).show()
+            }) {
+                Icon(Icons.Outlined.ContentCopy, stringResource(if (query.isBlank()) R.string.logs_copy_all else R.string.logs_copy_matching))
+            }
             IconButton(onClick = { follow = !follow }) {
                 Icon(
                     if (follow) Icons.Outlined.Stop else Icons.Outlined.PlayArrow,
@@ -419,19 +476,49 @@ fun AppLogsScreen(app: String, container: String, service: String) {
             }
         })
         if (!access.connected && access.error != null) ConnectionBanner()
+        if (searching) {
+            com.vknxworks.truectrl.ui.components.CtrlTextField(
+                value = query,
+                onValueChange = { query = it.take(200) },
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.logs_search_hint)) },
+                leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                supportingText = if (query.isNotBlank()) ({ Text(pluralStringResource(R.plurals.logs_matches, shown.size, shown.size, buffer.size)) }) else null,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(autoCorrectEnabled = false, imeAction = androidx.compose.ui.text.input.ImeAction.Search),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            )
+        }
         Box(Modifier.fillMaxSize().background(CtrlColors.Background)) {
-            if (lines.isEmpty()) {
+            if (buffer.size == 0) {
                 Text(
                     stringResource(R.string.logs_waiting),
                     color = CtrlColors.Muted,
                     modifier = Modifier.padding(16.dp),
                 )
+            } else if (shown.isEmpty()) {
+                Text(
+                    stringResource(R.string.logs_no_match, query.trim()),
+                    color = CtrlColors.Muted,
+                    modifier = Modifier.padding(16.dp),
+                )
             }
+            val highlight = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
             SelectionContainer {
                 LazyColumn(Modifier.fillMaxSize().navigationBarsPadding(), state = listState, contentPadding = PaddingValues(8.dp)) {
-                    items(lines.size) { i ->
+                    if (buffer.dropped > 0 && query.isBlank()) {
+                        item(key = "dropped") {
+                            Text(
+                                pluralStringResource(R.plurals.logs_dropped, buffer.dropped.toInt().coerceAtLeast(0), buffer.dropped, buffer.capacity),
+                                color = CtrlColors.Muted,
+                                fontSize = 11.sp,
+                                modifier = Modifier.padding(bottom = 6.dp),
+                            )
+                        }
+                    }
+                    items(shown.size) { i ->
+                        val line = shown.getOrNull(i)?.takeIf { it < buffer.size }?.let { buffer[it] }.orEmpty()
                         Text(
-                            lines[i],
+                            highlighted(line, query, highlight),
                             color = CtrlColors.Text,
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
@@ -445,6 +532,15 @@ fun AppLogsScreen(app: String, container: String, service: String) {
     }
 }
 
+/** [line] with every occurrence of [query] given a [color] background. */
+private fun highlighted(line: String, query: String, color: Color): AnnotatedString {
+    val ranges = LogBuffer.ranges(line, query)
+    if (ranges.isEmpty()) return AnnotatedString(line)
+    return buildAnnotatedString {
+        append(line)
+        ranges.forEach { addStyle(SpanStyle(background = color), it.first, it.last + 1) }
+    }
+}
 /** [url] as a Uri when it's an http or https address with a host; null for anything else (intent:, file:, …). */
 internal fun webUri(url: String): Uri? {
     val uri = runCatching { Uri.parse(url.trim()) }.getOrNull() ?: return null

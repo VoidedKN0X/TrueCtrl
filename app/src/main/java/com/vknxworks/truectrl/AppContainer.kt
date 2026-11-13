@@ -74,7 +74,7 @@ class AppContainer(val context: Context) {
     val lockAtStart: Boolean = vault.enabled || runBlocking { runCatching { settings.stored.first().appLock }.getOrDefault(false) }
 
     val serverStore = ServerStore(context, vault).apply {
-        sealPolicy = { vault.enabled && notifySettings.settings.value.let { !it.polling && !it.push } }
+        sealPolicy = { vault.enabled && !notifySettings.settings.value.needsBackgroundSignIn }
     }
     val sessions = Sessions(serverStore, http, appScope, lockedAtStart = lockAtStart)
 
@@ -109,6 +109,7 @@ class AppContainer(val context: Context) {
             sharing.forget(id)
             HealthStore.forget(context, id)
             CheckStore.forget(context, id)
+            com.vknxworks.truectrl.data.notify.DiskHealthStore.forget(context, id)
             Notifier.cancelServer(context, id)
         }
         serverStore.removeAll()
@@ -166,6 +167,9 @@ class AppContainer(val context: Context) {
     val system = SystemRepository(sessions)
     val catalog = com.vknxworks.truectrl.data.system.CatalogRepository(sessions)
 
+    /** "Update all apps": runs in the app's scope, so it goes on when its screen is left. */
+    val appUpdates = com.vknxworks.truectrl.data.system.AppUpdateRunner(appScope)
+
     init {
         AppLock.onLocked = { onLocked() }
         // One live connection while the app is on screen; background checks run in NotifyWorker.
@@ -183,7 +187,7 @@ class AppContainer(val context: Context) {
         // Background checks sign in while the app is locked, so turning them on unseals the saved
         // sign-ins and turning them off seals them again (only possible while unlocked).
         appScope.launch {
-            notifySettings.settings.map { it.polling || it.push }.distinctUntilChanged().drop(1).collect {
+            notifySettings.settings.map { it.needsBackgroundSignIn }.distinctUntilChanged().drop(1).collect {
                 if (vault.isOpen) runCatching { serverStore.applySealing() }
             }
         }

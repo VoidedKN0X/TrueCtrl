@@ -51,6 +51,30 @@ object Jobs {
         throw TnError.Unreachable(null)
     }
 
+    /**
+     * Like [awaitResult], and reports the job's progress (percent and description) to [onProgress] each
+     * time it's read, about once a second. A missed reading (a dropped call) is skipped, not fatal.
+     */
+    suspend fun follow(
+        c: Connection,
+        result: JsonElement,
+        timeoutMs: Long,
+        onProgress: (com.vknxworks.truectrl.data.system.JobInfo) -> Unit,
+    ): JsonElement? {
+        val id = result.long() ?: return result
+        val until = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < until) {
+            delay(1_000)
+            val job = find(c, id) ?: continue
+            com.vknxworks.truectrl.data.system.JobInfo.from(job)?.let(onProgress)
+            when (job["state"].str()) {
+                "SUCCESS" -> return job["result"]
+                "FAILED", "ABORTED" -> throw TnError.Call(job["state"].str(), errorOf(job))
+            }
+        }
+        throw TnError.Unreachable(null)
+    }
+
     private suspend fun find(c: Connection, id: Long): JsonElement? = runCatching {
         val filter = JsonArray(listOf(JsonArray(listOf(JsonPrimitive("id"), JsonPrimitive("="), JsonPrimitive(id)))))
         c.call("core.get_jobs", listOf(filter)).arr()?.firstOrNull()

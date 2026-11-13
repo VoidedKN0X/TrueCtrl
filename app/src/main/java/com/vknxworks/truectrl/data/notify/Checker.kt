@@ -88,7 +88,8 @@ class Checker(private val context: Context) {
         // Conditions, from the same rules as the Overview's attention list.
         for (item in Attention.compute(snapshot, config.poolWarnPercent, now)) {
             when (item) {
-                is AttentionItem.PoolUnhealthy -> if (n.on(NotifyEvent.POOL_UNHEALTHY)) {
+                // With the disk-health check on, it reports pool status itself (once, not twice).
+                is AttentionItem.PoolUnhealthy -> if (n.on(NotifyEvent.POOL_UNHEALTHY) && !n.diskHealth) {
                     conditions[key("pool:${item.pool.name}:health")] = Alert(
                         key("pool:${item.pool.name}:health"), NotifyEvent.POOL_UNHEALTHY, item.severity,
                         prefix + s(R.string.nt_pool_unhealthy, item.pool.name, item.pool.status),
@@ -125,6 +126,8 @@ class Checker(private val context: Context) {
         if (!first && !n.push) {
             for (a in liveAlerts) {
                 if (a.uuid in prev.seenAlerts || a.severity.ordinal > n.minAlertLevel.ordinal) continue
+                // Disk alerts are the disk-health check's, when it's on.
+                if (n.diskHealth && DiskHealth.isDiskAlert(a.klass)) continue
                 val smart = a.klass.contains("SMART", ignoreCase = true) || a.klass.contains("Smartd", ignoreCase = true) ||
                     a.klass.startsWith("DiskTemperature")
                 val event = if (smart) NotifyEvent.SMART else NotifyEvent.NEW_ALERT

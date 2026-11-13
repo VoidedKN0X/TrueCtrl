@@ -20,8 +20,9 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Protection**: periodic snapshot, replication, cloud sync, rsync and scrub tasks with their schedule, last and next run, and the age of the last good backup. Run tasks now, stop a cloud sync, turn snapshot and scrub tasks on and off
 - **Snapshots**: browse per dataset, take, delete one or many, roll back and clone
 - **Sharing**: create, edit and delete SMB and NFS shares (pick the dataset, name, purpose, description, read-only, show in the share list, guest access, allowed networks and hosts, map root / map all, security), turn them on and off, see who's connected over SMB, and the services behind them (start, stop, restart, start on boot). TrueCtrl shows when the SMB or NFS service isn't running and offers to start it
-- **System**: apps (start, stop, redeploy, upgrade, uninstall with or without their ix-volumes, open their web UI, live container logs), the **app catalog** (search, categories, app pages with version, train, links and optional icon and screenshots, and installing with a form built from the app's own questions: text, numbers, switches, choices, ixVolume or host path storage, ports, lists and more, with anything unusual editable as JSON; the install runs as a job you follow in Jobs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
+- **System**: apps (start, stop, redeploy, upgrade, uninstall with or without their ix-volumes, open their web UI, live container logs with search and copy), **Update all apps** (pick the apps with an update, or take them all, and follow each upgrade job's progress, one app after another), the **app catalog** (search, categories, app pages with version, train, links and optional icon and screenshots, and installing with a form built from the app's own questions: text, numbers, switches, choices, ixVolume or host path storage, ports, lists and more, with anything unusual editable as JSON; the install runs as a job you follow in Jobs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
 - **Notifications**: background checks every 15 to 120 minutes, and TrueNAS alerts pushed within seconds through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server (TrueCtrl can set it up on TrueNAS for you), with the background checks as a fallback
+- **Disk health warnings** (off until you turn them on): a separate background check, every 15 minutes to once a day, of pool status, the state and read/write/checksum errors of every disk in your pools, SMART self-test results (TrueNAS 25.04) and TrueNAS's disk alerts (SMART, disk temperature, pool status). Each new problem is notified once, and can also be posted to a topic on your own ntfy server for your other devices
 - **Widgets and a Quick Settings tile** with pool health and usage, the number of active alerts, and whether anything needs attention
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
 - **Several servers**, signed in with an API key or a password (two-factor codes work too), with a list of what each sign-in is allowed to do
@@ -140,6 +141,18 @@ TrueNAS has no ntfy alert type, but its **Slack** alert type posts a small JSON 
 3. Tap **Set up on** followed by your server's name. TrueCtrl adds a "TrueCtrl" alert service (type Slack, pointed at the push address, at your chosen alert level). This needs the `ALERT_WRITE` role; without it, the page shows the steps to add the service in the TrueNAS web UI yourself.
 4. Tap **Send a test alert** to check the whole path.
 
+## Disk health warnings
+
+Turn them on in **Settings › Notifications › Disk health**. TrueCtrl then checks every saved server in the background (every 15 minutes to once a day, with a network connection), over its own short, read-only connection:
+
+- **Pools** that aren't ONLINE or that TrueNAS marks unhealthy
+- **Disks in a pool** that are FAULTED, REMOVED, UNAVAIL, OFFLINE or DEGRADED, or that have read, write or checksum errors (more errors later are a new warning)
+- **SMART self-tests** whose latest result failed (TrueNAS 25.04; later versions report SMART through alerts)
+- **TrueNAS's disk alerts**: SMART, disk temperature, pool and boot pool status
+
+Each problem is notified once, including problems that are already there when you turn it on, and its notification goes away when it's fixed. While it's on, the general background check leaves pool status and SMART alerts to it, so you don't get them twice. It needs the same read access as the Overview (READONLY_ADMIN).
+
+**Also post to ntfy** (off by default) posts each check's new warnings to a topic on your own ntfy server too, for your other devices: enter the server (like https://ntfy.example.com), the topic and, if the topic needs it, an access token, then tap **Save and send a test**. TrueCtrl uses ntfy's JSON publishing and contacts nothing else.
 ## Widgets and Quick Settings
 
 - **TrueNAS pools** widget: the selected server, whether anything needs attention, and up to four pools with their health and usage.
@@ -159,7 +172,7 @@ Turn it on under **Settings › Privacy and security › App lock** (tap your pr
 - **Lock again:** as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Opening an app's web UI, ProxCtrl, ntfy, a link in your browser or Android's settings from TrueCtrl doesn't count as leaving, unless you stay away for more than 5 minutes.
 - **Change app PIN** asks for your current PIN first, and turning the app lock off asks for the PIN too.
 - **Forgot your PIN?** It can't be recovered, because it encrypts your sign-ins. The lock screen offers to remove every server with its API key or password, and the cached data kept on this phone; nothing changes on your TrueNAS.
-- **Background checks while locked:** with background checks or push on (Settings > Notifications), they keep running while TrueCtrl is locked, so your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Settings says so under the app lock. Turn background checks and push off to keep them sealed with your PIN too. Background checks and notifications work the same either way.
+- **Background checks while locked:** with background checks, push or disk health on (Settings > Notifications), they keep running while TrueCtrl is locked, so your API keys and passwords (and the ntfy access token for disk warnings) are then only encrypted with the Android Keystore, as without the app lock. Settings says so under the app lock. Turn background checks, push and disk health off to keep them sealed with your PIN too. Background checks and notifications work the same either way.
 - **Widgets and the Quick Settings tile** only say that TrueCtrl is locked while the app lock is locked (also once the *Lock again* time has run out while you were away), instead of showing your pools, alerts or server name. They show the last check again as soon as you unlock.
 
 Two more switches in the same section work with or without the app lock, and are both off until you turn them on:
@@ -184,7 +197,8 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 
 **Telemetry-free.** TrueCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add (and, only when you ask for them, the images of a catalog app).
 
-- **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket by default; plain HTTP only for your own server after a warning (never with an API key). Push alerts come from TrueNAS through your own ntfy server and the ntfy app, the only push app TrueCtrl works with; TrueCtrl doesn't connect to ntfy itself.
+- **Servers:** your own TrueNAS servers, over HTTPS and a secure WebSocket by default; plain HTTP only for your own server after a warning (never with an API key). Push alerts come from TrueNAS through your own ntfy server and the ntfy app, the only push app TrueCtrl works with.
+- **Your ntfy server, only if you turn on Disk health › Also post to ntfy** (off by default): TrueCtrl then posts new disk warnings (server, pool and disk names and what's wrong) to the server and topic you enter, and to nothing else. The optional access token is stored encrypted and only sent over HTTPS, redirects are never followed, and a self-signed certificate is pinned by its fingerprint after you confirm it. Turn the switch off to stop it.
 - **Links:** the Support, Report a bug, Source code and Licence rows in About, an app's web UI and the links on a catalog app's page open in your browser only when you tap them; the app itself doesn't contact GitHub.
 - **App catalog images:** a catalog app's icon and screenshots are hosted on the internet by the catalog, not on your TrueNAS. TrueCtrl only downloads them when you tap **Show icon and screenshots** on that app's page.
 - **Notifications** on the lock screen hide server details when you hide sensitive notification content in Android's settings.

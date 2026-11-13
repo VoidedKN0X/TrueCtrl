@@ -4,6 +4,19 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.15.0 (2026-11-13)
+
+### New
+
+- **Update all apps:** System › Apps shows **Update all apps** when apps have a newer version. It lists them with the version you have and the new one, all ticked; untick the ones to leave alone, then tap **Update** (the ticked ones) or **Update all**, and confirm. TrueCtrl updates them one after another and shows each upgrade's own progress (pulling images and so on), what's waiting, done or failed, and a summary at the end. A failed app doesn't stop the others. You can leave the screen meanwhile; **Stop after this app** lets the running update finish and skips the rest. It needs the APPS_WRITE role, as single upgrades do.
+- **Search and copy in app logs:** the live log of an app's container now has a search button that shows only the lines containing your text, highlighted, with how many match, and a copy button that copies the log (or only the matching lines). Logs are kept out of clipboard previews, as they can contain tokens or addresses.
+- **Disk health warnings** (Settings › Notifications › Disk health, off until you turn them on): a separate background check, every 15 minutes to once a day, of pool status, the state and read/write/checksum errors of every disk in your pools, SMART self-test results (TrueNAS 25.04) and TrueNAS's disk alerts (SMART, disk temperature, pool status). Each new problem is notified once, problems already there when you turn it on included, and the notification goes away once it's fixed. **Check disks now** runs it at once, and each server shows when it was last checked and how many problems it found.
+- **Disk warnings to your ntfy server** (optional, off by default): new disk warnings can also be posted to a topic on your own ntfy server, for your other devices. Enter the server, the topic and, if needed, an access token (stored encrypted, only sent over HTTPS), and tap **Save and send a test**. A self-signed certificate is shown with its fingerprint and pinned once you trust it.
+
+### Changed
+
+- **Longer app logs:** the log screen now keeps the last 5,000 lines instead of 2,000, says when older lines were dropped, and cuts single lines longer than 4,000 characters.
+- With Disk health on, the general background check no longer notifies pool status and SMART alerts itself, so you don't get them twice.
 ## v0.14.11 (2026-11-13)
 
 A security and privacy check-up. Nothing works differently, and you don't need to sign in again.

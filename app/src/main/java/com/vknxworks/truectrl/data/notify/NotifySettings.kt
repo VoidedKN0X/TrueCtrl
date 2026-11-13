@@ -40,11 +40,26 @@ data class NotifySettings(
     val disabled: Set<NotifyEvent> = emptySet(),
     /** The least serious TrueNAS alert level that's notified. */
     val minAlertLevel: Severity = Severity.WARNING,
+    /** The separate disk-health check (pools, disks, SMART, disk alerts). Off until turned on. */
+    val diskHealth: Boolean = false,
+    val diskHealthMinutes: Int = 60,
+    /** Also post new disk-health warnings to a topic on the user's ntfy server. Off until turned on. */
+    val ntfyPost: Boolean = false,
+    val ntfyServer: String = "",
+    val ntfyTopic: String = "",
+    /** SHA-256 of the ntfy server's self-signed certificate, once the user trusted it. */
+    val ntfyCertPin: String = "",
 ) {
     fun on(e: NotifyEvent): Boolean = e !in disabled
 
+    /** Background work signs in to TrueNAS while the app is locked. */
+    val needsBackgroundSignIn: Boolean get() = polling || push || diskHealth
+
     companion object {
         val INTERVALS = listOf(15, 30, 60, 120)
+
+        /** Disk-health check intervals in minutes: from 15 minutes (Android's minimum) to once a day. */
+        val DISK_INTERVALS = listOf(15, 30, 60, 120, 360, 720, 1440)
     }
 }
 
@@ -55,6 +70,12 @@ class NotifySettingsRepository(private val context: Context, scope: CoroutineSco
         val push = booleanPreferencesKey("notify_push")
         val disabled = stringSetPreferencesKey("notify_disabled")
         val minLevel = stringPreferencesKey("notify_min_level")
+        val diskHealth = booleanPreferencesKey("disk_health")
+        val diskMinutes = intPreferencesKey("disk_health_minutes")
+        val ntfyPost = booleanPreferencesKey("disk_ntfy_post")
+        val ntfyServer = stringPreferencesKey("disk_ntfy_server")
+        val ntfyTopic = stringPreferencesKey("disk_ntfy_topic")
+        val ntfyPin = stringPreferencesKey("disk_ntfy_cert_pin")
     }
 
     val settings: StateFlow<NotifySettings> = context.appDataStore.data
@@ -70,6 +91,12 @@ class NotifySettingsRepository(private val context: Context, scope: CoroutineSco
         push = this[K.push] ?: false,
         disabled = this[K.disabled].orEmpty().mapNotNull { n -> NotifyEvent.entries.firstOrNull { it.name == n } }.toSet(),
         minAlertLevel = this[K.minLevel]?.let { n -> Severity.entries.firstOrNull { it.name == n } } ?: Severity.WARNING,
+        diskHealth = this[K.diskHealth] ?: false,
+        diskHealthMinutes = (this[K.diskMinutes] ?: 60).let { if (it in NotifySettings.DISK_INTERVALS) it else 60 },
+        ntfyPost = this[K.ntfyPost] ?: false,
+        ntfyServer = this[K.ntfyServer].orEmpty(),
+        ntfyTopic = this[K.ntfyTopic].orEmpty(),
+        ntfyCertPin = this[K.ntfyPin].orEmpty(),
     )
 
     suspend fun update(transform: (NotifySettings) -> NotifySettings) {
@@ -80,6 +107,12 @@ class NotifySettingsRepository(private val context: Context, scope: CoroutineSco
             p[K.push] = s.push
             p[K.disabled] = s.disabled.map { it.name }.toSet()
             p[K.minLevel] = s.minAlertLevel.name
+            p[K.diskHealth] = s.diskHealth
+            p[K.diskMinutes] = s.diskHealthMinutes
+            p[K.ntfyPost] = s.ntfyPost
+            p[K.ntfyServer] = s.ntfyServer
+            p[K.ntfyTopic] = s.ntfyTopic
+            p[K.ntfyPin] = s.ntfyCertPin
         }
     }
 }

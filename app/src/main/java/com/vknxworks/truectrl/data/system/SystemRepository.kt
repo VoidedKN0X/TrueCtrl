@@ -151,6 +151,26 @@ class SystemRepository(private val sessions: Sessions) {
     }
 
     /**
+     * An [AppUpgrader] bound to the server that's active now (app.upgrade to the latest version, as a
+     * job whose progress is reported), so a run keeps going to the same server even if another one
+     * is picked meanwhile. Null when not connected.
+     */
+    fun upgrader(): Pair<String, AppUpgrader>? {
+        val active = sessions.active.value ?: return null
+        val c = active.connection
+        val upgrade: AppUpgrader = { name, onProgress ->
+            val result = c.call("app.upgrade", listOf(JsonPrimitive(name), buildJsonObject { put("app_version", "latest") }))
+            // Pulling large images can take a while; 30 minutes per app before giving up on following it.
+            Jobs.follow(c, result, timeoutMs = 1_800_000, onProgress = onProgress)
+        }
+        return active.server.id to upgrade
+    }
+
+    /** Whether this user may update apps on this server (and the method exists). */
+    fun canUpgradeApps(): Boolean =
+        sessions.access.value.capabilities?.has("app.upgrade") == true && sessions.canWrite("APPS_WRITE")
+
+    /**
      * Live log lines of one container, starting with the last [tail] lines. Each event is one
      * line; the subscription ends when collection stops.
      */

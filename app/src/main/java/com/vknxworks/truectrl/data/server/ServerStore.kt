@@ -136,6 +136,21 @@ class ServerStore(context: Context, private val vault: LockVault) {
 
     private fun secretKey(id: String, what: String) = "secret_${id}_$what"
 
+    /**
+     * The access token for posting disk-health warnings to the user's ntfy server: encrypted like the
+     * sign-ins (and sealed with them while the app lock asks for it), never stored in plain text.
+     * Empty when none is saved, or while it's sealed and the app is locked.
+     */
+    fun ntfyToken(): String = read(sp.getString(KEY_NTFY_TOKEN, null))
+
+    @Synchronized
+    fun saveNtfyToken(token: String) {
+        val seal = sealPolicy()
+        if (seal && !vault.isOpen) return
+        val value = write(token.trim(), seal)
+        sp.edit().apply { if (value == null) remove(KEY_NTFY_TOKEN) else putString(KEY_NTFY_TOKEN, value) }.apply()
+    }
+
     // --- Keystore AES-GCM ---
 
     /** StrongBox for a new key when the phone has one; an existing key is kept (see [KeystoreAes]). */
@@ -168,5 +183,8 @@ class ServerStore(context: Context, private val vault: LockVault) {
         const val KEY_SERVERS = "servers"
         const val KEY_ACTIVE = "active"
         const val KEY_ALIAS = "truectrl_secrets"
+
+        /** Starts with "secret_", so [applySealing] seals and unseals it with the sign-ins. */
+        const val KEY_NTFY_TOKEN = "secret_ntfy_token"
     }
 }

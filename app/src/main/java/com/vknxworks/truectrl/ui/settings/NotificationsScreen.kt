@@ -164,7 +164,7 @@ fun NotificationsScreen() {
                 modifier = Modifier.padding(horizontal = Gutter, vertical = 8.dp),
             )
 
-            if (!canPost && (settings.polling || settings.push)) {
+            if (!canPost && (settings.polling || settings.push || settings.diskHealth)) {
                 Surface(
                     shape = CtrlShapes.Card,
                     color = MaterialTheme.colorScheme.errorContainer,
@@ -301,6 +301,9 @@ fun NotificationsScreen() {
                 }
             }
 
+            // --- Disk health ---
+            DiskHealthSettings(settings, canPost, ensurePermission = ::ensurePermission, update = ::update)
+
             // --- What to notify ---
             Group(stringResource(R.string.group_events)) {
                 GroupChoice(
@@ -319,9 +322,14 @@ fun NotificationsScreen() {
                 ) { v -> update { it.copy(minAlertLevel = v) } }
                 NotifyEvent.entries.forEach { e ->
                     val coveredByPush = settings.push && (e == NotifyEvent.NEW_ALERT || e == NotifyEvent.SMART)
+                    val coveredByDiskHealth = settings.diskHealth && (e == NotifyEvent.SMART || e == NotifyEvent.POOL_UNHEALTHY)
                     GroupSwitch(
                         stringResource(e.label),
-                        if (coveredByPush) stringResource(e.summary) + "\n" + stringResource(R.string.ev_sent_by_truenas) else stringResource(e.summary),
+                        when {
+                            coveredByDiskHealth -> stringResource(e.summary) + "\n" + stringResource(R.string.ev_sent_by_disk_health)
+                            coveredByPush -> stringResource(e.summary) + "\n" + stringResource(R.string.ev_sent_by_truenas)
+                            else -> stringResource(e.summary)
+                        },
                         checked = settings.on(e) && canPost,
                     ) { on ->
                         if (on) ensurePermission()

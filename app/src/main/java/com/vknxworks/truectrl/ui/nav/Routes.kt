@@ -22,6 +22,7 @@ import kotlinx.serialization.Serializable
 
 // System
 @Serializable data object AppsRoute
+@Serializable data object AppUpdatesRoute
 @Serializable data class AppLogsRoute(val app: String, val container: String, val service: String)
 @Serializable data object JobsRoute
 @Serializable data object UpdatesRoute

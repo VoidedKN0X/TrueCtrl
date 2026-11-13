@@ -125,6 +125,7 @@ fun ServersScreen() {
                     c.sharing.forget(server.id)
                     com.vknxworks.truectrl.data.widget.HealthStore.forget(context, server.id)
                     com.vknxworks.truectrl.data.notify.CheckStore.forget(context, server.id)
+                    com.vknxworks.truectrl.data.notify.DiskHealthStore.forget(context, server.id)
                     com.vknxworks.truectrl.data.notify.Notifier.cancelServer(context, server.id)
                 }) { Text(stringResource(R.string.remove), color = MaterialTheme.colorScheme.error) }
             },

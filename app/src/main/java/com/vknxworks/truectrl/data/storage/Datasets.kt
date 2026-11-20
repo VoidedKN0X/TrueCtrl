@@ -3,6 +3,7 @@ package com.vknxworks.truectrl.data.storage
 import android.content.Context
 import com.vknxworks.truectrl.data.api.TnError
 import com.vknxworks.truectrl.data.api.TnJson
+import com.vknxworks.truectrl.data.crypto.SealedCache
 import com.vknxworks.truectrl.data.api.arr
 import com.vknxworks.truectrl.data.api.bool
 import com.vknxworks.truectrl.data.api.get
@@ -129,6 +130,8 @@ class DatasetRepository(
     private val context: Context,
     private val sessions: Sessions,
     private val scope: CoroutineScope,
+    /** Keeps the offline copy encrypted at rest. */
+    private val cache: SealedCache,
 ) {
     private val _state = MutableStateFlow(DatasetsState())
     val state: StateFlow<DatasetsState> = _state.asStateFlow()
@@ -268,16 +271,16 @@ class DatasetRepository(
     }
 
     fun forget(serverId: String) {
-        runCatching { cacheFile(serverId).delete() }
+        runCatching { cache.delete(cacheFile(serverId)) }
     }
 
     private fun cacheFile(serverId: String) = File(File(context.noBackupFilesDir, "cache").apply { mkdirs() }, "datasets-$serverId.json")
 
     private suspend fun readCache(serverId: String): DatasetsCache? = withContext(Dispatchers.IO) {
-        runCatching { TnJson.decodeFromString(DatasetsCache.serializer(), cacheFile(serverId).readText()) }.getOrNull()
+        runCatching { cache.readText(cacheFile(serverId))?.let { TnJson.decodeFromString(DatasetsCache.serializer(), it) } }.getOrNull()
     }
 
-    private suspend fun writeCache(serverId: String, cache: DatasetsCache) = withContext(Dispatchers.IO) {
-        runCatching { cacheFile(serverId).writeText(TnJson.encodeToString(DatasetsCache.serializer(), cache)) }
+    private suspend fun writeCache(serverId: String, snapshot: DatasetsCache) = withContext(Dispatchers.IO) {
+        runCatching { cache.writeText(cacheFile(serverId), TnJson.encodeToString(DatasetsCache.serializer(), snapshot)) }
     }
 }

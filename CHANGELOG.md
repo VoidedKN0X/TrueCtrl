@@ -4,6 +4,26 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Not released yet: these changes are on `main` and in the CI build, and ship with the next version. Built and checked by CI only: none of this had been run on a phone when it was written.
+
+### Security
+
+- **Encryption at rest for what TrueCtrl keeps about your servers.** These files are now stored encrypted on the phone: the offline copies for each server (`cache/overview-<server>.json`, `storage-`, `datasets-`, `protection-` and `sharing-<server>.json`: system details, alerts, pools, disks, dataset names, snapshot and backup tasks, shares and connected SMB sessions) and the notes the background checks keep for each server (`notify/<server>.json` and `disk-health/<server>.json`: which alerts, failures and disk problems were already notified, when the last check ran). They're sealed with AES-256-GCM under a random 256-bit data key. That key is stored in `data.key` in the app's private storage, itself encrypted by a key in the Android Keystore that can't be exported (made in the StrongBox security chip when the phone has one). It needs no PIN or fingerprint, so background checks keep working while the phone or the app is locked. It has nothing to do with the app lock, and the key that encrypts your saved sign-ins is not touched.
+- **What this protects, and what it doesn't:** a copy of the app's files taken off the phone (a backup image, a forensic copy, another app that got hold of the files) no longer shows your guests, storage and check history in readable form. It does not protect against something that controls TrueCtrl while it runs: the data key is in the app's memory then.
+- **Moving over is automatic and can't lose anything that matters.** The first time the updated app starts, each existing file is sealed in the background: the sealed copy is written next to it and synced to storage, read back, decrypted and compared byte for byte, and only then moved over the original in one step. If anything fails, or the app is stopped halfway, the original file stays in use and it's tried again at the next start. New saves are sealed from then on. Files of both kinds are read, so nothing changes on screen.
+- **If the key is ever lost** (the Keystore key is gone, or a sealed file is damaged), a sealed file can't be opened. Because everything in these files comes from your TrueNAS, TrueCtrl then treats it as "nothing saved": the file is deleted and the data is read from the server again at the next refresh. For the background check that means it starts fresh, so a warning that is still true can be notified once more. Nothing is asked and nothing on your server changes. The `data.key` file itself is never replaced; while it can't be read, TrueCtrl goes on saving ordinary files exactly as before this change. The same happens on a phone whose Keystore doesn't work at all.
+- **Not encrypted, on purpose:**
+  - **The list of servers** (name, address, user name, certificate fingerprint) and **which server is open**: plain settings that are read at once on the main thread when the app starts, before anything can be drawn. Sealing them would put the secure hardware in that path and slow every start down, or show the set-up screen for a moment while the key loads. API keys, passwords and the ntfy access token in the same file were already encrypted and are not touched.
+  - **The push registration with ntfy** (the push address and the secret token that proves a message comes from ntfy): read at once, on the main thread, every time ntfy hands over a message. If it couldn't be read, push would stop until TrueNAS's alert service is set up again, so it stays as it was.
+  - **Settings** (theme, notification and disk-health choices, the ntfy server and topic for disk warnings, app lock choices) and the small note that the app lock is off: not content, and the note has to be readable at once at start.
+  - **The app lock's vault**: already encrypted, not touched.
+  - **The method list** TrueCtrl remembers between reconnects: only ever in memory, never on storage.
+  - **WorkManager's own database** (Android's schedule of the background checks): a database of the library, not TrueCtrl's content.
+- **No going back to an older version with these files:** TrueCtrl 0.16.0 and older can't read sealed files. If you install an older version over this one, it finds nothing it can read and starts without the offline copies and with a fresh background check (it reads everything from the server again); it does not crash on them as far as the code shows, but that was not tried. There is nothing to export first: your servers and sign-ins are stored as before and are not affected.
+- **What you might notice:** nothing, apart from the points above. The first Keystore use happens in the background, so on phones with a slow security chip the last known state can appear a moment later after a cold start.
+
 ## v0.16.0 (2026-11-20)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

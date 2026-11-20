@@ -25,7 +25,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-/** Saved [DiskHealthState] per server, in no-backup storage. */
+/** Saved [DiskHealthState] per server, in no-backup storage, encrypted at rest ([com.vknxworks.truectrl.data.crypto.SealedCache]). */
 object DiskHealthStore {
     private val _last = MutableStateFlow<Map<String, DiskHealthState>>(emptyMap())
     val last: StateFlow<Map<String, DiskHealthState>> = _last.asStateFlow()
@@ -34,18 +34,20 @@ object DiskHealthStore {
         File(File(context.noBackupFilesDir, "disk-health").apply { mkdirs() }, "$serverId.json")
 
     suspend fun read(context: Context, serverId: String): DiskHealthState = withContext(Dispatchers.IO) {
-        val s = runCatching { TnJson.decodeFromString(DiskHealthState.serializer(), file(context, serverId).readText()) }.getOrNull() ?: DiskHealthState()
+        val s = runCatching {
+            context.container.sealedCache.readText(file(context, serverId))?.let { TnJson.decodeFromString(DiskHealthState.serializer(), it) }
+        }.getOrNull() ?: DiskHealthState()
         _last.value = _last.value + (serverId to s)
         s
     }
 
     suspend fun write(context: Context, serverId: String, state: DiskHealthState) = withContext(Dispatchers.IO) {
-        runCatching { file(context, serverId).writeText(TnJson.encodeToString(DiskHealthState.serializer(), state)) }
+        runCatching { context.container.sealedCache.writeText(file(context, serverId), TnJson.encodeToString(DiskHealthState.serializer(), state)) }
         _last.value = _last.value + (serverId to state)
     }
 
     fun forget(context: Context, serverId: String) {
-        runCatching { file(context, serverId).delete() }
+        runCatching { context.container.sealedCache.delete(file(context, serverId)) }
         _last.value = _last.value - serverId
     }
 }

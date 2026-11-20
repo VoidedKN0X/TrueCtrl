@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-/** Saved [CheckState] per server, in no-backup storage. */
+/** Saved [CheckState] per server, in no-backup storage, encrypted at rest ([com.vknxworks.truectrl.data.crypto.SealedCache]). */
 object CheckStore {
     private val _lastCheck = MutableStateFlow<Map<String, CheckState>>(emptyMap())
 
@@ -32,18 +32,20 @@ object CheckStore {
         File(File(context.noBackupFilesDir, "notify").apply { mkdirs() }, "$serverId.json")
 
     suspend fun read(context: Context, serverId: String): CheckState = withContext(Dispatchers.IO) {
-        val s = runCatching { TnJson.decodeFromString(CheckState.serializer(), file(context, serverId).readText()) }.getOrNull() ?: CheckState()
+        val s = runCatching {
+            context.container.sealedCache.readText(file(context, serverId))?.let { TnJson.decodeFromString(CheckState.serializer(), it) }
+        }.getOrNull() ?: CheckState()
         _lastCheck.value = _lastCheck.value + (serverId to s)
         s
     }
 
     suspend fun write(context: Context, serverId: String, state: CheckState) = withContext(Dispatchers.IO) {
-        runCatching { file(context, serverId).writeText(TnJson.encodeToString(CheckState.serializer(), state)) }
+        runCatching { context.container.sealedCache.writeText(file(context, serverId), TnJson.encodeToString(CheckState.serializer(), state)) }
         _lastCheck.value = _lastCheck.value + (serverId to state)
     }
 
     fun forget(context: Context, serverId: String) {
-        runCatching { file(context, serverId).delete() }
+        runCatching { context.container.sealedCache.delete(file(context, serverId)) }
         _lastCheck.value = _lastCheck.value - serverId
     }
 }

@@ -20,6 +20,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import com.vknxworks.truectrl.data.crypto.DataKeyStore
+import com.vknxworks.truectrl.data.crypto.KeystoreWrapper
+import com.vknxworks.truectrl.data.crypto.SealedCache
 import com.vknxworks.truectrl.data.lock.LockVault
 import com.vknxworks.truectrl.data.notify.CheckStore
 import com.vknxworks.truectrl.data.notify.Notifier
@@ -30,6 +33,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 /** Manual dependency container; one per process. Created on the main thread in [TrueCtrlApp]. */
@@ -148,11 +152,26 @@ class AppContainer(val context: Context) {
         appScope.launch { runCatching { serverStore.applySealing() } }
         sessions.setLocked(false)
     }
-    val overview = OverviewRepository(context, sessions, appScope)
-    val storage = StorageRepository(context, sessions, appScope)
-    val datasets = DatasetRepository(context, sessions, appScope)
-    val protection = ProtectionRepository(context, sessions, appScope)
-    val sharing = SharingRepository(context, sessions, appScope)
+
+    /**
+     * Encryption at rest for the offline copies (Overview, storage, datasets, protection, sharing) and the
+     * background checks' notes. Its own data key in `data.key`, wrapped by its own Keystore key: nothing to
+     * do with the app lock or with the key of the saved sign-ins. Nothing is read here; the Keystore is first
+     * asked on a background thread, when a file is read or saved.
+     */
+    val sealedCache = SealedCache { DataKeyStore(context.filesDir, KeystoreWrapper(DATA_KEY_ALIAS)) }
+
+    /** Seals the copies and notes saved before encryption (and those of servers that aren't open). Slow: off the main thread. */
+    fun sealStoredFiles() {
+        val dir = context.noBackupFilesDir
+        sealedCache.sealAll(listOf(File(dir, "cache"), File(dir, "notify"), File(dir, "disk-health")))
+    }
+
+    val overview = OverviewRepository(context, sessions, appScope, sealedCache)
+    val storage = StorageRepository(context, sessions, appScope, sealedCache)
+    val datasets = DatasetRepository(context, sessions, appScope, sealedCache)
+    val protection = ProtectionRepository(context, sessions, appScope, sealedCache)
+    val sharing = SharingRepository(context, sessions, appScope, sealedCache)
     val system = SystemRepository(sessions)
     val catalog = com.vknxworks.truectrl.data.system.CatalogRepository(sessions)
 
@@ -190,6 +209,7 @@ class AppContainer(val context: Context) {
 
     private companion object {
         const val KEY_LOCK_OFF = "app_lock_off"
+        const val DATA_KEY_ALIAS = "truectrl_data_at_rest"
     }
 }
 

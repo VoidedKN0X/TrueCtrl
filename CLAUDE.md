@@ -13,6 +13,15 @@ Android app for monitoring and managing a TrueNAS server (25.04 and newer). Part
 - Never log or store API keys, passwords, OTPs or dataset passphrases in plain text. Dataset passphrases are never persisted.
 - Test write actions on a throwaway test dataset and its snapshots, never on datasets used by Jellyfin, Immich, Paperless, the *arr stack or other services.
 
+## Encryption at rest
+
+- `noBackupFilesDir/cache/{overview,storage,datasets,protection,sharing}-<id>.json`, `notify/<id>.json` and `disk-health/<id>.json` are sealed with AES-256-GCM (`data/crypto/SealedFile`, marker `TRUECTRL-REST1`) under the data key (`DataKeyStore`: 32 random bytes in `filesDir/data.key`, wrapped by the Keystore key `truectrl_data_at_rest` through `KeystoreWrapper`/`KeystoreAes`; no user authentication, so background checks work while locked). It is separate from the app lock vault and from `truectrl_secrets`; never touch those for this.
+- All of these are caches the app can make again, so they go through `data/crypto/SealedCache` (the simple tier): reads accept sealed and ordinary files; writes seal when there is a data key and write an ordinary file when there isn't; a sealed file that can't be opened is a cache miss and is deleted. Never put anything the user typed in, or anything that can't be fetched again, through `SealedCache`: that needs the full treatment (block writes, keep the file, tell the user), as in RideCtrl.
+- An ordinary file only becomes a sealed one through `SealedFile.sealInPlace` (temp file, sync, read back, compare, atomic rename); `AppContainer.sealStoredFiles()` runs that over `cache/`, `notify/` and `disk-health/` at every start, on a background thread. Never replace an existing `data.key`, and never create a Keystore key on the decrypt path (`KeystoreAes.existing`).
+- Keystore work stays off the main thread: `SealedCache.readText`/`writeText`/`sealAll` are only called from `Dispatchers.IO`; `delete` doesn't touch the Keystore and may run anywhere.
+- Not sealed on purpose: the `servers` preferences (server list, read synchronously at start), the push registration preferences (read on the main thread in the push receiver), plain settings, and WorkManager's database. See the changelog entry for the reasons.
+- `SealedFileTest` covers the format, the migration step, the key rules and `SealedCache` (`./gradlew :app:testDebugUnitTest`; CI doesn't run unit tests).
+
 ## Releasing
 
 - A release is published only when `versionName` in `app/build.gradle.kts` is bumped. Bump `versionCode` by 1 at the same time.

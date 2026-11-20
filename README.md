@@ -196,6 +196,7 @@ Some method names changed between versions (snapshots, services, updates, SMART)
 - **Install ntfy** (in notification settings, when ntfy is missing) opens ntfy's page on f-droid.org in your browser.
 - **Google-free:** no Google Play services, Firebase or other Google code, and nothing is sent to Google. The web view's Safe Browsing lookups and usage metrics are switched off.
 - **No backups:** Android doesn't back up TrueCtrl's data or move it to a new phone.
+- **Encrypted on the phone:** besides your sign-ins, the offline copies of what TrueNAS last reported (Overview, storage, datasets, protection, sharing) and the background checks' notes are stored encrypted (AES-256-GCM, with a key protected by the phone's secure hardware). This protects those files when they're copied off the phone, not against something that controls the running app. The list of servers (names and addresses), the push address and other settings are ordinary settings files in the app's private storage.
 
 ## How TrueCtrl is made
 

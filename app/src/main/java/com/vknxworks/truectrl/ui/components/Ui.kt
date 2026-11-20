@@ -44,7 +44,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -224,6 +231,97 @@ fun Group(
             Column(Modifier.fillMaxWidth(), content = content)
         }
         if (footer != null) {
+            Text(
+                footer,
+                style = MaterialTheme.typography.bodySmall,
+                color = CtrlColors.Muted,
+                modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 8.dp),
+            )
+        }
+    }
+}
+
+/** The corner radius of [CtrlShapes.Card], for cards that are drawn one row at a time. */
+private val SliceCorner = 22.dp
+private val SliceTopShape = RoundedCornerShape(topStart = SliceCorner, topEnd = SliceCorner)
+private val SliceBottomShape = RoundedCornerShape(bottomStart = SliceCorner, bottomEnd = SliceCorner)
+
+/**
+ * One row's piece of a card, for lazy lists: every row is its own list item, so only the rows on
+ * screen are composed, and together the pieces look like one card. The [first] piece has the
+ * rounded top and the [last] the rounded bottom; the outline is the card's own, a rounded rectangle
+ * drawn past the piece's edges where the card goes on. With [divider], every piece but the first
+ * gets the line [groupDivider] draws on top of a row (a row inside a piece is always at the top of
+ * its parent, so it doesn't draw its own).
+ */
+@Composable
+fun CardSlice(
+    first: Boolean,
+    last: Boolean,
+    modifier: Modifier = Modifier,
+    divider: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    val outline = CtrlColors.CardBorder
+    val shape = when {
+        first && last -> CtrlShapes.Card
+        first -> SliceTopShape
+        last -> SliceBottomShape
+        else -> RectangleShape
+    }
+    Surface(
+        shape = shape,
+        color = CtrlColors.Surface,
+        modifier = modifier.drawWithContent {
+            drawContent()
+            val stroke = 1.dp.toPx()
+            if (divider && !first) drawLine(outline, Offset(0f, 0.5f), Offset(size.width, 0.5f), strokeWidth = stroke)
+            val radius = SliceCorner.toPx()
+            val beyond = radius + stroke
+            val top = if (first) stroke / 2 else -beyond
+            val bottom = if (last) size.height - stroke / 2 else size.height + beyond
+            clipRect {
+                drawRoundRect(
+                    color = outline,
+                    topLeft = Offset(stroke / 2, top),
+                    size = Size(size.width - stroke, bottom - top),
+                    cornerRadius = CornerRadius(radius - stroke / 2),
+                    style = Stroke(stroke),
+                )
+            }
+        },
+    ) {
+        content()
+    }
+}
+
+/**
+ * One row of a [Group] for lazy lists (see [CardSlice]): the [first] row carries the section
+ * [title] and the top padding, the [last] row the [footer] and the bottom padding.
+ */
+@Composable
+fun GroupSlice(
+    first: Boolean,
+    last: Boolean,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    footer: String? = null,
+    divider: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        modifier.fillMaxWidth().padding(
+            start = Gutter,
+            end = Gutter,
+            top = if (first) 8.dp else 0.dp,
+            bottom = if (last) 8.dp else 0.dp,
+        ),
+    ) {
+        if (first && title != null) CtrlLabel(title, Modifier.padding(start = 4.dp, bottom = 8.dp))
+        CardSlice(first, last, Modifier.fillMaxWidth(), divider = divider) {
+            Column(Modifier.fillMaxWidth()) { content() }
+        }
+        if (last && footer != null) {
             Text(
                 footer,
                 style = MaterialTheme.typography.bodySmall,

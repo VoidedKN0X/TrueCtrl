@@ -4,6 +4,16 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: nothing here had been run on a phone when it was pushed. No version bump, so this is not a release yet.
+
+### Performance
+
+- **Snapshots, the app catalog, datasets, disks, installed apps and jobs only draw the rows on screen.** These lists sat in a scrolling list that held the whole card as one single item, so every row was built at once: thousands of snapshots of one dataset, or the few hundred apps of the catalog, made the page slow to open and to scroll. Each row is now its own list item. The cards look the same: every row draws its own piece of the card (rounded top on the first row, rounded bottom on the last, the outline at the sides, the dividing line where there was one), and the section title and the note under a card belong to its first and last row.
+  - **What can look or behave differently:** nothing is meant to. Things to look at on the phone: the card outline and corners where two rows meet (a hairline gap or a doubled line would be a mistake), the space above and below each card, the lines between rows (snapshots, disks, catalog and apps have them; datasets and jobs have none, as before), selecting several snapshots with a long press and scrolling while they are selected, the catalog while typing in the search box (the list now keeps the same app at the top of the screen where it can, instead of the same distance from the top), and a job moving from **Running** to **Recent**.
+- **Datasets are grouped by pool once per load** instead of on every redraw of the Storage tab.
+
 ## v0.17.0 (2026-11-20)
 
 **This release encrypts some of what the app stores on the phone. An older version cannot read it afterwards, so export or back up anything you need before you update (details below).** Built and checked by CI only: nothing in this release had been run on a phone when it was published.

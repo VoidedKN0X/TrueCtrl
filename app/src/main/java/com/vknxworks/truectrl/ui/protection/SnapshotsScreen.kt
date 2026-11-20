@@ -1,6 +1,5 @@
 package com.vknxworks.truectrl.ui.protection
 
-import com.vknxworks.truectrl.ui.theme.CtrlShapes
 import com.vknxworks.truectrl.ui.theme.CtrlColors
 import com.vknxworks.truectrl.ui.components.CtrlSheet
 import com.vknxworks.truectrl.ui.components.CtrlDialog
@@ -23,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
@@ -37,7 +37,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -64,6 +63,7 @@ import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.data.api.TnError
 import com.vknxworks.truectrl.data.protection.SnapshotAction
 import com.vknxworks.truectrl.data.protection.SnapshotInfo
+import com.vknxworks.truectrl.ui.components.CardSlice
 import com.vknxworks.truectrl.ui.components.ConfirmDialog
 import com.vknxworks.truectrl.ui.components.ConnectionBanner
 import com.vknxworks.truectrl.ui.components.EmptyState
@@ -238,8 +238,9 @@ fun SnapshotsScreen(initialDataset: String?) {
                 )
                 else -> {
                     val list = snaps!!
+                    val uniqueIds = remember(list) { list.mapTo(HashSet()) { it.id }.size == list.size }
                     LazyColumn(Modifier.fillMaxSize().navigationBarsPadding(), contentPadding = PaddingValues(bottom = 24.dp)) {
-                        item(key = "count") {
+                        item(key = "count", contentType = "count") {
                             Text(
                                 pluralStringResource(R.plurals.snapshot_count, list.size, list.size) +
                                     if (canDelete) "  ·  " + stringResource(R.string.snapshots_hold_hint) else "",
@@ -248,51 +249,51 @@ fun SnapshotsScreen(initialDataset: String?) {
                                 modifier = Modifier.padding(horizontal = Gutter + 4.dp, vertical = 8.dp),
                             )
                         }
-                        item(key = "list") {
-                            Surface(
-                                shape = CtrlShapes.Card,
-                                color = CtrlColors.Surface,
-                                border = CtrlColors.CardStroke,
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter),
-                            ) {
-                                Column(Modifier.padding(vertical = 4.dp)) {
-                                    list.forEachIndexed { i, s ->
-                                        if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = CtrlColors.CardBorder)
-                                        val isSel = s.id in selected
-                                        Row(
-                                            Modifier
-                                                .fillMaxWidth()
-                                                .combinedClickable(
-                                                    onClick = {
-                                                        when {
-                                                            selected.isNotEmpty() && !s.holds -> selected = if (isSel) selected - s.id else selected + s.id
-                                                            selected.isEmpty() -> sheetFor = s
-                                                        }
-                                                    },
-                                                    onLongClick = { if (canDelete && !s.holds) selected = selected + s.id },
-                                                )
-                                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            if (selected.isNotEmpty()) {
-                                                Checkbox(checked = isSel, onCheckedChange = null, enabled = !s.holds)
-                                                Spacer(Modifier.width(8.dp))
-                                            }
-                                            Column(Modifier.weight(1f)) {
-                                                Text(s.name, style = MaterialTheme.typography.bodyLarge, fontFamily = FontFamily.Monospace, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                                Text(
-                                                    listOfNotNull(
-                                                        s.createdMs?.let { relativeTime(it) },
-                                                        s.used?.let { stringResource(R.string.snapshot_used, formatBytes(it)) },
-                                                        s.referenced?.let { stringResource(R.string.snapshot_referenced, formatBytes(it)) },
-                                                    ).joinToString("  ·  "),
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
-                                            }
-                                            if (s.holds) Icon(Icons.Outlined.Lock, stringResource(R.string.snapshot_held), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            else if (selected.isEmpty()) Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        itemsIndexed(
+                            list,
+                            // "dataset@name" names one snapshot; the position is used if the server ever repeats one.
+                            key = { i, s -> if (uniqueIds) "s:" + s.id else "p:$i" },
+                            contentType = { _, _ -> "snapshot" },
+                        ) { i, s ->
+                            val first = i == 0
+                            val last = i == list.lastIndex
+                            CardSlice(first, last, Modifier.fillMaxWidth().padding(horizontal = Gutter)) {
+                                Column(Modifier.padding(top = if (first) 4.dp else 0.dp, bottom = if (last) 4.dp else 0.dp)) {
+                                    if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = CtrlColors.CardBorder)
+                                    val isSel = s.id in selected
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .combinedClickable(
+                                                onClick = {
+                                                    when {
+                                                        selected.isNotEmpty() && !s.holds -> selected = if (isSel) selected - s.id else selected + s.id
+                                                        selected.isEmpty() -> sheetFor = s
+                                                    }
+                                                },
+                                                onLongClick = { if (canDelete && !s.holds) selected = selected + s.id },
+                                            )
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        if (selected.isNotEmpty()) {
+                                            Checkbox(checked = isSel, onCheckedChange = null, enabled = !s.holds)
+                                            Spacer(Modifier.width(8.dp))
                                         }
+                                        Column(Modifier.weight(1f)) {
+                                            Text(s.name, style = MaterialTheme.typography.bodyLarge, fontFamily = FontFamily.Monospace, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                            Text(
+                                                listOfNotNull(
+                                                    s.createdMs?.let { relativeTime(it) },
+                                                    s.used?.let { stringResource(R.string.snapshot_used, formatBytes(it)) },
+                                                    s.referenced?.let { stringResource(R.string.snapshot_referenced, formatBytes(it)) },
+                                                ).joinToString("  ·  "),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                        if (s.holds) Icon(Icons.Outlined.Lock, stringResource(R.string.snapshot_held), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        else if (selected.isEmpty()) Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
                             }

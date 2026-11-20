@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Album
@@ -55,6 +56,7 @@ import com.vknxworks.truectrl.R
 import com.vknxworks.truectrl.container
 import com.vknxworks.truectrl.data.storage.DiskInfo
 import com.vknxworks.truectrl.data.storage.PoolDetail
+import com.vknxworks.truectrl.ui.components.CardSlice
 import com.vknxworks.truectrl.ui.components.ConnectionBanner
 import com.vknxworks.truectrl.ui.components.EmptyState
 import com.vknxworks.truectrl.ui.components.LocalBottomClearance
@@ -137,6 +139,12 @@ fun StorageScreen() {
             modifier = Modifier.weight(1f),
         ) {
             val bottom = PaddingValues(bottom = LocalBottomClearance.current + 16.dp)
+            // Grouped once per loaded list, not on every redraw of the list.
+            val datasetList = datasets.datasets
+            val byPool = remember(datasetList) { datasetList.groupBy { it.pool } }
+            val uniqueDatasets = remember(datasetList) { datasetList.mapTo(HashSet()) { it.id }.size == datasetList.size }
+            val diskList = snapshot.disks
+            val uniqueDisks = remember(diskList) { diskList.mapTo(HashSet()) { it.name }.size == diskList.size }
             when {
                 section == 1 && datasets.updatedAt == 0L -> EmptyState(
                     Icons.Outlined.Folder,
@@ -151,17 +159,22 @@ fun StorageScreen() {
                     Modifier.fillMaxSize().padding(bottom = LocalBottomClearance.current),
                 )
                 section == 1 -> LazyColumn(Modifier.fillMaxSize(), contentPadding = bottom) {
-                    val byPool = datasets.datasets.groupBy { it.pool }
                     byPool.forEach { (pool, list) ->
-                        item(key = "ds-pool-$pool") {
-                            Surface(
-                                shape = CtrlShapes.Card,
-                                color = CtrlColors.Surface,
-                                border = CtrlColors.CardStroke,
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
+                        itemsIndexed(
+                            list,
+                            // The dataset's path is its name on the server; the position is used if one is ever repeated.
+                            key = { i, d -> if (uniqueDatasets) "ds-" + d.id else "ds-pool-$pool-$i" },
+                            contentType = { _, _ -> "dataset" },
+                        ) { i, d ->
+                            val first = i == 0
+                            val last = i == list.lastIndex
+                            CardSlice(
+                                first,
+                                last,
+                                Modifier.fillMaxWidth().padding(start = Gutter, end = Gutter, top = if (first) 8.dp else 0.dp, bottom = if (last) 8.dp else 0.dp),
                             ) {
-                                Column(Modifier.padding(vertical = 4.dp)) {
-                                    list.forEach { d -> DatasetTreeRow(d, level = d.depth) { nav.navigate(DatasetRoute(d.id)) } }
+                                Column(Modifier.padding(top = if (first) 4.dp else 0.dp, bottom = if (last) 4.dp else 0.dp)) {
+                                    DatasetTreeRow(d, level = d.depth) { nav.navigate(DatasetRoute(d.id)) }
                                 }
                             }
                         }
@@ -191,18 +204,23 @@ fun StorageScreen() {
                     Modifier.fillMaxSize().padding(bottom = LocalBottomClearance.current),
                 )
                 else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = bottom) {
-                    item(key = "disks") {
-                        Surface(
-                            shape = CtrlShapes.Card,
-                            color = CtrlColors.Surface,
-                            border = CtrlColors.CardStroke,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp),
+                    val disks = snapshot.disks
+                    itemsIndexed(
+                        disks,
+                        // The device name (sda, nvme0n1) identifies a disk; the position is used if one is ever repeated.
+                        key = { i, d -> if (uniqueDisks) "disk-" + d.name else "disk-at-$i" },
+                        contentType = { _, _ -> "disk" },
+                    ) { i, d ->
+                        val first = i == 0
+                        val last = i == disks.lastIndex
+                        CardSlice(
+                            first,
+                            last,
+                            Modifier.fillMaxWidth().padding(start = Gutter, end = Gutter, top = if (first) 8.dp else 0.dp, bottom = if (last) 8.dp else 0.dp),
                         ) {
-                            Column(Modifier.padding(vertical = 4.dp)) {
-                                snapshot.disks.forEachIndexed { i, d ->
-                                    if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = CtrlColors.CardBorder)
-                                    DiskRow(d, snapshot.temps[d.name]) { nav.navigate(DiskRoute(d.name)) }
-                                }
+                            Column(Modifier.padding(top = if (first) 4.dp else 0.dp, bottom = if (last) 4.dp else 0.dp)) {
+                                if (i > 0) HorizontalDivider(Modifier.padding(start = 16.dp), color = CtrlColors.CardBorder)
+                                DiskRow(d, snapshot.temps[d.name]) { nav.navigate(DiskRoute(d.name)) }
                             }
                         }
                     }

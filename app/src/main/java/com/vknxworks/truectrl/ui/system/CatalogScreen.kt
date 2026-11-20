@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -65,6 +66,7 @@ import com.vknxworks.truectrl.ui.components.CtrlTextField
 import com.vknxworks.truectrl.ui.components.EmptyState
 import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupRow
+import com.vknxworks.truectrl.ui.components.GroupSlice
 import com.vknxworks.truectrl.ui.components.PillButton
 import com.vknxworks.truectrl.ui.components.RemoteImage
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
@@ -155,29 +157,37 @@ fun CatalogScreen() {
                         (q.isEmpty() || a.title.lowercase().contains(q) || a.name.contains(q) || a.description.lowercase().contains(q) || a.tags.any { it.lowercase().contains(q) })
                 }
             }
+            val uniqueIds = remember(shown) { shown.mapTo(HashSet()) { it.train + "/" + it.name }.size == shown.size }
             when {
                 list == null && error != null -> EmptyState(Icons.Outlined.Apps, stringResource(R.string.catalog_failed), errorMessage(context, error!!, server?.host.orEmpty()))
                 list == null -> EmptyState(Icons.Outlined.Apps, stringResource(R.string.overview_loading), stringResource(R.string.catalog_loading_hint))
                 shown.isEmpty() -> EmptyState(Icons.Outlined.Search, stringResource(R.string.catalog_none), stringResource(R.string.catalog_none_body))
                 else -> LazyColumn(Modifier.fillMaxSize().navigationBarsPadding(), contentPadding = PaddingValues(bottom = 24.dp)) {
-                    item(key = "list") {
-                        Group(footer = stringResource(R.string.catalog_footer, shown.size)) {
-                            shown.forEach { a ->
-                                GroupRow(
-                                    title = a.title,
-                                    subtitle = listOfNotNull(
-                                        a.description.takeIf { it.isNotBlank() },
-                                        listOfNotNull(
-                                            a.appVersion,
-                                            a.train.takeIf { it != "stable" },
-                                            if (a.installed) stringResource(R.string.catalog_installed) else null,
-                                        ).joinToString("  ·  ").ifBlank { null },
-                                    ).joinToString("\n"),
-                                    titleColor = CtrlColors.Text,
-                                    showChevron = true,
-                                    onClick = { nav.navigate(CatalogAppRoute(a.name, a.train)) },
-                                )
-                            }
+                    itemsIndexed(
+                        shown,
+                        // Name and train identify a catalog app; the position is used if the server ever repeats one.
+                        key = { i, a -> if (uniqueIds) "a:" + a.train + "/" + a.name else "p:$i" },
+                        contentType = { _, _ -> "app" },
+                    ) { i, a ->
+                        GroupSlice(
+                            first = i == 0,
+                            last = i == shown.lastIndex,
+                            footer = stringResource(R.string.catalog_footer, shown.size),
+                        ) {
+                            GroupRow(
+                                title = a.title,
+                                subtitle = listOfNotNull(
+                                    a.description.takeIf { it.isNotBlank() },
+                                    listOfNotNull(
+                                        a.appVersion,
+                                        a.train.takeIf { it != "stable" },
+                                        if (a.installed) stringResource(R.string.catalog_installed) else null,
+                                    ).joinToString("  ·  ").ifBlank { null },
+                                ).joinToString("\n"),
+                                titleColor = CtrlColors.Text,
+                                showChevron = true,
+                                onClick = { nav.navigate(CatalogAppRoute(a.name, a.train)) },
+                            )
                         }
                     }
                 }

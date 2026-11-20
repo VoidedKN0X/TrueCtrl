@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.toggleable
@@ -71,6 +72,7 @@ import com.vknxworks.truectrl.ui.components.ConnectionBanner
 import com.vknxworks.truectrl.ui.components.EmptyState
 import com.vknxworks.truectrl.ui.components.Group
 import com.vknxworks.truectrl.ui.components.GroupRow
+import com.vknxworks.truectrl.ui.components.GroupSlice
 import com.vknxworks.truectrl.ui.components.PollWhileVisible
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
 import com.vknxworks.truectrl.ui.components.errorMessage
@@ -181,23 +183,32 @@ fun AppsScreen() {
                             }
                         }
                     }
-                    item {
-                        Group(footer = if (!canWrite) stringResource(if (server?.readOnly == true) R.string.read_only_hint else R.string.apps_role_hint) else null) {
-                            list.forEach { app ->
-                                GroupRow(
-                                    title = app.name,
-                                    subtitle = listOfNotNull(
-                                        stateLabel(app.state),
-                                        app.version.ifBlank { null },
-                                        if (app.upgradeAvailable) stringResource(R.string.app_upgrade_to, app.latestVersion ?: "") else null,
-                                        if (app.imageUpdates) stringResource(R.string.app_image_updates) else null,
-                                    ).joinToString("  ·  "),
-                                    titleColor = stateColor(app.state),
-                                    showChevron = app.name !in busy,
-                                    onClick = { sheetFor = app.name },
-                                    trailing = if (app.name in busy) ({ CircularProgressIndicator(Modifier.padding(2.dp), strokeWidth = 2.dp) }) else null,
-                                )
-                            }
+                    val footer = if (!canWrite) (if (server?.readOnly == true) R.string.read_only_hint else R.string.apps_role_hint) else null
+                    // An app's name is its id on TrueNAS; the position is used if the server ever repeats one.
+                    val uniqueNames = list.mapTo(HashSet()) { it.name }.size == list.size
+                    itemsIndexed(
+                        list,
+                        key = { i, app -> if (uniqueNames) "app:" + app.name else "at:$i" },
+                        contentType = { _, _ -> "app" },
+                    ) { i, app ->
+                        GroupSlice(
+                            first = i == 0,
+                            last = i == list.lastIndex,
+                            footer = footer?.let { stringResource(it) },
+                        ) {
+                            GroupRow(
+                                title = app.name,
+                                subtitle = listOfNotNull(
+                                    stateLabel(app.state),
+                                    app.version.ifBlank { null },
+                                    if (app.upgradeAvailable) stringResource(R.string.app_upgrade_to, app.latestVersion ?: "") else null,
+                                    if (app.imageUpdates) stringResource(R.string.app_image_updates) else null,
+                                ).joinToString("  ·  "),
+                                titleColor = stateColor(app.state),
+                                showChevron = app.name !in busy,
+                                onClick = { sheetFor = app.name },
+                                trailing = if (app.name in busy) ({ CircularProgressIndicator(Modifier.padding(2.dp), strokeWidth = 2.dp) }) else null,
+                            )
                         }
                     }
                     if (canBrowse) {

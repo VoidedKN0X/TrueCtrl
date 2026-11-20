@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.WorkHistory
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +36,7 @@ import com.vknxworks.truectrl.data.system.JobInfo
 import com.vknxworks.truectrl.ui.components.ConfirmDialog
 import com.vknxworks.truectrl.ui.components.ConnectionBanner
 import com.vknxworks.truectrl.ui.components.EmptyState
-import com.vknxworks.truectrl.ui.components.Group
+import com.vknxworks.truectrl.ui.components.GroupSlice
 import com.vknxworks.truectrl.ui.components.GroupRow
 import com.vknxworks.truectrl.ui.components.PollWhileVisible
 import com.vknxworks.truectrl.ui.components.ScreenTopBar
@@ -97,14 +98,25 @@ fun JobsScreen() {
                 list.isEmpty() -> EmptyState(Icons.Outlined.WorkHistory, stringResource(R.string.jobs_none), stringResource(R.string.jobs_none_body))
                 else -> LazyColumn(Modifier.fillMaxSize().navigationBarsPadding(), contentPadding = PaddingValues(bottom = 24.dp)) {
                     val (running, done) = list.partition { it.active }
-                    if (running.isNotEmpty()) {
-                        item(key = "running") {
-                            Group(stringResource(R.string.jobs_running)) { running.forEach { j -> JobRow(j, canAbort) { abort = j } } }
+                    // The job id identifies a job; the position is used if the server ever repeats one.
+                    val uniqueIds = list.mapTo(HashSet()) { it.id }.size == list.size
+                    // No line between job rows: there was none before either (the row sits in its own column).
+                    itemsIndexed(
+                        running,
+                        key = { i, j -> if (uniqueIds) "running:" + j.id else "running-at:$i" },
+                        contentType = { _, _ -> "job" },
+                    ) { i, j ->
+                        GroupSlice(first = i == 0, last = i == running.lastIndex, title = stringResource(R.string.jobs_running), divider = false) {
+                            JobRow(j, canAbort) { abort = j }
                         }
                     }
-                    if (done.isNotEmpty()) {
-                        item(key = "done") {
-                            Group(stringResource(R.string.jobs_recent)) { done.forEach { j -> JobRow(j, false) {} } }
+                    itemsIndexed(
+                        done,
+                        key = { i, j -> if (uniqueIds) "done:" + j.id else "done-at:$i" },
+                        contentType = { _, _ -> "job" },
+                    ) { i, j ->
+                        GroupSlice(first = i == 0, last = i == done.lastIndex, title = stringResource(R.string.jobs_recent), divider = false) {
+                            JobRow(j, false) {}
                         }
                     }
                 }

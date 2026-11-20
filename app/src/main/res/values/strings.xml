@@ -1028,7 +1028,7 @@
     <string name="hide_recents_subtitle">The recent apps view shows a blank card instead of the app</string>
     <string name="app_lock">App lock</string>
     <string name="app_lock_subtitle">Ask for an app PIN (and optionally your fingerprint) to open TrueCtrl. Separate from your phone\'s PIN</string>
-    <string name="app_lock_footer">While TrueCtrl is locked, your saved API keys and passwords stay encrypted with your PIN and the connection to TrueNAS is closed. Widgets and the Quick Settings tile keep showing the last check.</string>
+    <string name="app_lock_footer">While TrueCtrl is locked, your saved API keys and passwords stay encrypted with your PIN and the connection to TrueNAS is closed.</string>
     <string name="app_lock_footer_background">Background checks for notifications are on, so they can still sign in while TrueCtrl is locked: your API keys and passwords are then only encrypted with the Android Keystore, as without the app lock. Turn off background checks and push in Notifications to keep them sealed with your PIN too.</string>
     <string name="lock_title_short">Locked</string>
     <string name="lock_brand">VKNXWorks · Ctrl</string>
@@ -1080,31 +1080,6 @@
     <string name="lock_again_1h">After 1 hour away</string>
     <string name="lock_again_restart">Only when the app restarts</string>
 
-    <!-- Widgets and Quick Settings tile -->
-    <string name="widget_pools_name">TrueNAS pools</string>
-    <string name="widget_pools_description">Pool health and usage, and whether anything needs attention</string>
-    <string name="widget_alerts_name">TrueNAS alerts</string>
-    <string name="widget_alerts_description">The number of active TrueNAS alerts</string>
-    <string name="widget_all_good">All good</string>
-    <plurals name="widget_problems">
-        <item quantity="one">%d thing needs attention</item>
-        <item quantity="other">%d things need attention</item>
-    </plurals>
-    <plurals name="widget_problems_critical">
-        <item quantity="one">%1$d thing needs attention, %2$d critical</item>
-        <item quantity="other">%1$d things need attention, %2$d critical</item>
-    </plurals>
-    <string name="widget_unreachable">Can\'t reach it. Last seen %1$s</string>
-    <string name="widget_no_data">Open TrueCtrl once to fill this in.</string>
-    <string name="widget_no_data_short">No data yet</string>
-    <plurals name="widget_alerts">
-        <item quantity="one">alert</item>
-        <item quantity="other">alerts</item>
-    </plurals>
-    <string name="tile_label">TrueNAS</string>
-    <string name="tile_unreachable">Can\'t reach it</string>
-    <string name="widget_locked">TrueCtrl is locked</string>
-    <string name="widget_locked_short">Locked</string>
     <string name="error_cert_unreadable">Couldn\'t read the certificate %1$s presents, so it can\'t be checked. Try again, or check the address.</string>
 
     <!-- Update all apps -->

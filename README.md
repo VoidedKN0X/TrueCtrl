@@ -23,7 +23,6 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **System**: apps (start, stop, redeploy, upgrade, uninstall with or without their ix-volumes, open their web UI, live container logs with search and copy), **Update all apps** (pick the apps with an update, or take them all, and follow each upgrade job's progress, one app after another), the **app catalog** (search, categories, app pages with version, train, links and optional icon and screenshots, and installing with a form built from the app's own questions: text, numbers, switches, choices, ixVolume or host path storage, ports, lists and more, with anything unusual editable as JSON; the install runs as a job you follow in Jobs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
 - **Notifications**: background checks every 15 to 120 minutes, and TrueNAS alerts pushed within seconds through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server (TrueCtrl can set it up on TrueNAS for you), with the background checks as a fallback
 - **Disk health warnings** (off until you turn them on): a separate background check, every 15 minutes to once a day, of pool status, the state and read/write/checksum errors of every disk in your pools, SMART self-test results (TrueNAS 25.04) and TrueNAS's disk alerts (SMART, disk temperature, pool status). Each new problem is notified once, and can also be posted to a topic on your own ntfy server for your other devices
-- **Widgets and a Quick Settings tile** with pool health and usage, the number of active alerts, and whether anything needs attention
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
 - **Several servers**, signed in with an API key or a password (two-factor codes work too), with a list of what each sign-in is allowed to do
 - **Works offline**: the last known state stays on screen, marked as out of date, when TrueNAS can't be reached
@@ -153,14 +152,6 @@ Turn them on in **Settings › Notifications › Disk health**. TrueCtrl then ch
 Each problem is notified once, including problems that are already there when you turn it on, and its notification goes away when it's fixed. While it's on, the general background check leaves pool status and SMART alerts to it, so you don't get them twice. It needs the same read access as the Overview (READONLY_ADMIN).
 
 **Also post to ntfy** (off by default) posts each check's new warnings to a topic on your own ntfy server too, for your other devices: enter the server (like https://ntfy.example.com), the topic and, if the topic needs it, an access token, then tap **Save and send a test**. TrueCtrl uses ntfy's JSON publishing and contacts nothing else.
-## Widgets and Quick Settings
-
-- **TrueNAS pools** widget: the selected server, whether anything needs attention, and up to four pools with their health and usage.
-- **TrueNAS alerts** widget: the number of active alerts, red when one is critical.
-- **TrueNAS** Quick Settings tile: the selected server and whether anything needs attention. Tap it to open TrueCtrl.
-
-They update whenever TrueCtrl reads the server and after every background check, so with background checks off they only change while the app is open.
-
 ## App lock
 
 Turn it on under **Settings › Privacy and security › App lock** (tap your profile picture, then **Settings**). It's off until you turn it on.
@@ -173,7 +164,6 @@ Turn it on under **Settings › Privacy and security › App lock** (tap your pr
 - **Change app PIN** asks for your current PIN first, and turning the app lock off asks for the PIN too.
 - **Forgot your PIN?** It can't be recovered, because it encrypts your sign-ins. The lock screen offers to remove every server with its API key or password, and the cached data kept on this phone; nothing changes on your TrueNAS.
 - **Background checks while locked:** with background checks, push or disk health on (Settings > Notifications), they keep running while TrueCtrl is locked, so your API keys and passwords (and the ntfy access token for disk warnings) are then only encrypted with the Android Keystore, as without the app lock. Settings says so under the app lock. Turn background checks, push and disk health off to keep them sealed with your PIN too. Background checks and notifications work the same either way.
-- **Widgets and the Quick Settings tile** only say that TrueCtrl is locked while the app lock is locked (also once the *Lock again* time has run out while you were away), instead of showing your pools, alerts or server name. They show the last check again as soon as you unlock.
 
 Two more switches in the same section work with or without the app lock, and are both off until you turn them on:
 

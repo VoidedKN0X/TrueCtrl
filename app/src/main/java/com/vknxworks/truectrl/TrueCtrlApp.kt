@@ -18,6 +18,11 @@ class TrueCtrlApp : Application() {
         container = AppContainer(this)
         Notifier.createChannels(this)
         val c = container
+        // The home-screen widgets and the Quick Settings tile were removed: delete the summary of each
+        // server (pool names, health and alert counts) they kept on the phone.
+        c.appScope.launch {
+            runCatching { java.io.File(java.io.File(noBackupFilesDir, "cache"), "health.json").delete() }
+        }
         c.appScope.launch {
             // Keep the background check and push registration in line with the settings.
             val first = c.notifySettings.current()

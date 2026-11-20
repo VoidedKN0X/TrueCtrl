@@ -4,6 +4,16 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Not in a release yet: these changes are in the code and ship with the next version.
+
+### Removed
+
+- **Home-screen widgets:** the **TrueNAS pools** and **TrueNAS alerts** widgets are gone. After updating, Android removes them from your home screen (or shows them as unavailable; remove them by hand). The Overview in the app still shows pool health and usage, alerts and what needs attention.
+- **Quick Settings tile:** the **TrueNAS** tile is gone.
+- **Their saved data:** the summary the widgets and the tile kept for each server (server name, pool names, health and alert counts, in a file called `health.json`) is deleted the first time the updated app starts, and is no longer written after each refresh and background check. Notifications and background checks themselves are not affected.
+
 ## Project updates (2026-11-19)
 
 ### Project

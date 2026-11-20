@@ -36,10 +36,7 @@ data class CheckState(
 )
 
 /** Result of one check: notifications to show, keys whose notifications to remove, and the new state. */
-class CheckResult(val post: List<Alert>, val cancel: Set<String>, val state: CheckState) {
-    /** What was read, when the server could be reached (for the widgets and tile). */
-    var snapshot: OverviewSnapshot? = null
-}
+class CheckResult(val post: List<Alert>, val cancel: Set<String>, val state: CheckState)
 
 data class CheckConfig(
     val notify: NotifySettings,
@@ -73,7 +70,7 @@ class Checker(private val context: Context) {
         } catch (e: TnError) {
             return unreachable(server, config, prev, e, now)
         }
-        return evaluate(server, snapshot, config, prev, now).also { it.snapshot = snapshot }
+        return evaluate(server, snapshot, config, prev, now)
     }
 
     /** Turns one snapshot into notifications. */

@@ -90,55 +90,5 @@
         <receiver
             android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
             tools:node="remove" />
-
-        <receiver
-            android:name=".ui.widget.PoolsWidget"
-            android:exported="false"
-            android:label="@string/widget_pools_name">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <!-- The rest of what Android's widget host sends, so strict intent matching lets it through. -->
-                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
-                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
-                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" />
-                <action android:name="android.appwidget.action.APPWIDGET_RESTORED" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_pools_info" />
-        </receiver>
-
-        <receiver
-            android:name=".ui.widget.AlertsWidget"
-            android:exported="false"
-            android:label="@string/widget_alerts_name">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <!-- The rest of what Android's widget host sends, so strict intent matching lets it through. -->
-                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
-                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
-                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" />
-                <action android:name="android.appwidget.action.APPWIDGET_RESTORED" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_alerts_info" />
-        </receiver>
-
-        <service
-            android:name=".ui.widget.HealthTile"
-            android:exported="true"
-            android:icon="@drawable/ic_notification"
-            android:label="@string/tile_label"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.service.quicksettings.ACTIVE_TILE"
-                android:value="false" />
-        </service>
     </application>
 </manifest>

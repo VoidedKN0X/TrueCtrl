@@ -188,23 +188,6 @@ object AppLock {
 
     private const val EXEMPT_TRIP_MAX = 5 * 60_000L
 
-    /**
-     * TrueCtrl has been away for longer than the lock timeout, but hasn't come back on screen yet (leaving
-     * only notes the time; [onForeground] locks on return). Read by the widgets and the tile, which work
-     * without TrueCtrl on screen. Safe from any thread; it changes nothing.
-     */
-    fun expired(enabled: Boolean, timeoutMillis: Long): Boolean {
-        val since = backgroundAt
-        if (!enabled || !unlocked || since <= 0 || timeoutMillis < 0) return false
-        val limit = if (exemptTrip) maxOf(timeoutMillis, EXEMPT_TRIP_MAX) else timeoutMillis
-        return SystemClock.elapsedRealtime() - since >= limit
-    }
-
-    /** Locks now when [expired]. For the widgets and the tile. Main thread only. */
-    fun lockIfExpired(enabled: Boolean, timeoutMillis: Long) {
-        if (expired(enabled, timeoutMillis)) lock()
-    }
-
     fun lock() {
         unlocked = false
         lockCount++

@@ -72,8 +72,6 @@ class OverviewRepository(
     private val context: Context,
     private val sessions: Sessions,
     private val scope: CoroutineScope,
-    /** Called (on an IO thread) with each newly read snapshot, for the widgets and tile. */
-    private val onSnapshot: (com.vknxworks.truectrl.data.server.Server, OverviewSnapshot) -> Unit = { _, _ -> },
 ) {
     private val _state = MutableStateFlow(OverviewState())
     val state: StateFlow<OverviewState> = _state.asStateFlow()
@@ -129,7 +127,6 @@ class OverviewRepository(
                 val now = System.currentTimeMillis()
                 _state.value = _state.value.copy(snapshot = snapshot, updatedAt = now, error = null, loading = false)
                 writeCache(active.server.id, OverviewCache(now, snapshot))
-                withContext(Dispatchers.IO) { runCatching { onSnapshot(active.server, snapshot) } }
             } catch (e: TnError) {
                 _state.value = _state.value.copy(error = e, loading = false)
             }
@@ -155,7 +152,6 @@ class OverviewRepository(
             val snapshot = _state.value.snapshot.copy(alerts = list)
             _state.value = _state.value.copy(snapshot = snapshot)
             writeCache(active.server.id, OverviewCache(_state.value.updatedAt, snapshot))
-            withContext(Dispatchers.IO) { runCatching { onSnapshot(active.server, snapshot) } }
         }
     }
 

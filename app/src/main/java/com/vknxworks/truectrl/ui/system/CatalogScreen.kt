@@ -148,9 +148,12 @@ fun CatalogScreen() {
             val list = apps
             val q = query.trim().lowercase()
             val cat = category
-            val shown = list.orEmpty().filter { a ->
-                (cat == null || cat in a.categories) &&
-                    (q.isEmpty() || a.title.lowercase().contains(q) || a.name.contains(q) || a.description.lowercase().contains(q) || a.tags.any { it.lowercase().contains(q) })
+            // Filtered again only when the catalog, the search text or the category changes, not on every redraw.
+            val shown = remember(list, q, cat) {
+                list.orEmpty().filter { a ->
+                    (cat == null || cat in a.categories) &&
+                        (q.isEmpty() || a.title.lowercase().contains(q) || a.name.contains(q) || a.description.lowercase().contains(q) || a.tags.any { it.lowercase().contains(q) })
+                }
             }
             when {
                 list == null && error != null -> EmptyState(Icons.Outlined.Apps, stringResource(R.string.catalog_failed), errorMessage(context, error!!, server?.host.orEmpty()))
@@ -237,7 +240,7 @@ fun CatalogAppScreen(name: String, train: String) {
                 ) {
                     val icon = app.iconUrl
                     if (showImages && icon != null) {
-                        RemoteImage(c.http, icon, null, Modifier.size(52.dp)) { Icon(Icons.Outlined.Apps, null, tint = CtrlColors.AccentText) }
+                        RemoteImage(c.http, icon, null, Modifier.size(52.dp), maxSide = 384) { Icon(Icons.Outlined.Apps, null, tint = CtrlColors.AccentText) }
                     } else {
                         Icon(Icons.Outlined.Apps, null, Modifier.size(28.dp), tint = CtrlColors.AccentText)
                     }

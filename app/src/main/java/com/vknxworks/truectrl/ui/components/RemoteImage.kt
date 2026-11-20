@@ -35,12 +35,7 @@ suspend fun loadRemoteBitmap(http: OkHttpClient, url: String, maxSide: Int = 128
     runCatching {
         // Redirects stay on https. The catalog's image host isn't the user's TrueNAS: it isn't told
         // which app is asking (no TrueCtrl User-Agent), and a stalled download gives up after 30 s.
-        val client = http.newBuilder()
-            .followRedirects(true)
-            .followSslRedirects(false)
-            .apply { interceptors().clear() }
-            .callTimeout(30, TimeUnit.SECONDS)
-            .build()
+        val client = imageClient(http)
         val bytes = client.newCall(Request.Builder().url(url).build()).execute().use { r ->
             val body = r.body
             if (!r.isSuccessful || body == null || body.contentLength() > MAX_IMAGE_BYTES) null else readCapped(body.byteStream())
@@ -54,6 +49,22 @@ suspend fun loadRemoteBitmap(http: OkHttpClient, url: String, maxSide: Int = 128
         while (bounds.outWidth / sample > maxSide || bounds.outHeight / sample > maxSide) sample *= 2
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
     }.getOrNull()
+}
+
+@Volatile
+private var imageClients: Pair<OkHttpClient, OkHttpClient>? = null
+
+/** The client for image downloads, made once from [http] and reused instead of being rebuilt for every image. */
+private fun imageClient(http: OkHttpClient): OkHttpClient {
+    imageClients?.let { (base, client) -> if (base === http) return client }
+    val client = http.newBuilder()
+        .followRedirects(true)
+        .followSslRedirects(false)
+        .apply { interceptors().clear() }
+        .callTimeout(30, TimeUnit.SECONDS)
+        .build()
+    imageClients = http to client
+    return client
 }
 
 /** Reads at most [MAX_IMAGE_BYTES]; null when there's more. */
@@ -79,12 +90,14 @@ fun RemoteImage(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
+    /** The largest side, in pixels, the image is decoded at. Small for icons, so they don't take the memory of a full picture. */
+    maxSide: Int = 1280,
     fallback: @Composable () -> Unit = {},
 ) {
     var bitmap by remember(url) { mutableStateOf<Bitmap?>(null) }
     var failed by remember(url) { mutableStateOf(false) }
     LaunchedEffect(url) {
-        val b = loadRemoteBitmap(http, url)
+        val b = loadRemoteBitmap(http, url, maxSide)
         if (b == null) failed = true else bitmap = b
     }
     val b = bitmap

@@ -14,6 +14,14 @@ Not in a release yet: these changes are in the code and ship with the next versi
 - **Quick Settings tile:** the **TrueNAS** tile is gone.
 - **Their saved data:** the summary the widgets and the tile kept for each server (server name, pool names, health and alert counts, in a file called `health.json`) is deleted the first time the updated app starts, and is no longer written after each refresh and background check. Notifications and background checks themselves are not affected.
 
+### Performance
+
+- **Faster start without the app lock:** at start TrueCtrl read its settings store on the main thread, before the first screen, to know whether the app lock was on. It now keeps a small note that the lock is off and reads that instead. When there is no such note (the first start after this update, or when the lock may be on) the setting is read exactly as before, so the app still never shows unlocked for a moment. With a PIN set nothing changes: the PIN vault already answered at once.
+- **Faster reconnects:** every time TrueCtrl came back on screen it downloaded the full method documentation of 24 parts of the TrueNAS API (`core.get_methods`) to know what your sign-in may do. That list is now remembered while the app runs and reused as long as TrueNAS reports exactly the same version and your user the same roles and shell permission; otherwise it's read again. It's kept in memory only, never on storage, and the **Retry** button always reads it again.
+- **One request less per reconnect:** the check of the address (`GET /api/versions`) is done on the first connect and whenever the connection can't be opened, instead of before every reconnect. The first connect to a server, setting up a server and the error messages are unchanged.
+- **Pinned certificates:** the secure connection setup for a server with a pinned (self-signed) certificate is no longer done on the main thread at start.
+- **App catalog:** the search and category filter is no longer worked out again on every redraw, the app icon on an app's page is decoded at the size it's shown instead of up to 1280 pixels, and images reuse one download client instead of building a new one each.
+
 ## Project updates (2026-11-19)
 
 ### Project

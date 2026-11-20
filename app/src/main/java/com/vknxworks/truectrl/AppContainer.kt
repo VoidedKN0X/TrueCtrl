@@ -69,8 +69,25 @@ class AppContainer(val context: Context) {
     /** The app lock's PIN, fingerprint key and the key that seals the saved sign-ins while locked. */
     val vault = LockVault(context, "truectrl")
 
-    /** Read once, synchronously, so the app never shows unlocked for a moment at start. */
-    val lockAtStart: Boolean = vault.enabled || runBlocking { runCatching { settings.stored.first().appLock }.getOrDefault(false) }
+    /**
+     * A small private settings file that can be read at once at start. It only remembers that the app
+     * lock setting was last seen switched off, so the settings store doesn't have to be read (blocking
+     * the main thread) before the first screen. Kept in step with the setting below.
+     */
+    private val startPrefs = context.getSharedPreferences("start", Context.MODE_PRIVATE)
+
+    /**
+     * Read once, synchronously, so the app never shows unlocked for a moment at start. With a PIN the
+     * vault answers. Without one, the note in [startPrefs] answers when it says the lock is off;
+     * when there's no such note (first start, or the lock may be on) the setting itself is read, as before.
+     */
+    val lockAtStart: Boolean = vault.enabled || (
+        if (runCatching { startPrefs.getBoolean(KEY_LOCK_OFF, false) }.getOrDefault(false)) {
+            false
+        } else {
+            runBlocking { runCatching { settings.stored.first().appLock }.getOrDefault(false) }
+        }
+    )
 
     val serverStore = ServerStore(context, vault).apply {
         sealPolicy = { vault.enabled && !notifySettings.settings.value.needsBackgroundSignIn }
@@ -84,6 +101,8 @@ class AppContainer(val context: Context) {
     suspend fun enableLock(pin: String) {
         // Unlocked first, so the lock screen doesn't flash up while the PIN is being saved.
         AppLock.markUnlocked()
+        // The lock is about to be on: drop the "lock is off" note first, so a start never trusts an old one.
+        withContext(Dispatchers.IO) { runCatching { startPrefs.edit().putBoolean(KEY_LOCK_OFF, false).commit() } }
         withContext(Dispatchers.Default) { vault.setUp(pin) }
         settings.update { it.copy(appLock = true) }
         withContext(Dispatchers.IO) { serverStore.applySealing() }
@@ -154,6 +173,12 @@ class AppContainer(val context: Context) {
                 AppLock.onBackground(lockEnabled, settings.settings.value.lockTimeout.millis)
             }
         })
+        // Keeps the note for the next start in step with the app lock setting (see [lockAtStart]).
+        appScope.launch {
+            settings.stored.map { it.appLock }.distinctUntilChanged().collect { on ->
+                runCatching { startPrefs.edit().putBoolean(KEY_LOCK_OFF, !on).apply() }
+            }
+        }
         // Background checks sign in while the app is locked, so turning them on unseals the saved
         // sign-ins and turning them off seals them again (only possible while unlocked).
         appScope.launch {
@@ -161,6 +186,10 @@ class AppContainer(val context: Context) {
                 if (vault.isOpen) runCatching { serverStore.applySealing() }
             }
         }
+    }
+
+    private companion object {
+        const val KEY_LOCK_OFF = "app_lock_off"
     }
 }
 

@@ -176,21 +176,76 @@ object TnAuth {
      * After signing in: the user's roles (auth.me), the methods it may call in the namespaces the
      * app uses (core.get_methods), and the exact version (system.version).
      */
-    suspend fun capabilities(socket: RpcSocket, apiVersion: TnVersion?): Capabilities = coroutineScope {
+    /**
+     * With a [cacheKey] (the saved server's id), the method list is remembered in memory for as long as
+     * the app runs and reused on the next connect, as long as the server still reports exactly the same
+     * version and this user the same roles; anything else reads the list again. core.get_methods returns
+     * full method docs for 24 namespaces, far too much to download every time the app comes back on screen.
+     */
+    suspend fun capabilities(socket: RpcSocket, apiVersion: TnVersion?, cacheKey: String? = null): Capabilities = coroutineScope {
         val me = async { runCatching { socket.call("auth.me") }.getOrNull() }
         val version = async { runCatching { socket.call("system.version") }.getOrNull() }
-        val methods = Capabilities.NAMESPACES.map { ns ->
-            async {
-                runCatching { socket.call("core.get_methods", listOf(JsonPrimitive(ns))) }.getOrNull().obj()?.keys ?: emptySet()
-            }
-        }.awaitAll().flatten().toSet()
+        val remembered = cacheKey?.let { methodCache[it] }
+        // Nothing remembered for this server: ask for the methods at the same time, as before.
+        val fresh = if (remembered == null) async { readMethods(socket) } else null
         val privilege = me.await()["privilege"]
+        val versionText = version.await().str()
+        val roles = privilege["roles"].arr()?.mapNotNull { it.str() }?.toSet() ?: emptySet()
+        val webShell = privilege["web_shell"].bool() ?: false
+        // Without a version or roles there is nothing to compare with: the list is read and not remembered.
+        val fingerprint = if (versionText.isNullOrBlank() || roles.isEmpty()) null else versionText + "|" + roles.sorted().joinToString(",") + "|" + webShell
+        val read: Pair<Set<String>, Boolean>? = when {
+            fresh != null -> fresh.await()
+            remembered != null && fingerprint != null && remembered.fingerprint == fingerprint -> null
+            else -> readMethods(socket)
+        }
+        val methods = read?.first ?: remembered?.methods ?: emptySet()
+        if (cacheKey != null && read != null) {
+            // Only a complete list is remembered: one cut short by a dropped connection is read again next time.
+            if (fingerprint != null && read.second && read.first.isNotEmpty()) {
+                methodCache[cacheKey] = RememberedMethods(fingerprint, read.first)
+            } else {
+                methodCache.remove(cacheKey)
+            }
+        }
         Capabilities(
-            version = TnVersion.parse(version.await().str()) ?: apiVersion,
+            version = TnVersion.parse(versionText) ?: apiVersion,
             methods = methods,
-            roles = privilege["roles"].arr()?.mapNotNull { it.str() }?.toSet() ?: emptySet(),
-            webShell = privilege["web_shell"].bool() ?: false,
+            roles = roles,
+            webShell = webShell,
         )
+    }
+
+    private class RememberedMethods(val fingerprint: String, val methods: Set<String>)
+
+    /** Method lists by saved server id. In memory only: gone when the app's process ends. */
+    private val methodCache = java.util.concurrent.ConcurrentHashMap<String, RememberedMethods>()
+
+    /** Forgets the remembered method list of a server, so the next connect reads it again (Retry). */
+    fun forgetMethods(cacheKey: String) {
+        methodCache.remove(cacheKey)
+    }
+
+    /**
+     * core.get_methods for every namespace the app uses. The second value is false when a namespace
+     * couldn't be read because the connection dropped or timed out (the list is then incomplete); a
+     * namespace this TrueNAS version doesn't have, or this user may not see, simply adds nothing.
+     */
+    private suspend fun readMethods(socket: RpcSocket): Pair<Set<String>, Boolean> = coroutineScope {
+        val answers: List<Set<String>?> = Capabilities.NAMESPACES.map { ns ->
+            async<Set<String>?> {
+                try {
+                    socket.call("core.get_methods", listOf(JsonPrimitive(ns))).obj()?.keys ?: emptySet<String>()
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: TnError.Unreachable) {
+                    null
+                } catch (e: Exception) {
+                    emptySet<String>()
+                }
+            }
+        }.awaitAll()
+        Pair(answers.filterNotNull().flatten().toSet(), answers.none { it == null })
     }
 
     /** system.info, or null when this user can't read it. */

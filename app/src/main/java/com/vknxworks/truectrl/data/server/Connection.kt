@@ -72,7 +72,16 @@ class Connection(
     /** False while the app lock is locked: nothing connects or is sent until it's unlocked. */
     private val allowed: () -> Boolean = { true },
 ) {
-    private val http = httpFor(baseHttp, server.host, server.certPin)
+    /** Built on first use (a connect, off the main thread): setting up TLS for a pinned certificate is slow. */
+    private val http by lazy { httpFor(baseHttp, server.host, server.certPin) }
+
+    /**
+     * The newest API version GET /api/versions listed, once this connection has signed in successfully.
+     * While set, reconnects (every return to the app) skip that extra request and open the socket
+     * straight away; any failure to open it clears this and runs the check again.
+     */
+    @Volatile
+    private var probed: com.vknxworks.truectrl.data.api.TnVersion? = null
 
     private val _access = MutableStateFlow(Access())
     val access: StateFlow<Access> = _access.asStateFlow()
@@ -107,6 +116,9 @@ class Connection(
     /** Drops the current attempt and connects again right away (the Retry button). */
     fun restart() {
         stop()
+        // Asked for by hand: check the address and read what this user may do from scratch.
+        probed = null
+        TnAuth.forgetMethods(server.id)
         start()
     }
 
@@ -136,10 +148,24 @@ class Connection(
     private suspend fun open(): RpcSocket {
         // TrueNAS revokes an API key that arrives over plain HTTP: refuse before anything is sent.
         if (server.isPlainHttp && server.auth == AuthMethod.API_KEY) throw TnError.ApiKeyOverHttp()
-        val newest = TnAuth.requireSupported(TnAuth.probe(http, server.url, allowHttp = server.httpAccepted))
+        val known = probed
+        val newest = known ?: TnAuth.requireSupported(TnAuth.probe(http, server.url, allowHttp = server.httpAccepted))
         val s = RpcSocket(http, TnAuth.socketUrl(server.url, allowHttp = server.httpAccepted))
         try {
-            s.open()
+            try {
+                s.open()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (known != null) {
+                    // The check of the address was skipped and the socket didn't open. Unless the server
+                    // simply can't be reached, run the check now: it names the reason (an older TrueNAS,
+                    // not TrueNAS, a redirect to https) exactly as it did before the socket was tried.
+                    probed = null
+                    if (e !is TnError.Unreachable) TnAuth.requireSupported(TnAuth.probe(http, server.url, allowHttp = server.httpAccepted))
+                }
+                throw e
+            }
             val sec = secrets()
             val result = when (server.auth) {
                 AuthMethod.API_KEY -> TnAuth.loginApiKey(s, server.username, sec.apiKey)
@@ -149,9 +175,10 @@ class Connection(
                 }
             }
             if (result == LoginResult.OtpRequired) throw TnError.NeedsSignIn()
-            val caps = TnAuth.capabilities(s, newest)
+            val caps = TnAuth.capabilities(s, newest, cacheKey = server.id)
             val info = TnAuth.systemInfo(s)
             caps.version?.label?.let(onVersion)
+            probed = newest
             socket = s
             scope.launch {
                 // Forward this socket's subscription updates until it closes.

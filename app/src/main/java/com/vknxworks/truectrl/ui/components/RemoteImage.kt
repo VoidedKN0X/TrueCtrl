@@ -2,6 +2,7 @@ package com.vknxworks.truectrl.ui.components
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -82,6 +83,17 @@ private fun readCapped(input: java.io.InputStream): ByteArray? = input.use { str
     out.toByteArray()
 }
 
+private const val IMAGE_CACHE_BYTES = 8 * 1024 * 1024
+
+/**
+ * Decoded images that were shown before, so coming back to a page doesn't download and decode them
+ * again. In memory only (nothing is written to storage), at most 8 MiB of pixels, the least recently
+ * used dropped first, and gone when the app's process ends. Keyed by address and decode size.
+ */
+private val imageCache = object : LruCache<String, Bitmap>(IMAGE_CACHE_BYTES) {
+    override fun sizeOf(key: String, value: Bitmap): Int = value.byteCount
+}
+
 /** An image from [url], with a spinner while loading and [fallback] when it can't be shown. */
 @Composable
 fun RemoteImage(
@@ -94,11 +106,19 @@ fun RemoteImage(
     maxSide: Int = 1280,
     fallback: @Composable () -> Unit = {},
 ) {
-    var bitmap by remember(url) { mutableStateOf<Bitmap?>(null) }
+    val cacheKey = "$maxSide $url"
+    var bitmap by remember(url) { mutableStateOf<Bitmap?>(imageCache.get(cacheKey)) }
     var failed by remember(url) { mutableStateOf(false) }
     LaunchedEffect(url) {
+        if (bitmap != null) return@LaunchedEffect
         val b = loadRemoteBitmap(http, url, maxSide)
-        if (b == null) failed = true else bitmap = b
+        if (b == null) {
+            failed = true
+        } else {
+            // Big pictures (full-size screenshots) are shown but not kept.
+            if (b.byteCount <= IMAGE_CACHE_BYTES / 4) imageCache.put(cacheKey, b)
+            bitmap = b
+        }
     }
     val b = bitmap
     when {

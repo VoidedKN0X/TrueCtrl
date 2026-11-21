@@ -4,6 +4,12 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### New
+
+- **TrueCtrl in French and German, following the phone's language.** With the phone set to French or German, every screen, message and notification of TrueCtrl is in that language (French with the polite "vous", German with the informal "du"); Dutch and English stay as they were, and any other language still gets English. Under Settings > Apps > TrueCtrl > Language you can also pick English, Dutch, French or German for TrueCtrl alone. TrueNAS's own names and technical words (pool, dataset, snapshot, scrub, resilver, vdev, ZFS, SMB, NFS, iSCSI, the role names), the menu paths of the TrueNAS web UI, units and the app name are not translated, and what the server itself sends (alert texts, app and service names, TrueNAS's error messages) stays as TrueNAS writes it. The translations were written with this release and have not been read on a phone yet: tell me where a word is off.
+
 ## v0.19.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

@@ -231,7 +231,7 @@ class ProtectionRepository(
         val result = Jobs.awaitResult(c, c.call("core.bulk", listOf(JsonPrimitive("$ns.delete"), params)), timeoutMs = 300_000)
         // core.bulk reports each call: [{result, error}, …]
         val errors = result.arr()?.mapNotNull { r -> r["error"].str() }?.filter { it.isNotBlank() }.orEmpty()
-        if (errors.isNotEmpty()) throw TnError.Call(null, "${errors.size} of ${ids.size}: ${errors.first()}")
+        if (errors.isNotEmpty()) throw TnError.Call(null, "${errors.size}/${ids.size}: ${errors.first()}")
     }
 
     /**

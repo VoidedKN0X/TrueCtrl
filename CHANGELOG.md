@@ -4,6 +4,16 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Fixed
+
+- **Uptimes and durations use your language's short units.** Uptime on the Overview and System pages, the UPS runtime and the scrub "time left" and "took" lines were always written with English letters (like "14d 2h"). They now use the phone's own short units, so French shows "14j 2h", German its own abbreviations, and English stays as it was.
+- **More task states in your language.** A protection task whose last run is pending, on hold or aborted showed TrueNAS's English word; these three now come in Dutch, French and German too. Other unusual states still show as TrueNAS sends them.
+- **Built-in admin roles in your language.** Users and groups with the Full admin, Sharing admin or Read-only admin role now show that role in the phone's language; other roles still show TrueNAS's own name.
+- **Deleting several snapshots** that partly fails no longer shows an English "3 of 5" in front of TrueNAS's error; it shows "3/5".
+- **Dutch strings that were missing.** The console keys, "Apps", "Scrub" and "Resilver" percentages and the shell title are now in the Dutch file too (they read the same as in English).
+
 ## v0.20.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

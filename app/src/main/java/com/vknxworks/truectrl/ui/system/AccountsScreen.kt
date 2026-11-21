@@ -109,7 +109,7 @@ fun AccountsScreen() {
                 Fact(R.string.account_kind, stringResource(if (u.builtin) R.string.account_kind_builtin else if (u.local) R.string.account_kind_local else R.string.account_kind_directory))
                 Fact(R.string.account_primary_group, u.group.ifBlank { stringResource(R.string.no_value) })
                 Fact(R.string.account_other_groups, otherGroups.joinToString().ifBlank { stringResource(R.string.none) })
-                Fact(R.string.account_roles, u.roles.joinToString { roleLabel(it) }.ifBlank { stringResource(R.string.none) })
+                Fact(R.string.account_roles, u.roles.map { roleLabel(it) }.joinToString().ifBlank { stringResource(R.string.none) })
                 Fact(R.string.account_locked_label, if (u.locked) yes else no)
                 Fact(R.string.account_password, stringResource(if (u.passwordDisabled) R.string.account_password_off else R.string.account_password_on))
                 u.passwordChangedMs?.let { Fact(R.string.account_password_changed, relativeTime(it)) }
@@ -140,7 +140,7 @@ fun AccountsScreen() {
                 Fact(R.string.account_gid, g.gid.toString())
                 Fact(R.string.account_kind, stringResource(if (g.builtin) R.string.account_kind_builtin else if (g.local) R.string.account_kind_local else R.string.account_kind_directory))
                 Fact(R.string.account_members_label, members.joinToString().ifBlank { stringResource(R.string.none) })
-                Fact(R.string.account_roles, g.roles.joinToString { roleLabel(it) }.ifBlank { stringResource(R.string.none) })
+                Fact(R.string.account_roles, g.roles.map { roleLabel(it) }.joinToString().ifBlank { stringResource(R.string.none) })
                 Fact(R.string.account_smb, if (g.smb) yes else no)
                 Fact(R.string.account_sudo, if (g.sudo) yes else no)
             }
@@ -148,8 +148,14 @@ fun AccountsScreen() {
     }
 }
 
-/** FULL_ADMIN → Full admin: TrueNAS's role names made readable. */
-private fun roleLabel(role: String): String = role.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
+/** TrueNAS's built-in admin roles in the phone's language; other roles made readable (SOME_ROLE → Some role). */
+@Composable
+private fun roleLabel(role: String): String = when (role) {
+    "FULL_ADMIN" -> stringResource(R.string.role_full_admin)
+    "SHARING_ADMIN" -> stringResource(R.string.role_sharing_admin)
+    "READONLY_ADMIN" -> stringResource(R.string.role_readonly_admin)
+    else -> role.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
+}
 
 /** One labelled value in a detail sheet. */
 @Composable

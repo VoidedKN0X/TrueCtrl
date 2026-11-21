@@ -461,6 +461,9 @@
     <string name="task_ok">Erfolgreich</string>
     <string name="task_failed_at">Fehlgeschlagen %1$s</string>
     <string name="task_failed">Fehlgeschlagen</string>
+    <string name="task_state_pending">Ausstehend</string>
+    <string name="task_state_hold">Angehalten</string>
+    <string name="task_state_aborted">Abgebrochen</string>
     <string name="task_last_success">Letzter Erfolg %1$s</string>
     <string name="task_no_success_known">Noch kein Erfolg von TrueCtrl gesehen</string>
     <string name="task_enabled_done">Aufgabe eingeschaltet</string>
@@ -1188,6 +1191,9 @@
     <string name="account_other_groups">Weitere Gruppen</string>
     <string name="account_members_label">Mitglieder</string>
     <string name="account_roles">TrueNAS-Rollen</string>
+    <string name="role_full_admin">Voller Administrator</string>
+    <string name="role_sharing_admin">Freigabe-Administrator</string>
+    <string name="role_readonly_admin">Nur-Lese-Administrator</string>
     <string name="account_locked_label">Gesperrt</string>
     <string name="account_password">Anmeldung per Passwort</string>
     <string name="account_password_on">Erlaubt</string>

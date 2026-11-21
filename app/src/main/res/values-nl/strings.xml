@@ -445,6 +445,9 @@
     <string name="task_ok">Gelukt</string>
     <string name="task_failed_at">Mislukt %1$s</string>
     <string name="task_failed">Mislukt</string>
+    <string name="task_state_pending">In afwachting</string>
+    <string name="task_state_hold">In de wacht</string>
+    <string name="task_state_aborted">Afgebroken</string>
     <string name="task_last_success">Laatst gelukt %1$s</string>
     <string name="task_no_success_known">TrueCtrl zag hem nog niet lukken</string>
     <string name="task_enabled_done">Taak aangezet</string>
@@ -1146,6 +1149,9 @@
     <string name="account_other_groups">Andere groepen</string>
     <string name="account_members_label">Leden</string>
     <string name="account_roles">TrueNAS-rollen</string>
+    <string name="role_full_admin">Volledige beheerder</string>
+    <string name="role_sharing_admin">Beheerder van shares</string>
+    <string name="role_readonly_admin">Alleen-lezen-beheerder</string>
     <string name="account_locked_label">Vergrendeld</string>
     <string name="account_password">Aanmelden met wachtwoord</string>
     <string name="account_password_on">Toegelaten</string>
@@ -1323,4 +1329,17 @@
     <string name="settings_file_server_name">Server %1$s wordt hernoemd naar %2$s</string>
     <string name="settings_file_server_read_only">Server %1$s: de alleen-lezenmodus wordt aangezet</string>
     <string name="settings_file_server_vm">Server %1$s: het nummer van de Proxmox-VM wordt %2$d</string>
+    <string name="preset_apps">Apps</string>
+    <string name="pool_scrubbing">Scrub %1$d%%</string>
+    <string name="pool_resilvering">Resilver %1$d%%</string>
+    <string name="shell_title_on">Shell · %1$s</string>
+    <string name="key_esc">Esc</string>
+    <string name="key_tab">Tab</string>
+    <string name="key_ctrl">Ctrl</string>
+    <string name="key_alt">Alt</string>
+    <string name="key_home">Home</string>
+    <string name="key_end">End</string>
+    <string name="key_pgup">PgUp</string>
+    <string name="key_pgdn">PgDn</string>
+    <string name="key_del">Del</string>
 </resources>

@@ -53,5 +53,13 @@ fun lastRunText(last: LastRun?): String = when {
         last.atMs?.let { stringResource(R.string.task_failed_at, relativeTime(it)) } ?: stringResource(R.string.task_failed),
         last.error,
     ).joinToString(": ")
-    else -> listOfNotNull(last.state.lowercase().replaceFirstChar { it.uppercase() }, last.atMs?.let { relativeTime(it) }).joinToString("  ·  ")
+    else -> listOfNotNull(
+        when (last.state) {
+            "PENDING" -> stringResource(R.string.task_state_pending)
+            "HOLD" -> stringResource(R.string.task_state_hold)
+            "ABORTED" -> stringResource(R.string.task_state_aborted)
+            else -> last.state.lowercase().replaceFirstChar { it.uppercase() }
+        },
+        last.atMs?.let { relativeTime(it) },
+    ).joinToString("  ·  ")
 }

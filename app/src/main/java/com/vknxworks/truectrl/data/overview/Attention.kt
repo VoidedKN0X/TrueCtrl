@@ -53,6 +53,11 @@ sealed interface AttentionItem {
         override val severity get() = Severity.INFO
     }
 
+    /** The pool doesn't have every ZFS feature of this TrueNAS version enabled: it can be upgraded (one-way). */
+    data class PoolUpgradable(val pool: PoolInfo) : AttentionItem {
+        override val severity get() = Severity.INFO
+    }
+
     data class RebootPending(val reasons: List<String>) : AttentionItem {
         override val severity get() = Severity.WARNING
     }
@@ -111,6 +116,9 @@ object Attention {
         s.apps.filter { it.state == "CRASHED" }.forEach { items += AttentionItem.AppCrashed(it) }
         if (s.rebootReasons.isNotEmpty() || s.update?.applied == true) items += AttentionItem.RebootPending(s.rebootReasons)
         s.update?.takeIf { it.available }?.let { items += AttentionItem.UpdateAvailable(it.version) }
+
+        // Only for a pool that's fine otherwise: an unhealthy pool has more urgent things to say.
+        s.pools.filter { it.id in s.upgradablePools && it.isOnline && it.healthy }.forEach { items += AttentionItem.PoolUpgradable(it) }
 
         // Stable: the order above stays within each severity.
         return items.sortedBy { it.severity.ordinal }

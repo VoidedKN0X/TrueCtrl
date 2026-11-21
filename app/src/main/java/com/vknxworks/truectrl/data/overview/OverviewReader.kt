@@ -4,12 +4,14 @@ import com.vknxworks.truectrl.data.api.Capabilities
 import com.vknxworks.truectrl.data.api.TnError
 import com.vknxworks.truectrl.data.api.UpdateApi
 import com.vknxworks.truectrl.data.api.arr
+import com.vknxworks.truectrl.data.api.bool
 import com.vknxworks.truectrl.data.api.get
 import com.vknxworks.truectrl.data.api.str
 import com.vknxworks.truectrl.data.server.Connection
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * Reads everything the Overview and the background check need in one go: system, pools, alerts,
@@ -61,9 +63,19 @@ object OverviewReader {
             }
         }
 
+        val poolList = pools.await().arr()?.mapNotNull(PoolInfo::from).orEmpty()
+        // pool.is_upgraded per pool (documented for 25.04 and 25.10; going away in 27, where this stays empty).
+        val upgradable = if (caps.has("pool.is_upgraded")) {
+            poolList.map { p ->
+                p.id to async { runCatching { c.call("pool.is_upgraded", listOf(JsonPrimitive(p.id))).bool() }.getOrNull() }
+            }.filter { (_, d) -> d.await() == false }.map { it.first }
+        } else {
+            emptyList()
+        }
+
         OverviewSnapshot(
             info = SystemInfo.from(info.await()) ?: previous.info,
-            pools = pools.await().arr()?.mapNotNull(PoolInfo::from).orEmpty(),
+            pools = poolList,
             alerts = alerts.await().arr()?.mapNotNull(AlertInfo::from).orEmpty(),
             tasks = tasks,
             services = services.await().arr()?.mapNotNull(ServiceInfo::from).orEmpty(),
@@ -71,6 +83,7 @@ object OverviewReader {
             scrubs = scrubs.await().arr()?.mapNotNull(ScrubSchedule::from).orEmpty(),
             update = update.await(),
             rebootReasons = rebootReasons(reboot.await()),
+            upgradablePools = upgradable,
         )
     }
 

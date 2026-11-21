@@ -6,6 +6,7 @@ import com.vknxworks.truectrl.data.api.TnError
 import com.vknxworks.truectrl.data.api.TnJson
 import com.vknxworks.truectrl.data.crypto.SealedCache
 import com.vknxworks.truectrl.data.api.arr
+import com.vknxworks.truectrl.data.api.bool
 import com.vknxworks.truectrl.data.api.double
 import com.vknxworks.truectrl.data.api.get
 import com.vknxworks.truectrl.data.api.long
@@ -149,6 +150,15 @@ class StorageRepository(
             emptyMap()
         }
 
+        // pool.query only says whether a pool is upgraded when asked through `extra`; pool.is_upgraded
+        // is the documented call for it (deprecated from TrueNAS 27 on, then this simply stays unknown).
+        val upgraded: Map<Int, Boolean> = if (caps.has("pool.is_upgraded")) {
+            poolList.map { p -> p.info.id to async { runCatching { c.call("pool.is_upgraded", listOf(JsonPrimitive(p.info.id))).bool() }.getOrNull() } }
+                .mapNotNull { (id, d) -> d.await()?.let { id to it } }.toMap()
+        } else {
+            emptyMap()
+        }
+
         val tempMap = temps.await().obj()?.mapNotNull { (k, v) -> tempOf(v)?.let { k to it } }?.toMap().orEmpty()
         val smartMap = smart?.await().arr()?.mapNotNull { e ->
             val disk = e["disk"].str() ?: return@mapNotNull null
@@ -159,7 +169,7 @@ class StorageRepository(
         }?.toMap().orEmpty()
 
         StorageSnapshot(
-            pools = poolList.map { p -> p.copy(compressRatio = ratios[p.info.name]) },
+            pools = poolList.map { p -> p.copy(compressRatio = ratios[p.info.name], isUpgraded = upgraded[p.info.id] ?: p.isUpgraded) },
             disks = disks.await().arr()?.mapNotNull(DiskInfo::from).orEmpty().sortedWith(compareBy({ it.name.length }, { it.name })),
             temps = tempMap,
             scrubs = scrubs.await().arr()?.mapNotNull(ScrubSchedule::from).orEmpty(),
@@ -193,6 +203,49 @@ class StorageRepository(
         val active = sessions.active.value ?: return
         val job = active.connection.call("pool.scrub", listOf(JsonPrimitive(poolId), JsonPrimitive(action.name)))
         Jobs.awaitStart(active.connection, job)
+        refresh()
+    }
+
+    /**
+     * pool.upgrade: turns on every ZFS feature this TrueNAS version supports. It can't be undone, and
+     * older TrueNAS versions can't import the pool afterwards. Throws when TrueNAS refuses.
+     */
+    suspend fun upgradePool(poolId: Int) {
+        val active = sessions.active.value ?: throw TnError.Unreachable(null)
+        active.connection.call("pool.upgrade", listOf(JsonPrimitive(poolId)), waitMs = 15_000)
+        refresh()
+    }
+
+    /** pool.offline / pool.online for one disk of a pool; [label] is the vdev's GUID (or device name). */
+    suspend fun setDiskOnline(poolId: Int, label: String, online: Boolean) {
+        val active = sessions.active.value ?: throw TnError.Unreachable(null)
+        active.connection.call(if (online) "pool.online" else "pool.offline", listOf(JsonPrimitive(poolId), buildJsonObject { put("label", label) }))
+        refresh()
+    }
+
+    /** Disks that aren't in any imported pool (disk.details with type UNUSED), smallest name first. */
+    suspend fun unusedDisks(): List<UnusedDisk> {
+        val active = sessions.active.value ?: throw TnError.Unreachable(null)
+        val r = active.connection.call("disk.details", listOf(buildJsonObject { put("join_partitions", false); put("type", "UNUSED") }))
+        // UNUSED gives a list; BOTH would give {used, unused}. Accept either.
+        val list = r.arr() ?: r["unused"].arr()
+        return list?.mapNotNull(UnusedDisk::from).orEmpty().sortedWith(compareBy({ it.name.length }, { it.name }))
+    }
+
+    /**
+     * pool.replace: swaps the disk [label] (vdev GUID or device name) of a pool for [newDisk] and starts
+     * a resilver. It runs as a job; an early failure (disk too small, in use) is thrown, otherwise the
+     * replacement counts as started and the resilver shows on the pool.
+     */
+    suspend fun replaceDisk(poolId: Int, label: String, newDisk: String, force: Boolean) {
+        val active = sessions.active.value ?: throw TnError.Unreachable(null)
+        val options = buildJsonObject {
+            put("label", label)
+            put("disk", newDisk)
+            put("force", force)
+        }
+        val job = active.connection.call("pool.replace", listOf(JsonPrimitive(poolId), options))
+        Jobs.awaitStart(active.connection, job, graceMs = 10_000)
         refresh()
     }
 

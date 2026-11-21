@@ -35,6 +35,8 @@ object ReadOnlyGate {
         "catalog.get_app_details",
         // The SMB share purposes this server offers.
         "sharing.smb.presets",
+        // Whether a pool has every ZFS feature enabled (the "pool can be upgraded" note).
+        "pool.is_upgraded",
         // Job progress and results.
         "core.get_jobs",
         // Disk temperatures and graphs.

@@ -27,6 +27,8 @@ data class Vdev(
     val writeErrors: Long = 0,
     val checksumErrors: Long = 0,
     val children: List<Vdev> = emptyList(),
+    /** The vdev's GUID: what pool.offline, pool.online and pool.replace take as its label. */
+    val guid: String? = null,
 ) {
     val errors: Long get() = readErrors + writeErrors + checksumErrors
     val isDisk: Boolean get() = children.isEmpty() && (type == "DISK" || type == "FILE" || disk != null)
@@ -47,6 +49,7 @@ data class Vdev(
                 writeErrors = stats?.get("write_errors").long() ?: 0,
                 checksumErrors = stats?.get("checksum_errors").long() ?: 0,
                 children = o["children"].arr()?.mapNotNull(::from).orEmpty(),
+                guid = o["guid"].str()?.takeIf { it.isNotBlank() },
             )
         }
     }
@@ -114,6 +117,33 @@ data class DiskInfo(
                 devname = o["devname"].str().orEmpty(),
                 description = o["description"].str().orEmpty(),
                 bus = o["bus"].str().orEmpty(),
+            )
+        }
+    }
+}
+
+/** A disk that isn't part of any imported pool (disk.details, type UNUSED): a candidate to replace a failed one. */
+data class UnusedDisk(
+    val name: String,
+    val size: Long,
+    val serial: String,
+    val model: String,
+    /** An exported pool this disk still belongs to; using it needs "force". */
+    val exportedPool: String?,
+    /** Other disks reporting the same serial number (usually a sign of a multipath or USB bridge). */
+    val duplicateSerial: List<String>,
+) {
+    companion object {
+        fun from(j: JsonElement): UnusedDisk? {
+            val o = j.obj() ?: return null
+            val name = o["name"].str() ?: o["devname"].str() ?: return null
+            return UnusedDisk(
+                name = name,
+                size = o["size"].long() ?: 0,
+                serial = o["serial"].str().orEmpty(),
+                model = o["model"].str().orEmpty(),
+                exportedPool = o["exported_zpool"].str()?.takeIf { it.isNotBlank() },
+                duplicateSerial = o["duplicate_serial"].arr()?.mapNotNull { it.str() }.orEmpty(),
             )
         }
     }

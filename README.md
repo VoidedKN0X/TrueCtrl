@@ -12,9 +12,9 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 ## Features
 
-- **Overview** of your server, with an attention list for alerts, unhealthy or full pools, failing disks, overdue scrubs, failed or stale backups, stopped services, crashed apps and pending updates, a system card, live CPU, memory and network graphs, and your pools
+- **Overview** of your server, with an attention list for alerts, unhealthy or full pools, pools that can be upgraded, failing disks, overdue scrubs, failed or stale backups, stopped services, crashed apps and pending updates, a system card, live CPU, memory and network graphs, and your pools
 - **Alerts** that update live, with dismiss and restore
-- **Storage**: pools with their health, space and layout, and scrubs you can start, pause, resume and stop with live progress
+- **Storage**: pools with their health, space and layout, and scrubs you can start, pause, resume and stop with live progress. Take a disk offline or online, replace a disk with one that isn't in use, and upgrade a pool to the ZFS features of your TrueNAS version (after typing its name)
 - **Datasets** as a tree: space, quota, compression, encryption and more. Create child datasets with the TrueNAS presets, edit quotas and comments, lock and unlock encrypted datasets, and delete with a preview of everything that goes with it
 - **Disks** with temperatures, temperature and speed graphs, and SMART health (self-tests and attributes on TrueNAS 25.04)
 - **Protection**: periodic snapshot, replication, cloud sync, rsync and scrub tasks with their schedule, last and next run, and the age of the last good backup. Run tasks now, stop a cloud sync, turn snapshot and scrub tasks on and off
@@ -107,7 +107,7 @@ TrueCtrl works best with its own TrueNAS user and an API key that can only do wh
 | Role | Used for |
 | --- | --- |
 | `READONLY_ADMIN` | Everything TrueCtrl shows: the Overview, alerts, pools, datasets, disks, graphs, tasks, snapshots, shares, services, apps, jobs, updates and network |
-| `POOL_WRITE` | Starting, pausing, resuming and stopping scrubs |
+| `POOL_WRITE` | Starting, pausing, resuming and stopping scrubs; taking a disk offline or online, replacing a disk, and upgrading a pool |
 | `POOL_SCRUB_WRITE` | Turning scrub schedules on and off |
 | `ALERT_LIST_WRITE` | Dismissing and restoring alerts |
 | `ALERT_WRITE` | Setting up push notifications on TrueNAS for you (optional; you can add the alert service by hand) |

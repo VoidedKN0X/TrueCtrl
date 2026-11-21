@@ -4,6 +4,13 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### New
+
+- **"Pool can be upgraded" in the attention list, and upgrading a pool from the app.** After moving to a newer TrueNAS, a pool keeps working with the ZFS features it had; TrueNAS then says it can be upgraded. The Overview's attention list now shows that as a low-priority note per pool (only for a pool that is otherwise healthy), and the pool's page has a **ZFS features** card that explains it. **Upgrade pool** turns on every feature this TrueNAS version supports. Because that can't be undone, and an older TrueNAS version can't open the pool afterwards, you have to type the pool's name first. It needs a user with the Pool Write role and is hidden in read-only mode. Before, the pool page only said upgrading was done in the web UI (and in practice never showed it, because TrueNAS only reports it when asked). Uses `pool.is_upgraded` and `pool.upgrade` as documented for TrueNAS 25.10. Not run on a phone or against a server yet.
+- **Take a disk offline, bring it online, and replace a disk.** Every disk in a pool's layout now has a menu (the three dots) with **Take offline** (for a disk that's online), **Bring online** (for one that's offline) and **Replace**. Replace lists the disks TrueNAS reports as not in use, with size, model and serial number, and marks a disk that still belongs to an exported pool. Before anything happens you type the new disk's name, and the question spells out that everything on the new disk is erased and that the pool resilvers. The resilver then shows with its progress on the pool, as a scrub does. Tapping the row still opens the disk's page. Needs the Pool Write role; hidden in read-only mode. Uses `pool.offline`, `pool.online`, `pool.replace` and `disk.details` as documented for TrueNAS 25.10. Not run on a phone or against a server yet: try it first on a test pool, not on the pool your services use.
+
 ## v0.18.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published. It is the first release built with the new build tools (Android Gradle Plugin 9, stricter code shrinking), so update over your installed version and check that your data and settings are still there.

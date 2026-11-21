@@ -287,7 +287,6 @@
     <string name="pool_missing_body">It may have been exported or renamed. Pull down to refresh.</string>
     <string name="pool_fragmentation">Fragmentation %1$s%%</string>
     <string name="pool_compression">Compression %1$s</string>
-    <string name="pool_not_upgraded">Newer ZFS features are available for this pool. Upgrading it is done in the TrueNAS web UI and can\'t be undone.</string>
     <plurals name="disk_count">
         <item quantity="one">%1$d disk</item>
         <item quantity="other">%1$d disks</item>
@@ -1174,4 +1173,42 @@
     <string name="dh_disk_errors">Disk %1$s in pool %2$s has errors: %3$d read, %4$d write, %5$d checksum</string>
     <string name="dh_smart_failed">Disk %1$s failed its latest SMART self-test: %2$s</string>
     <string name="ev_sent_by_disk_health">Handled by the Disk health check while it\'s on.</string>
+
+    <!-- Pool upgrade (ZFS feature flags) -->
+    <string name="att_pool_upgradable">Pool %1$s can be upgraded</string>
+    <string name="att_pool_upgradable_detail">Newer ZFS features are available. Upgrading is optional and can\'t be undone.</string>
+    <string name="pool_upgrade_title">ZFS features</string>
+    <string name="pool_upgrade_available">This pool can be upgraded</string>
+    <string name="pool_upgrade_body">It doesn\'t use every ZFS feature of this TrueNAS version yet. Upgrading is optional, and can\'t be undone: older TrueNAS versions can no longer open the pool afterwards.</string>
+    <string name="pool_upgrade_action">Upgrade pool</string>
+    <string name="pool_upgrade_not_allowed">Your TrueNAS user can\'t upgrade pools.</string>
+    <string name="pool_upgrade_confirm_title">Upgrade %1$s?</string>
+    <string name="pool_upgrade_confirm_body">This turns on every ZFS feature this TrueNAS version supports. It can\'t be undone. A TrueNAS version older than the one running now can\'t open the pool any more, so only do this once you\'re sure you won\'t go back to the previous version. Your data isn\'t touched.</string>
+    <string name="pool_upgraded">Pool upgraded</string>
+
+    <!-- Disk actions in a pool -->
+    <string name="disk_actions">Actions for %1$s</string>
+    <string name="disk_actions_state">State: %1$s</string>
+    <string name="disk_offline">Take offline</string>
+    <string name="disk_offline_sub">The pool stops using this disk until it\'s brought online again</string>
+    <string name="disk_offline_title">Take %1$s offline?</string>
+    <string name="disk_offline_body">Pool %1$s stops using this disk and runs with less redundancy until it\'s brought online again or replaced. TrueNAS refuses when the pool can\'t do without it.</string>
+    <string name="disk_offline_done">Disk taken offline</string>
+    <string name="disk_online">Bring online</string>
+    <string name="disk_online_sub">The pool uses this disk again and catches it up</string>
+    <string name="disk_online_title">Bring %1$s online?</string>
+    <string name="disk_online_body">Pool %1$s uses this disk again and copies over what it missed (a resilver).</string>
+    <string name="disk_online_done">Disk brought online</string>
+    <string name="disk_replace">Replace</string>
+    <string name="disk_replace_sub">Swap it for a disk no pool uses; the pool then resilvers</string>
+    <string name="disk_replace_pick">Replace %1$s with</string>
+    <string name="disk_replace_none">TrueNAS sees no disk that isn\'t in use. Put the new disk in first, then try again.</string>
+    <string name="disk_replace_serial">Serial %1$s</string>
+    <string name="disk_replace_in_exported">Still part of exported pool %1$s</string>
+    <string name="disk_replace_duplicate">Same serial as %1$s</string>
+    <string name="disk_replace_title">Replace %1$s?</string>
+    <string name="disk_replace_body">%1$s in pool %3$s is replaced by %2$s. Everything on %2$s is erased, and the pool resilvers onto it, which can take hours.</string>
+    <string name="disk_replace_exported">%1$s still belongs to the exported pool %2$s. That pool loses this disk.</string>
+    <string name="disk_replace_started">Replacement started. The resilver shows on this pool.</string>
+    <string name="disk_actions_none">Nothing can be done with this disk in its current state.</string>
 </resources>

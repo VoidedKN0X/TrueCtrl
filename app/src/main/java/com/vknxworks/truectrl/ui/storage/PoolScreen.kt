@@ -22,6 +22,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Upgrade
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.IconButton
+import com.vknxworks.truectrl.data.storage.UnusedDisk
+import com.vknxworks.truectrl.ui.components.CtrlSheet
+import com.vknxworks.truectrl.ui.components.GroupRow
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -94,6 +101,18 @@ fun PoolScreen(poolId: Int) {
     var busy by remember { mutableStateOf(false) }
     var refreshing by remember { mutableStateOf(false) }
     val canScrub = access.capabilities?.has("pool.scrub") == true && c.sessions.canWrite("POOL_WRITE")
+    val canUpgrade = access.capabilities?.has("pool.upgrade") == true && c.sessions.canWrite("POOL_WRITE")
+    val canOffline = access.capabilities?.has("pool.offline") == true && c.sessions.canWrite("POOL_WRITE")
+    val canOnline = access.capabilities?.has("pool.online") == true && c.sessions.canWrite("POOL_WRITE")
+    val canReplace = access.capabilities?.has("pool.replace") == true && access.capabilities?.has("disk.details") == true &&
+        c.sessions.canWrite("POOL_WRITE")
+    var upgradeConfirm by remember { mutableStateOf(false) }
+    // The disk whose actions are open, the one being taken offline (false) or brought online (true),
+    // the one being replaced, and the replacement that was picked for it.
+    var diskMenu by remember { mutableStateOf<Vdev?>(null) }
+    var onlineConfirm by remember { mutableStateOf<Pair<Vdev, Boolean>?>(null) }
+    var replacing by remember { mutableStateOf<Vdev?>(null) }
+    var replacement by remember { mutableStateOf<Pair<Vdev, UnusedDisk>?>(null) }
 
     LaunchedEffect(server?.id) { if (state.updatedAt == 0L) c.storage.refresh() }
     val lifecycle = LocalLifecycleOwner.current
@@ -123,6 +142,21 @@ fun PoolScreen(poolId: Int) {
         }
     }
 
+    /** Runs a change on the pool, then says it worked ([done]) or why it didn't. */
+    fun change(done: Int, action: suspend () -> Unit) {
+        busy = true
+        scope.launch {
+            try {
+                action()
+                snackbar.showSnackbar(context.getString(done))
+            } catch (e: Exception) {
+                snackbar.showSnackbar(errorMessage(context, e, server?.host.orEmpty()))
+            } finally {
+                busy = false
+            }
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
         ScreenTopBar(pool?.info?.name ?: stringResource(R.string.pool_title))
         if (!access.connected && access.error != null) ConnectionBanner()
@@ -142,6 +176,21 @@ fun PoolScreen(poolId: Int) {
             } else {
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(bottom = 24.dp)) {
                     StatusCard(pool, settings.poolWarnPercent)
+                    if (pool.isUpgraded == false) {
+                        Group(
+                            stringResource(R.string.pool_upgrade_title),
+                            footer = when {
+                                server?.readOnly == true -> stringResource(R.string.read_only_hint)
+                                !canUpgrade -> stringResource(R.string.pool_upgrade_not_allowed)
+                                else -> null
+                            },
+                        ) {
+                            GroupRow(stringResource(R.string.pool_upgrade_available), stringResource(R.string.pool_upgrade_body), Icons.Outlined.Upgrade)
+                            if (canUpgrade && !busy) {
+                                GroupRow(stringResource(R.string.pool_upgrade_action), showChevron = true, onClick = { upgradeConfirm = true })
+                            }
+                        }
+                    }
                     ScrubCard(
                         pool = pool,
                         schedule = state.snapshot.scrubs.firstOrNull { it.poolId == poolId || it.poolName == pool.info.name },
@@ -155,7 +204,11 @@ fun PoolScreen(poolId: Int) {
                             Group(groupLabel(group)) {
                                 vdevs.forEachIndexed { i, v ->
                                     if (i > 0) HorizontalDivider(color = CtrlColors.CardBorder)
-                                    VdevBlock(v) { disk -> nav.navigate(DiskRoute(disk)) }
+                                    VdevBlock(
+                                        v,
+                                        // Actions need the vdev's GUID to name the disk, and something this user may do.
+                                        onMenu = if ((canOffline || canOnline || canReplace) && !busy) { d -> diskMenu = d } else null,
+                                    ) { disk -> nav.navigate(DiskRoute(disk)) }
                                 }
                             }
                         }
@@ -164,6 +217,112 @@ fun PoolScreen(poolId: Int) {
             }
         }
         SnackbarHost(snackbar)
+    }
+
+    if (upgradeConfirm && pool != null) {
+        ConfirmDialog(
+            title = stringResource(R.string.pool_upgrade_confirm_title, pool.info.name),
+            body = stringResource(R.string.pool_upgrade_confirm_body),
+            confirmLabel = stringResource(R.string.pool_upgrade_action),
+            destructive = true,
+            typeToConfirm = pool.info.name,
+            onConfirm = {
+                upgradeConfirm = false
+                change(R.string.pool_upgraded) { c.storage.upgradePool(poolId) }
+            },
+            onDismiss = { upgradeConfirm = false },
+        )
+    }
+
+    diskMenu?.let { d ->
+        val label = d.disk ?: d.name
+        CtrlSheet(onDismissRequest = { diskMenu = null }) {
+            Text(label, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
+            Text(
+                stringResource(R.string.disk_actions_state, d.status),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
+            Column(Modifier.navigationBarsPadding().padding(top = 8.dp, bottom = 16.dp)) {
+                if (!canReplace && !(canOffline && d.status == "ONLINE") && !(canOnline && d.status == "OFFLINE")) {
+                    Text(
+                        stringResource(R.string.disk_actions_none),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                    )
+                }
+                if (canOffline && d.status == "ONLINE") {
+                    SheetAction(stringResource(R.string.disk_offline), stringResource(R.string.disk_offline_sub)) {
+                        diskMenu = null
+                        onlineConfirm = d to false
+                    }
+                }
+                if (canOnline && d.status == "OFFLINE") {
+                    SheetAction(stringResource(R.string.disk_online), stringResource(R.string.disk_online_sub)) {
+                        diskMenu = null
+                        onlineConfirm = d to true
+                    }
+                }
+                if (canReplace) {
+                    SheetAction(stringResource(R.string.disk_replace), stringResource(R.string.disk_replace_sub)) {
+                        diskMenu = null
+                        replacing = d
+                    }
+                }
+            }
+        }
+    }
+
+    onlineConfirm?.let { (d, online) ->
+        val label = d.disk ?: d.name
+        ConfirmDialog(
+            title = stringResource(if (online) R.string.disk_online_title else R.string.disk_offline_title, label),
+            body = stringResource(if (online) R.string.disk_online_body else R.string.disk_offline_body, pool?.info?.name.orEmpty()),
+            confirmLabel = stringResource(if (online) R.string.disk_online else R.string.disk_offline),
+            destructive = !online,
+            onConfirm = {
+                onlineConfirm = null
+                val guid = d.guid ?: return@ConfirmDialog
+                change(if (online) R.string.disk_online_done else R.string.disk_offline_done) { c.storage.setDiskOnline(poolId, guid, online) }
+            },
+            onDismiss = { onlineConfirm = null },
+        )
+    }
+
+    replacing?.let { d ->
+        ReplaceDiskSheet(
+            old = d.disk ?: d.name,
+            load = { c.storage.unusedDisks() },
+            errorText = { e -> errorMessage(context, e, server?.host.orEmpty()) },
+            onDismiss = { replacing = null },
+            onPick = { picked ->
+                replacing = null
+                replacement = d to picked
+            },
+        )
+    }
+
+    replacement?.let { (d, new) ->
+        val old = d.disk ?: d.name
+        ConfirmDialog(
+            title = stringResource(R.string.disk_replace_title, old),
+            body = listOfNotNull(
+                stringResource(R.string.disk_replace_body, old, new.name, pool?.info?.name.orEmpty()),
+                new.exportedPool?.let { stringResource(R.string.disk_replace_exported, new.name, it) },
+            ).joinToString("\n\n"),
+            confirmLabel = stringResource(R.string.disk_replace),
+            destructive = true,
+            typeToConfirm = new.name,
+            onConfirm = {
+                replacement = null
+                val guid = d.guid ?: return@ConfirmDialog
+                // "force" only for a disk that still carries an exported pool: TrueNAS refuses it otherwise.
+                change(R.string.disk_replace_started) { c.storage.replaceDisk(poolId, guid, new.name, force = new.exportedPool != null) }
+            },
+            onDismiss = { replacement = null },
+        )
     }
 
     confirm?.let { action ->
@@ -237,9 +396,6 @@ private fun StatusCard(pool: PoolDetail, warn: Int) {
             )
             if (facts.isNotEmpty()) {
                 Text(facts.joinToString("  ·  "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            if (pool.isUpgraded == false) {
-                Text(stringResource(R.string.pool_not_upgraded), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -352,9 +508,9 @@ private fun nextScrubText(schedule: ScrubSchedule?, scan: ScanInfo?): String {
 
 /** A vdev with its state and errors, and the disks inside it. */
 @Composable
-private fun VdevBlock(v: Vdev, onDisk: (String) -> Unit) {
+private fun VdevBlock(v: Vdev, onMenu: ((Vdev) -> Unit)?, onDisk: (String) -> Unit) {
     if (v.children.isEmpty()) {
-        DiskLine(v, indent = false, onDisk)
+        DiskLine(v, indent = false, onMenu, onDisk)
         return
     }
     Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
@@ -367,16 +523,16 @@ private fun VdevBlock(v: Vdev, onDisk: (String) -> Unit) {
         v.children.forEach { child ->
             if (child.children.isNotEmpty()) {
                 // A spare or replacement in progress inside a vdev: show its disks too.
-                child.disks().forEach { DiskLine(it, indent = true, onDisk) }
+                child.disks().forEach { DiskLine(it, indent = true, onMenu, onDisk) }
             } else {
-                DiskLine(child, indent = true, onDisk)
+                DiskLine(child, indent = true, onMenu, onDisk)
             }
         }
     }
 }
 
 @Composable
-private fun DiskLine(d: Vdev, indent: Boolean, onDisk: (String) -> Unit) {
+private fun DiskLine(d: Vdev, indent: Boolean, onMenu: ((Vdev) -> Unit)?, onDisk: (String) -> Unit) {
     val disk = d.disk
     Row(
         Modifier
@@ -399,6 +555,69 @@ private fun DiskLine(d: Vdev, indent: Boolean, onDisk: (String) -> Unit) {
                 color = if (d.errors > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        if (disk != null) Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (onMenu != null && d.guid != null) {
+            IconButton(onClick = { onMenu(d) }) {
+                Icon(Icons.Outlined.MoreVert, stringResource(R.string.disk_actions, disk ?: d.name), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else if (disk != null) {
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** One action in a disk's sheet: what it does, and a line on what that means. */
+@Composable
+private fun SheetAction(title: String, subtitle: String, onClick: () -> Unit) {
+    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).heightIn(min = 52.dp).padding(horizontal = 24.dp, vertical = 12.dp)) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** Picks the disk that takes [old]'s place, from the disks no pool uses. Nothing changes until the next question is answered. */
+@Composable
+private fun ReplaceDiskSheet(
+    old: String,
+    load: suspend () -> List<UnusedDisk>,
+    errorText: (Throwable) -> String,
+    onDismiss: () -> Unit,
+    onPick: (UnusedDisk) -> Unit,
+) {
+    var disks by remember { mutableStateOf<List<UnusedDisk>?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(old) {
+        try {
+            disks = load()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            error = errorText(e)
+        }
+    }
+    CtrlSheet(onDismissRequest = onDismiss) {
+        Text(stringResource(R.string.disk_replace_pick, old), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
+        Column(Modifier.navigationBarsPadding().verticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
+            val list = disks
+            val note = when {
+                error != null -> error
+                list == null -> stringResource(R.string.overview_loading)
+                list.isEmpty() -> stringResource(R.string.disk_replace_none)
+                else -> null
+            }
+            if (note != null) {
+                Text(note, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp))
+            }
+            list?.forEach { d ->
+                SheetAction(
+                    title = listOfNotNull(d.name, formatBytes(d.size).takeIf { d.size > 0 }).joinToString("  ·  "),
+                    subtitle = listOfNotNull(
+                        d.model.ifBlank { null },
+                        d.serial.ifBlank { null }?.let { stringResource(R.string.disk_replace_serial, it) },
+                        d.exportedPool?.let { stringResource(R.string.disk_replace_in_exported, it) },
+                        if (d.duplicateSerial.isNotEmpty()) stringResource(R.string.disk_replace_duplicate, d.duplicateSerial.joinToString()) else null,
+                    ).joinToString("  ·  ").ifBlank { stringResource(R.string.no_value) },
+                ) { onPick(d) }
+            }
+        }
     }
 }

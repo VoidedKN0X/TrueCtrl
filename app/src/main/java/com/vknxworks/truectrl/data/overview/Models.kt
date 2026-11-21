@@ -299,6 +299,8 @@ data class OverviewSnapshot(
     val scrubs: List<ScrubSchedule> = emptyList(),
     val update: UpdateInfo? = null,
     val rebootReasons: List<String> = emptyList(),
+    /** IDs of pools that don't have every ZFS feature of this TrueNAS version enabled yet. */
+    val upgradablePools: List<Int> = emptyList(),
 )
 
 /** Reasons a reboot is pending, from system.reboot.info. */

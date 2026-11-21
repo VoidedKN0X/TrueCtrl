@@ -53,7 +53,7 @@ private const val COLLAPSED_COUNT = 5
 
 fun AttentionItem.target(): AttentionTarget = when (this) {
     is AttentionItem.Alert, is AttentionItem.MoreAlerts -> AttentionTarget.ALERTS
-    is AttentionItem.PoolUnhealthy, is AttentionItem.PoolFull, is AttentionItem.ScrubErrors -> AttentionTarget.STORAGE
+    is AttentionItem.PoolUnhealthy, is AttentionItem.PoolFull, is AttentionItem.ScrubErrors, is AttentionItem.PoolUpgradable -> AttentionTarget.STORAGE
     is AttentionItem.ScrubOverdue, is AttentionItem.TaskFailed, is AttentionItem.BackupStale -> AttentionTarget.PROTECTION
     is AttentionItem.ServiceStopped -> AttentionTarget.SHARING
     is AttentionItem.AppCrashed, is AttentionItem.UpdateAvailable, is AttentionItem.RebootPending -> AttentionTarget.SYSTEM
@@ -97,6 +97,7 @@ private fun title(item: AttentionItem): String = when (item) {
     is AttentionItem.AppCrashed -> stringResource(R.string.att_app_crashed, item.app.name)
     is AttentionItem.UpdateAvailable -> item.version?.let { stringResource(R.string.att_update_version, it) } ?: stringResource(R.string.att_update)
     is AttentionItem.RebootPending -> stringResource(R.string.att_reboot)
+    is AttentionItem.PoolUpgradable -> stringResource(R.string.att_pool_upgradable, item.pool.name)
 }
 
 @Composable
@@ -116,6 +117,7 @@ private fun detail(item: AttentionItem): String? = when (item) {
     is AttentionItem.AppCrashed -> stringResource(R.string.att_app_crashed_detail)
     is AttentionItem.UpdateAvailable -> stringResource(R.string.att_update_detail)
     is AttentionItem.RebootPending -> item.reasons.joinToString("\n").ifBlank { stringResource(R.string.att_reboot_detail) }
+    is AttentionItem.PoolUpgradable -> stringResource(R.string.att_pool_upgradable_detail)
 }
 
 /** Severity icons differ in shape as well as colour, and carry a label for screen readers. */

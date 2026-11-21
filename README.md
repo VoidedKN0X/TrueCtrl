@@ -26,6 +26,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
 - **Several servers**, signed in with an API key or a password (two-factor codes work too), with a list of what each sign-in is allowed to do
 - **Settings file**: export your settings (never keys, passwords or trusted certificates) to a file and import them again, with a list of what will change before anything does
+- **English and Dutch**: the app follows your phone's language
 - **Works offline**: the last known state stays on screen, marked as out of date, when TrueNAS can't be reached
 - **Safe by design**: read-only mode that blocks every change at the connection level, confirmations for anything disruptive (typing the dataset path or hostname for the most dangerous ones), certificate pinning, an optional [app lock](#app-lock) with its own PIN and fingerprint unlock that keeps your saved sign-ins encrypted while locked, **Hide in screenshots** and **Hide in recent apps** switches, screenshots always blocked wherever you type keys, passwords, passphrases or use the shell, API keys and passwords encrypted with the Android Keystore, and dataset passphrases that are never saved
 

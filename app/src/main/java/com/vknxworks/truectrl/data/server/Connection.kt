@@ -219,6 +219,21 @@ class Connection(
         return client.newWebSocket(okhttp3.Request.Builder().url(base + path).build(), listener)
     }
 
+    /**
+     * GETs [path] (the one-time address core.download returned, starting with "/") from this server,
+     * with the same pinned certificate as the API connection and no read timeout (a download can be
+     * slow to start). Blocking: call it off the main thread and close the response.
+     */
+    fun download(path: String): okhttp3.Response {
+        if (!allowed()) throw TnError.Unreachable(null)
+        val trimmed = server.url.trimEnd('/')
+        val plain = trimmed.startsWith("http://", ignoreCase = true)
+        // Plain HTTP only for an address the user accepted, like the API connection.
+        if (!trimmed.startsWith("https://", ignoreCase = true) && !(plain && server.httpAccepted)) throw TnError.InsecureAddress()
+        val client = http.newBuilder().readTimeout(0, java.util.concurrent.TimeUnit.MILLISECONDS).build()
+        return client.newCall(okhttp3.Request.Builder().url(trimmed + path).build()).execute()
+    }
+
     suspend fun call(method: String, params: List<JsonElement> = emptyList(), waitMs: Long = 15_000): JsonElement {
         if (readOnly() && !ReadOnlyGate.allows(method)) throw TnError.ReadOnly(method)
         // Locked: refused before anything is sent, so nothing left on screen can act on the server.

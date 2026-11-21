@@ -16,6 +16,21 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.outlined.FactCheck
+import androidx.compose.material.icons.outlined.Layers
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.SaveAlt
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.SettingsEthernet
+import com.vknxworks.truectrl.ui.nav.AccountsRoute
+import com.vknxworks.truectrl.ui.nav.AuditRoute
+import com.vknxworks.truectrl.ui.nav.BootEnvsRoute
+import com.vknxworks.truectrl.ui.nav.CronRoute
+import com.vknxworks.truectrl.ui.nav.GuestsRoute
+import com.vknxworks.truectrl.ui.nav.IscsiRoute
+import com.vknxworks.truectrl.ui.nav.UpsRoute
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Lan
@@ -93,6 +108,7 @@ fun SystemScreen() {
     var refreshing by remember { mutableStateOf(false) }
     var power by remember { mutableStateOf<Boolean?>(null) } // true = shut down, false = reboot
     var editVm by remember { mutableStateOf(false) }
+    var configBackup by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     PollWhileVisible(listOf(server?.id, access.generation), POLL_MS) {
@@ -165,6 +181,9 @@ fun SystemScreen() {
                                 onClick = { nav.navigate(CatalogRoute) },
                             )
                         }
+                        if (caps?.has("vm.query") == true || caps?.has("virt.instance.query") == true) {
+                            GroupRow(stringResource(R.string.guests_title), stringResource(R.string.guests_sub), Icons.Outlined.Computer, showChevron = true, onClick = { nav.navigate(GuestsRoute) })
+                        }
                         val activeAlerts = snap.alerts.count { !it.dismissed }
                         GroupRow(
                             stringResource(R.string.alerts_title),
@@ -195,6 +214,27 @@ fun SystemScreen() {
                         }
                         if (caps?.webShell == true && server?.readOnly == false) {
                             GroupRow(stringResource(R.string.shell_title), stringResource(R.string.shell_sub), Icons.Outlined.Terminal, showChevron = true, onClick = { nav.navigate(ShellRoute) })
+                        }
+                    }
+                    val canBackup = caps?.has("config.save") == true && c.sessions.canWrite(Capabilities.FULL_ADMIN)
+                    val adminRows = listOf(
+                        caps?.has("user.query") == true || caps?.has("group.query") == true,
+                        caps?.has("cronjob.query") == true,
+                        caps?.has("boot.environment.query") == true,
+                        caps?.has("audit.query") == true,
+                        caps?.has("ups.config") == true,
+                        caps?.has("iscsi.target.query") == true,
+                        canBackup,
+                    )
+                    if (adminRows.any { it }) {
+                        Group(stringResource(R.string.system_admin)) {
+                            if (adminRows[0]) GroupRow(stringResource(R.string.accounts_title), stringResource(R.string.accounts_sub), Icons.Outlined.Person, showChevron = true, onClick = { nav.navigate(AccountsRoute) })
+                            if (adminRows[1]) GroupRow(stringResource(R.string.cron_title), stringResource(R.string.cron_sub), Icons.Outlined.Schedule, showChevron = true, onClick = { nav.navigate(CronRoute) })
+                            if (adminRows[2]) GroupRow(stringResource(R.string.bootenv_title), stringResource(R.string.bootenv_sub), Icons.Outlined.Layers, showChevron = true, onClick = { nav.navigate(BootEnvsRoute) })
+                            if (adminRows[3]) GroupRow(stringResource(R.string.audit_title), stringResource(R.string.audit_sub), Icons.Outlined.FactCheck, showChevron = true, onClick = { nav.navigate(AuditRoute) })
+                            if (adminRows[4]) GroupRow(stringResource(R.string.ups_title), stringResource(R.string.ups_sub), Icons.Outlined.BatteryChargingFull, showChevron = true, onClick = { nav.navigate(UpsRoute) })
+                            if (adminRows[5]) GroupRow(stringResource(R.string.iscsi_title), stringResource(R.string.iscsi_sub), Icons.Outlined.SettingsEthernet, showChevron = true, onClick = { nav.navigate(IscsiRoute) })
+                            if (canBackup) GroupRow(stringResource(R.string.config_title), stringResource(R.string.config_sub), Icons.Outlined.SaveAlt, showChevron = true, onClick = { configBackup = true })
                         }
                     }
                     Group(
@@ -267,6 +307,18 @@ fun SystemScreen() {
                 }
             },
             onDismiss = { power = null },
+        )
+    }
+
+    if (configBackup) {
+        ConfigBackupDialog(
+            hostname = hostname,
+            version = info?.version.orEmpty(),
+            onDismiss = { configBackup = false },
+            onDone = { message ->
+                configBackup = false
+                scope.launch { snackbar.showSnackbar(message) }
+            },
         )
     }
 

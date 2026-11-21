@@ -28,6 +28,13 @@ import kotlinx.serialization.Serializable
 @Serializable data object UpdatesRoute
 @Serializable data object NetworkRoute
 @Serializable data object ShellRoute
+@Serializable data object GuestsRoute
+@Serializable data object AccountsRoute
+@Serializable data object UpsRoute
+@Serializable data object IscsiRoute
+@Serializable data object AuditRoute
+@Serializable data object BootEnvsRoute
+@Serializable data object CronRoute
 @Serializable data object CatalogRoute
 @Serializable data class CatalogAppRoute(val name: String, val train: String)
 @Serializable data class AppInstallRoute(val name: String, val train: String)

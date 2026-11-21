@@ -66,6 +66,9 @@ data class Capabilities(
             "system", "system.reboot", "pool", "pool.dataset", "pool.scrub", "pool.snapshot", "zfs.snapshot", "pool.snapshottask",
             "disk", "smart.test", "replication", "cloudsync", "rsynctask", "sharing.smb", "sharing.nfs",
             "service", "smb", "app", "catalog", "alert", "alertservice", "update", "interface", "reporting",
+            // The System tab's administration screens.
+            "vm", "virt.instance", "user", "group", "ups", "audit", "boot.environment", "cronjob", "config",
+            "iscsi.global", "iscsi.target", "iscsi.extent", "iscsi.targetextent", "iscsi.portal", "iscsi.initiator",
         )
     }
 }

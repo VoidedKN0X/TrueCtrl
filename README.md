@@ -20,7 +20,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Protection**: periodic snapshot, replication, cloud sync, rsync and scrub tasks with their schedule, last and next run, and the age of the last good backup. Run tasks now, stop a cloud sync, turn snapshot and scrub tasks on and off
 - **Snapshots**: browse per dataset, take, delete one or many, roll back and clone
 - **Sharing**: create, edit and delete SMB and NFS shares (pick the dataset, name, purpose, description, read-only, show in the share list, guest access, allowed networks and hosts, map root / map all, security), turn them on and off, see who's connected over SMB, and the services behind them (start, stop, restart, start on boot). TrueCtrl shows when the SMB or NFS service isn't running and offers to start it
-- **System**: apps (start, stop, redeploy, upgrade, uninstall with or without their ix-volumes, open their web UI, live container logs with search and copy), **Update all apps** (pick the apps with an update, or take them all, and follow each upgrade job's progress, one app after another), the **app catalog** (search, categories, app pages with version, train, links and optional icon and screenshots, and installing with a form built from the app's own questions: text, numbers, switches, choices, ixVolume or host path storage, ports, lists and more, with anything unusual editable as JSON; the install runs as a job you follow in Jobs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown
+- **System**: apps (start, stop, redeploy, upgrade, uninstall with or without their ix-volumes, open their web UI, live container logs with search and copy), **Update all apps** (pick the apps with an update, or take them all, and follow each upgrade job's progress, one app after another), the **app catalog** (search, categories, app pages with version, train, links and optional icon and screenshots, and installing with a form built from the app's own questions: text, numbers, switches, choices, ixVolume or host path storage, ports, lists and more, with anything unusual editable as JSON; the install runs as a job you follow in Jobs), jobs with live progress, TrueNAS updates, network interfaces with live traffic, the TrueNAS shell, and reboot and shutdown. **Virtual machines and containers** (start, shut down, restart, power off), **users and groups**, **UPS** status, an **iSCSI** overview, the **audit log**, **boot environments** (activate, keep, delete), **cron jobs** (run now, on and off) and the **configuration backup** saved to a file
 - **Notifications**: background checks every 15 to 120 minutes, and TrueNAS alerts pushed within seconds through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server (TrueCtrl can set it up on TrueNAS for you), with the background checks as a fallback
 - **Disk health warnings** (off until you turn them on): a separate background check, every 15 minutes to once a day, of pool status, the state and read/write/checksum errors of every disk in your pools, SMART self-test results (TrueNAS 25.04) and TrueNAS's disk alerts (SMART, disk temperature, pool status). Each new problem is notified once, and can also be posted to a topic on your own ntfy server for your other devices
 - **ProxCtrl link**: if TrueNAS runs as a Proxmox VM, open that VM in [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) straight from TrueCtrl, for example to start it again after a shutdown
@@ -106,7 +106,7 @@ TrueCtrl works best with its own TrueNAS user and an API key that can only do wh
 
 | Role | Used for |
 | --- | --- |
-| `READONLY_ADMIN` | Everything TrueCtrl shows: the Overview, alerts, pools, datasets, disks, graphs, tasks, snapshots, shares, services, apps, jobs, updates and network |
+| `READONLY_ADMIN` | Everything TrueCtrl shows: the Overview, alerts, pools, datasets, disks, graphs, tasks, snapshots, shares, services, apps, jobs, updates, network, virtual machines, containers, users and groups, the UPS, iSCSI, the audit log, boot environments and cron jobs |
 | `POOL_WRITE` | Starting, pausing, resuming and stopping scrubs; taking a disk offline or online, replacing a disk, and upgrading a pool |
 | `POOL_SCRUB_WRITE` | Turning scrub schedules on and off |
 | `ALERT_LIST_WRITE` | Dismissing and restoring alerts |
@@ -122,8 +122,12 @@ TrueCtrl works best with its own TrueNAS user and an API key that can only do wh
 | `SERVICE_READ` + `SERVICE_WRITE` | Starting, stopping and restarting services and choosing whether they start on boot (`SERVICE_WRITE` doesn't include `SERVICE_READ`, so add both) |
 | `APPS_WRITE` | Starting, stopping, redeploying, upgrading, installing and uninstalling apps |
 | `SYSTEM_UPDATE_WRITE` | Installing TrueNAS updates |
+| `VM_WRITE` | Starting, shutting down, restarting and powering off virtual machines |
+| `VIRT_INSTANCE_WRITE` | The same for containers |
+| `BOOT_ENV_WRITE` | Choosing the boot environment for the next boot, keeping and deleting boot environments |
+| `SYSTEM_CRON_WRITE` | Running cron jobs and turning them on and off |
 | Web shell privilege | The shell (the **Web Shell Access** option on the privilege) |
-| Full Admin only | Rebooting and shutting down. On TrueNAS 25.04 also SMART self-tests, snapshot rollback and clone |
+| Full Admin only | Rebooting and shutting down, and downloading the configuration backup. On TrueNAS 25.04 also SMART self-tests, snapshot rollback and clone |
 
 Running rsync tasks needs whatever role your TrueNAS version asks for; TrueCtrl offers it when TrueNAS says your user may call it.
 

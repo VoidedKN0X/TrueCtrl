@@ -180,7 +180,7 @@ object TnAuth {
      * With a [cacheKey] (the saved server's id), the method list is remembered in memory for as long as
      * the app runs and reused on the next connect, as long as the server still reports exactly the same
      * version and this user the same roles; anything else reads the list again. core.get_methods returns
-     * full method docs for 24 namespaces, far too much to download every time the app comes back on screen.
+     * full method docs for some 40 namespaces, far too much to download every time the app comes back on screen.
      */
     suspend fun capabilities(socket: RpcSocket, apiVersion: TnVersion?, cacheKey: String? = null): Capabilities = coroutineScope {
         val me = async { runCatching { socket.call("auth.me") }.getOrNull() }

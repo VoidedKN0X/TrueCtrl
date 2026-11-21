@@ -37,6 +37,8 @@ object ReadOnlyGate {
         "sharing.smb.presets",
         // Whether a pool has every ZFS feature enabled (the "pool can be upgraded" note).
         "pool.is_upgraded",
+        // Who is connected over iSCSI right now.
+        "iscsi.global.sessions",
         // Job progress and results.
         "core.get_jobs",
         // Disk temperatures and graphs.

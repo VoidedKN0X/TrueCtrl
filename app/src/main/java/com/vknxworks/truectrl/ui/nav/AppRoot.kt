@@ -265,6 +265,13 @@ private fun AppNavHost(navController: NavHostController) {
         composable<UpdatesRoute> { com.vknxworks.truectrl.ui.system.UpdatesScreen() }
         composable<NetworkRoute> { com.vknxworks.truectrl.ui.system.NetworkScreen() }
         composable<ShellRoute> { com.vknxworks.truectrl.ui.system.ShellScreen() }
+        composable<GuestsRoute> { com.vknxworks.truectrl.ui.system.GuestsScreen() }
+        composable<AccountsRoute> { com.vknxworks.truectrl.ui.system.AccountsScreen() }
+        composable<UpsRoute> { com.vknxworks.truectrl.ui.system.UpsScreen() }
+        composable<IscsiRoute> { com.vknxworks.truectrl.ui.system.IscsiScreen() }
+        composable<AuditRoute> { com.vknxworks.truectrl.ui.system.AuditScreen() }
+        composable<BootEnvsRoute> { com.vknxworks.truectrl.ui.system.BootEnvsScreen() }
+        composable<CronRoute> { com.vknxworks.truectrl.ui.system.CronScreen() }
 
         composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }

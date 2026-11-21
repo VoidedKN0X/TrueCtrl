@@ -173,6 +173,7 @@ class AppContainer(val context: Context) {
     val protection = ProtectionRepository(context, sessions, appScope, sealedCache)
     val sharing = SharingRepository(context, sessions, appScope, sealedCache)
     val system = SystemRepository(sessions)
+    val admin = com.vknxworks.truectrl.data.system.AdminRepository(sessions)
     val catalog = com.vknxworks.truectrl.data.system.CatalogRepository(sessions)
 
     /** "Update all apps": runs in the app's scope, so it goes on when its screen is left. */

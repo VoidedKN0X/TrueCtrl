@@ -150,6 +150,7 @@ fun SettingsScreen() {
                     icon = Icons.Outlined.History,
                 ) { d -> c.appScope.launch { c.settings.update { it.copy(backupMaxAgeDays = d) } } }
             }
+            SettingsFileGroup()
         }
     }
 }

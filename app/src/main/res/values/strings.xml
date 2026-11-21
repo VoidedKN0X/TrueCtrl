@@ -1432,4 +1432,37 @@
     <string name="config_downloading">Downloading the configuration…</string>
     <string name="config_saved">Configuration backup saved (%1$s)</string>
     <string name="config_failed">The configuration backup wasn\'t saved. %1$s</string>
+
+    <!-- Settings file (export and import) -->
+    <string name="settings_file">Settings file</string>
+    <string name="settings_file_footer">The file holds your warning limits, the two \"hide\" switches, your notification choices and, per server, its name, read-only mode and Proxmox VM number. It never holds API keys, passwords, the ntfy topic or token, the app PIN or trusted certificates.</string>
+    <string name="settings_file_export">Export settings</string>
+    <string name="settings_file_export_sub">Save them to a file you pick</string>
+    <string name="settings_file_import">Import settings</string>
+    <string name="settings_file_import_sub">Read them from a file; you see what changes first</string>
+    <string name="settings_file_exported">Settings exported</string>
+    <string name="settings_file_export_failed">The settings file couldn\'t be saved</string>
+    <string name="settings_file_not_one">That isn\'t a TrueCtrl settings file</string>
+    <string name="settings_file_newer">That file was made by a newer TrueCtrl. Update the app first.</string>
+    <string name="settings_file_unreadable">The file couldn\'t be read</string>
+    <string name="settings_file_confirm_title">Replace these settings?</string>
+    <string name="settings_file_confirm_body">Importing this file changes the following. Everything else stays as it is.</string>
+    <string name="settings_file_nothing_title">Nothing to change</string>
+    <string name="settings_file_nothing_body">Everything this file can set is already set that way.</string>
+    <string name="settings_file_replace">Replace</string>
+    <string name="settings_file_imported">Settings imported</string>
+    <string name="settings_file_import_failed">The settings couldn\'t be imported</string>
+    <string name="settings_file_never">An import never adds a server, never trusts a certificate, never allows an unencrypted connection, and never turns off the app lock, read-only mode or a \"hide\" switch.</string>
+    <string name="settings_file_unknown_servers">Not on this phone, so skipped: %1$s. Add a server yourself and sign in.</string>
+    <string name="settings_file_pool_warn">Pool usage warning: %1$d%% becomes %2$d%%</string>
+    <string name="settings_file_backup_age">Backup age warning: %1$d becomes %2$s</string>
+    <string name="settings_file_turn_on">%1$s: turned on</string>
+    <string name="settings_file_interval">Background check: every %1$d minutes becomes every %2$d minutes</string>
+    <string name="settings_file_disk_interval">Disk health check: every %1$d minutes becomes every %2$d minutes</string>
+    <string name="settings_file_min_level">Least serious alert that notifies: %1$s becomes %2$s</string>
+    <string name="settings_file_events_all">Every kind of notification is switched on</string>
+    <string name="settings_file_events">Notifications switched off: %1$s (all others on)</string>
+    <string name="settings_file_server_name">Server %1$s is renamed to %2$s</string>
+    <string name="settings_file_server_read_only">Server %1$s: read-only mode is turned on</string>
+    <string name="settings_file_server_vm">Server %1$s: Proxmox VM number becomes %2$d</string>
 </resources>

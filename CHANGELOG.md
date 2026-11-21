@@ -8,6 +8,10 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 
 Built and checked by CI only: nothing here had been run on a phone when it was pushed. No version bump, so this is not a release yet.
 
+### Fixed
+
+- **Fixed before release: the app would have crashed at start with the new build tools.** TrueCtrl uses WorkManager for its background work, and WorkManager stores its jobs in a small Room database that is created by name when the app starts. The shrinker (R8) in Android Gradle Plugin 9 is stricter than the old one and removed the constructor that needs, which makes the app stop right at launch (a known problem with Room 2.6.1 under Android Gradle Plugin 9). A keep rule for that constructor, the same one newer Room versions ship themselves, is now in `app/proguard-rules.pro`. No released version was affected: the new build tools have not been in any release. Built by CI only; not yet run on a phone.
+
 ### Performance
 
 - **Snapshots, the app catalog, datasets, disks, installed apps and jobs only draw the rows on screen.** These lists sat in a scrolling list that held the whole card as one single item, so every row was built at once: thousands of snapshots of one dataset, or the few hundred apps of the catalog, made the page slow to open and to scroll. Each row is now its own list item. The cards look the same: every row draws its own piece of the card (rounded top on the first row, rounded bottom on the last, the outline at the sides, the dividing line where there was one), and the section title and the note under a card belong to its first and last row.

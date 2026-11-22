@@ -23,7 +23,16 @@ import okio.ByteString.Companion.toByteString
  * first message; TrueNAS answers `{"msg": "connected", "id": …}` and from then on carries the
  * terminal's bytes both ways. The size is set with core.resize_shell on the API connection.
  */
-class ShellSession(private val connection: Connection) {
+class ShellSession internal constructor(
+    /** An API call on the signed-in connection (auth.generate_token, core.resize_shell). */
+    private val call: suspend (method: String, params: List<JsonElement>) -> JsonElement,
+    /** Opens a WebSocket on the server with the connection's TLS settings. */
+    private val openSocket: (path: String, listener: WebSocketListener) -> WebSocket,
+) {
+    constructor(connection: Connection) : this(
+        { method, params -> connection.call(method, params) },
+        { path, listener -> connection.openWebSocket(path, listener) },
+    )
 
     interface Listener {
         fun onConnected()
@@ -38,14 +47,21 @@ class ShellSession(private val connection: Connection) {
     @Volatile
     private var shellId: String? = null
 
+    /** Set by [close]. A [connect] still waiting for its token then never opens the socket (or closes it at once). */
+    @Volatile
+    private var closed = false
+
     /** Gets a token and connects. API errors are thrown; socket events go to [listener]. */
     suspend fun connect(listener: Listener) {
         // One minute is plenty to open the socket; the token isn't kept anywhere.
-        val token = connection.call(
+        val token = call(
             "auth.generate_token",
             listOf(JsonPrimitive(60), JsonObject(emptyMap()), JsonPrimitive(true)),
         ).str() ?: throw TnError.Call(null, null)
-        socket = connection.openWebSocket(
+        // Closed (Reconnect, leaving the screen) while the token was on its way: don't open a signed-in shell
+        // that nothing would ever close.
+        if (closed) return
+        val opened = openSocket(
             "/websocket/shell",
             object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -89,6 +105,12 @@ class ShellSession(private val connection: Connection) {
                     listener.onFailure(TnError.fromIo(t))
             },
         )
+        socket = opened
+        // close() may have run between the check above and here, when socket was still null.
+        if (closed) {
+            opened.close(1000, null)
+            socket = null
+        }
     }
 
     /** Typing goes as binary frames: TrueNAS writes them straight to the terminal. */
@@ -98,10 +120,11 @@ class ShellSession(private val connection: Connection) {
 
     suspend fun resize(cols: Int, rows: Int) {
         val id = shellId?.takeIf { it.isNotEmpty() } ?: return
-        runCatching { connection.call("core.resize_shell", listOf(JsonPrimitive(id), JsonPrimitive(cols), JsonPrimitive(rows))) }
+        runCatching { call("core.resize_shell", listOf(JsonPrimitive(id), JsonPrimitive(cols), JsonPrimitive(rows))) }
     }
 
     fun close() {
+        closed = true
         socket?.close(1000, null)
         socket = null
     }

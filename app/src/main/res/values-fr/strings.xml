@@ -978,7 +978,10 @@
     <string name="lock_too_many">Trop d’essais. Réessayez dans %1$d s</string>
     <string name="lock_forgot">Code PIN oublié ?</string>
     <string name="lock_forgot_title">Code PIN oublié ?</string>
-    <string name="lock_forgot_body">Le code PIN ne peut pas être récupéré, car il chiffre vos identifiants enregistrés. TrueCtrl va supprimer chaque serveur avec sa clé API ou son mot de passe, ainsi que les données en cache, résultats de vérification et notifications conservés sur ce téléphone. Rien ne change sur votre TrueNAS.</string>
+    <string name="lock_forgot_body">Le code PIN ne peut pas être récupéré, car il chiffre vos identifiants enregistrés. TrueCtrl va supprimer chaque serveur avec sa clé API ou son mot de passe, ainsi que les données en cache, résultats de vérification et notifications conservés sur ce téléphone. Rien ne change sur votre TrueNAS. Si votre téléphone a un verrouillage d\'écran, vous le confirmerez d\'abord avec celui-ci.</string>
+    <string name="lock_reset_prompt_title">Réinitialiser le verrouillage de TrueCtrl</string>
+    <string name="lock_reset_prompt_subtitle">Utilisez le verrouillage d\'écran de votre téléphone pour confirmer votre identité</string>
+    <string name="lock_reset_prompt_failed">Impossible d\'afficher le verrouillage d\'écran</string>
     <string name="lock_forgot_confirm">Supprimer les serveurs et réinitialiser</string>
     <string name="lock_choose_pin">Choisir un code PIN d’appli</string>
     <string name="lock_migrate_intro">Le verrouillage de TrueCtrl a désormais son propre code PIN, distinct de celui de votre téléphone. Vos identifiants enregistrés sont chiffrés avec ce code tant que l’appli est verrouillée.</string>

@@ -4,6 +4,23 @@ What changed in each TrueCtrl release. Every release on the [Releases page](http
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Not yet tried on a phone: built and checked by CI only.
+
+### Security
+
+- **"Forgot PIN?" now asks for your phone's screen lock.** Before, anyone holding your unlocked phone could tap "Forgot PIN?" on TrueCtrl's lock screen and reset it. That didn't reveal your sign-ins (they're removed), but it let anyone wipe your servers and turn the lock off. Now the reset first asks for your phone's own PIN, pattern, password or fingerprint. If you cancel or it fails, nothing is removed. If your phone has no screen lock at all, the reset works as before. The warning about what gets removed is unchanged.
+- **A web shell can't stay open by accident.** Tapping Reconnect in the shell while it was still connecting could leave the earlier, signed-in shell connection open on your TrueNAS, with nothing in the app attached to it, until Android closed TrueCtrl. Now a shell that's replaced or closed while it's still connecting never opens, or is closed straight away.
+
+### Fixed
+
+- **Background checks use your pool warning level.** When a background check ran while TrueCtrl wasn't open, it could use the default 80% pool-full warning instead of the level you set in Settings. It now always reads your saved setting.
+
+### Changed
+
+- **Two settings screens open more smoothly.** Disk health settings (the ntfy access token) and editing a server (whether an API key is saved) no longer decrypt saved secrets on the main thread while the screen opens; it happens in the background. The token field and the "key saved" hint fill in a moment later, and "Save and send test" waits until the saved token has been read, so it can't clear it by accident.
+
 ## v0.20.1 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

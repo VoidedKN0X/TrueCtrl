@@ -52,6 +52,8 @@ import com.vknxworks.truectrl.ui.setup.CertInfo
 import com.vknxworks.truectrl.ui.setup.CertTrustDialog
 import com.vknxworks.truectrl.ui.setup.fetchCertInfo
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 /**
  * Settings › Notifications › Disk health: the separate disk-health check (off by default), its interval,
@@ -68,7 +70,15 @@ fun DiskHealthSettings(settings: NotifySettings, canPost: Boolean, ensurePermiss
 
     var server by remember(settings.ntfyServer) { mutableStateOf(settings.ntfyServer) }
     var topic by remember(settings.ntfyTopic) { mutableStateOf(settings.ntfyTopic) }
-    var token by remember { mutableStateOf(c.serverStore.ntfyToken()) }
+    // The saved token is decrypted off the main thread (Keystore). Until it's read, saving is held back so an
+    // empty field can't wipe it.
+    var token by remember { mutableStateOf("") }
+    var tokenLoaded by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        val saved = withContext(Dispatchers.IO) { runCatching { c.serverStore.ntfyToken() }.getOrDefault("") }
+        if (token.isEmpty()) token = saved
+        tokenLoaded = true
+    }
     var busy by remember { mutableStateOf(false) }
     var cert by remember { mutableStateOf<Pair<CertInfo, NtfyTarget>?>(null) }
 
@@ -173,7 +183,7 @@ fun DiskHealthSettings(settings: NotifySettings, canPost: Boolean, ensurePermiss
                 stringResource(R.string.dh_ntfy_save_test_sub),
                 icon = Icons.Outlined.Dns,
                 onClick = onClick@{
-                    if (busy) return@onClick
+                    if (busy || !tokenLoaded) return@onClick
                     val (target, p) = Ntfy.target(server, topic, token, settings.ntfyCertPin)
                     if (target == null) {
                         Toast.makeText(context, context.getString(if (p == NtfyProblem.NO_SERVER || p == NtfyProblem.NO_TOPIC) R.string.dh_ntfy_missing else R.string.dh_ntfy_fix), Toast.LENGTH_LONG).show()
@@ -183,7 +193,7 @@ fun DiskHealthSettings(settings: NotifySettings, canPost: Boolean, ensurePermiss
                     scope.launch {
                         try {
                             c.notifySettings.update { it.copy(ntfyServer = target.server.toString().trimEnd('/'), ntfyTopic = target.topic) }
-                            c.serverStore.saveNtfyToken(target.token)
+                            withContext(Dispatchers.IO) { c.serverStore.saveNtfyToken(target.token) }
                             send(context, c.http, target)
                             Toast.makeText(context, context.getString(R.string.dh_ntfy_sent), Toast.LENGTH_SHORT).show()
                         } catch (e: TnError.UntrustedCertificate) {

@@ -1,5 +1,6 @@
 package com.vknxworks.truectrl.data.notify
 
+import kotlinx.coroutines.flow.first
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -61,7 +62,8 @@ class NotifyWorker(context: Context, params: WorkerParameters) : CoroutineWorker
         val c = applicationContext.container
         val notify = c.notifySettings.current()
         if (!notify.polling && !inputData.getBoolean(KEY_FORCE, false)) return Result.success()
-        val app = c.settings.settings.value
+        // The stored settings, not the StateFlow: on a cold start (the app not open) it still holds the defaults.
+        val app = c.settings.stored.first()
         val servers = c.sessions.servers.value
         val checker = Checker(applicationContext)
         val config = CheckConfig(notify, app.poolWarnPercent, manyServers = servers.size > 1)

@@ -938,7 +938,10 @@
     <string name="lock_too_many">Te veel pogingen. Probeer opnieuw over %1$d s</string>
     <string name="lock_forgot">Pincode vergeten?</string>
     <string name="lock_forgot_title">Je pincode vergeten?</string>
-    <string name="lock_forgot_body">De pincode kan niet hersteld worden, want ze versleutelt je opgeslagen aanmeldingen. TrueCtrl verwijdert elke server met zijn API-sleutel of wachtwoord, en de gecachete data, controleresultaten en meldingen op deze telefoon. Op je TrueNAS verandert niets.</string>
+    <string name="lock_forgot_body">De pincode kan niet hersteld worden, want ze versleutelt je opgeslagen aanmeldingen. TrueCtrl verwijdert elke server met zijn API-sleutel of wachtwoord, en de gecachete data, controleresultaten en meldingen op deze telefoon. Op je TrueNAS verandert niets. Heeft je telefoon een schermvergrendeling, dan bevestig je eerst daarmee.</string>
+    <string name="lock_reset_prompt_title">App-vergrendeling van TrueCtrl resetten</string>
+    <string name="lock_reset_prompt_subtitle">Bevestig met de schermvergrendeling van je telefoon dat jij het bent</string>
+    <string name="lock_reset_prompt_failed">De schermvergrendeling kon niet getoond worden</string>
     <string name="lock_forgot_confirm">Servers verwijderen en resetten</string>
     <string name="lock_choose_pin">Kies een app-pincode</string>
     <string name="lock_migrate_intro">De app-vergrendeling van TrueCtrl heeft nu een eigen pincode, los van die van je telefoon. Je opgeslagen aanmeldingen zijn ermee versleuteld zolang de app vergrendeld is.</string>

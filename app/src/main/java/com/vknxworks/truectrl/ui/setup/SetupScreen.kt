@@ -68,6 +68,9 @@ import com.vknxworks.truectrl.ui.components.SecureWindow
 import com.vknxworks.truectrl.ui.components.errorMessage
 import com.vknxworks.truectrl.ui.theme.Gutter
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import androidx.compose.runtime.LaunchedEffect
 import okhttp3.HttpUrl
 
 /** Everything learned from a successful connection, shown before the server is saved. */
@@ -98,7 +101,12 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     val scope = rememberCoroutineScope()
     val existing = remember(editId) { editId?.let { id -> c.sessions.servers.value.firstOrNull { it.id == id } } }
     // Only whether a key is saved; the key itself is decrypted when it's used, not kept in the screen's state.
-    val keptKey = remember(editId) { existing?.auth == AuthMethod.API_KEY && editId != null && c.serverStore.hasApiKey(editId) }
+    // Read off the main thread (a Keystore decrypt); false until then, so the key field simply shows as empty for a moment.
+    var keptKey by remember(editId) { mutableStateOf(false) }
+    LaunchedEffect(editId) {
+        keptKey = existing?.auth == AuthMethod.API_KEY && editId != null &&
+            withContext(Dispatchers.IO) { runCatching { c.serverStore.hasApiKey(editId) }.getOrDefault(false) }
+    }
 
     var name by remember { mutableStateOf(existing?.name.orEmpty()) }
     var address by remember { mutableStateOf(existing?.url?.removePrefix("https://").orEmpty()) }
@@ -151,7 +159,11 @@ fun SetupScreen(editId: String? = null, onDone: () -> Unit, onCancel: (() -> Uni
     fun pinFor(url: HttpUrl): String = if (pinnedHost.equals(url.host, ignoreCase = true)) pin else ""
 
     /** The API key to sign in with: the one typed, or the saved one when the field was left empty. */
-    fun keyToUse(): String = apiKey.trim().ifBlank { if (keptKey && editId != null) c.serverStore.secrets(editId).apiKey else "" }
+    suspend fun keyToUse(): String {
+        val typed = apiKey.trim()
+        if (typed.isNotEmpty()) return typed
+        return if (keptKey && editId != null) withContext(Dispatchers.IO) { c.serverStore.secrets(editId).apiKey } else ""
+    }
 
     /** Reads roles, version and system info on the signed-in [socket], then shows the result. */
     suspend fun finish(socket: RpcSocket, url: HttpUrl, newest: TnVersion, usesOtp: Boolean) {

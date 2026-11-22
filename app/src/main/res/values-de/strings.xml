@@ -978,7 +978,10 @@
     <string name="lock_too_many">Zu viele Versuche. Versuche es in %1$d s erneut</string>
     <string name="lock_forgot">PIN vergessen?</string>
     <string name="lock_forgot_title">PIN vergessen?</string>
-    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden, weil sie deine gespeicherten Anmeldungen verschlüsselt. TrueCtrl entfernt jeden Server mit seinem API-Schlüssel oder Passwort sowie die zwischengespeicherten Daten, Prüfergebnisse und Benachrichtigungen auf diesem Handy. An deinem TrueNAS ändert sich nichts.</string>
+    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden, weil sie deine gespeicherten Anmeldungen verschlüsselt. TrueCtrl entfernt jeden Server mit seinem API-Schlüssel oder Passwort sowie die zwischengespeicherten Daten, Prüfergebnisse und Benachrichtigungen auf diesem Handy. An deinem TrueNAS ändert sich nichts. Wenn dein Handy eine Displaysperre hat, bestätigst du zuerst damit.</string>
+    <string name="lock_reset_prompt_title">App-Sperre von TrueCtrl zurücksetzen</string>
+    <string name="lock_reset_prompt_subtitle">Bestätige mit der Displaysperre deines Handys, dass du es bist</string>
+    <string name="lock_reset_prompt_failed">Displaysperre konnte nicht angezeigt werden</string>
     <string name="lock_forgot_confirm">Server entfernen und zurücksetzen</string>
     <string name="lock_choose_pin">App-PIN festlegen</string>
     <string name="lock_migrate_intro">Die App-Sperre von TrueCtrl hat jetzt eine eigene PIN, unabhängig von der deines Handys. Deine gespeicherten Anmeldungen werden damit verschlüsselt, solange die App gesperrt ist.</string>
